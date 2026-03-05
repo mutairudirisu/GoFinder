@@ -7,6 +7,18 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
     "../../packages/**/*.{js,ts,jsx,tsx,mdx}", // for future shared UI package
   ],
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      animation: {
+        marquee: "marquee linear infinite",
+      },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+      },
+    },
+  },
   plugins: [],
 };
