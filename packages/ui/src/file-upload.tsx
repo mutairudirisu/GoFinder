@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Upload, File as FileIcon, X } from "lucide-react";
+import React from "react";
 
 interface FileUploadProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value" | "size"> {
   label?: string;

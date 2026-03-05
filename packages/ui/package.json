@@ -3,7 +3,19 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    "./*": "./src/*.tsx",
+    "./button": "./src/button.tsx",
+    "./card": "./src/card.tsx",
+    "./code": "./src/code.tsx",
+    "./input": "./src/input.tsx",
+    "./select": "./src/select.tsx",
+    "./textarea": "./src/textarea.tsx",
+    "./file-upload": "./src/file-upload.tsx",
+    "./tabs": "./src/tabs.tsx",
+    "./modal": "./src/modal.tsx",
+    "./table": "./src/table.tsx",
+    "./otp-input": "./src/otp-input.tsx",
+    "./toast": "./src/toast.tsx"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
