@@ -5,14 +5,6 @@ import { useEffect, useState } from "react";
 import "./globals.css";
 import { FullPageLoader } from "@repo/ui/loader";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-});
 
 // Note: Metadata export doesn't work with "use client", consider creating a separate metadata file
 // export const metadata: Metadata = {
@@ -46,11 +38,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <head>
+        <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700&display=swap" />
+        <script src="https://unpkg.com/@phosphor-icons/web"></script>
         <title>GIGS Rental - Find Your Perfect Student Housing</title>
         <meta name="description" content="GIGS Rental connects students with affordable co-sharing spaces and rental opportunities. Discover the perfect rental accommodation while studying." />
         <meta name="keywords" content="student housing, rental, co-sharing, accommodation, student housing rental, flat sharing" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="antialiased">
         {isLoading ? (
           <FullPageLoader
             size="lg"
