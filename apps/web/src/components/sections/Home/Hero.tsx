@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 // Hero section with decorative backgrounds, text, CTA buttons, and image cards
 export const Hero = () => {
