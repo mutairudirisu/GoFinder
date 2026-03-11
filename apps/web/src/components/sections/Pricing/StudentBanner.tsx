@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export const StudentBanner = () => {
-  const router = useRouter();
 
   return (
     <section className="py-12 bg-gradient-to-r from-brand-accent to-brand-500">
@@ -18,9 +17,9 @@ export const StudentBanner = () => {
               <p className="text-white/90">Search, match, and manage payments at zero cost.</p>
             </div>
           </div>
-          <button onClick={() => router.push('/listings')} className="px-8 py-4 bg-white text-brand-dark font-bold rounded-xl border-2 border-brand-dark hover:shadow-brutal transition-all whitespace-nowrap">
+          <Link href="/listings" className="px-8 py-4 bg-white text-brand-dark font-bold rounded-xl border-2 border-brand-dark hover:shadow-brutal transition-all whitespace-nowrap">
             Start Searching Free
-          </button>
+          </Link>
         </div>
       </div>
     </section>

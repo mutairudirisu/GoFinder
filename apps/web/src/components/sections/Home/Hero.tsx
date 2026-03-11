@@ -2,11 +2,9 @@
 
 import { Button } from "@repo/ui/button";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 // Hero section with decorative backgrounds, text, CTA buttons, and image cards
 export const Hero = () => {
-  const router = useRouter();
 
   return (
     // Hero Section
@@ -37,14 +35,14 @@ export const Hero = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button onClick={() => router.push('/listings')} className="px-8 py-4 bg-brand-500 text-brand-dark font-bold text-lg rounded-xl border-2 border-brand-dark shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-2">
+            <Link href="/listings" className="px-8 py-4 bg-brand-500 text-brand-dark font-bold text-lg rounded-xl border-2 border-brand-dark shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all flex items-center justify-center gap-2">
               <i className="ph-bold ph-magnifying-glass"></i>
               Start Searching
-            </button>
-            <button onClick={() => router.push('/listings')} className="px-8 py-4 bg-white text-brand-dark font-bold text-lg rounded-xl border-2 border-brand-dark hover:bg-brand-50 hover:border-brand-500 transition-all flex items-center justify-center gap-2">
+            </Link>
+            <Link href="/listings" className="px-8 py-4 bg-white text-brand-dark font-bold text-lg rounded-xl border-2 border-brand-dark hover:bg-brand-50 hover:border-brand-500 transition-all flex items-center justify-center gap-2">
               <i className="ph-bold ph-house-simple"></i>
               List a Space
-            </button>
+            </Link>
           </div>
 
           <div className="flex items-center gap-4 pt-6">
