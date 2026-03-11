@@ -1,9 +1,7 @@
 export { Hero } from "./Hero";
-export { Header } from "./Header";
 export { Marquee } from "./Marquee";
 export { FeaturesGrid } from "./FeaturesGrid";
 export { Testimonials } from "./Testimonials";
 export { Pricing } from "./Pricing";
 export { FAQ } from "./FAQ";
 export { Newsletter } from "./Newsletter";
-export { Footer } from "./Footer";

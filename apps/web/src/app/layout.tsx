@@ -1,9 +1,9 @@
 "use client";
 
-import localFont from "next/font/local";
 import { useEffect, useState } from "react";
 import "./globals.css";
 import { FullPageLoader } from "@repo/ui/loader";
+import { Header, Footer } from "@/components/Layout";
 
 
 // Note: Metadata export doesn't work with "use client", consider creating a separate metadata file
@@ -52,7 +52,11 @@ export default function RootLayout({
             message="Finding your perfect space..."
           />
         ) : (
-          <>{children}</>
+          <>
+          <Header />
+          {children}
+          <Footer />
+          </>
         )}
       </body>
     </html>

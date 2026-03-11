@@ -49,8 +49,8 @@ export const Footer = () => {
             <ul className="space-y-2 text-sm text-gray-500">
               <li><a href="#" className="hover:text-brand-dark">Help Center</a></li>
               <li><a href="#" className="hover:text-brand-dark">Safety Guidelines</a></li>
-              <li><a href="#" className="hover:text-brand-dark">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-brand-dark">Privacy Policy</a></li>
+              <li><button onClick={() => router.push('/terms-of-service')} className="hover:text-brand-dark">Terms of Service</button></li>
+              <li><button onClick={() => router.push('/privacy-policy')} className="hover:text-brand-dark">Privacy Policy</button></li>
             </ul>
           </div>
         </div>
