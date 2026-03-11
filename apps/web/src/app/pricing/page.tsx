@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Header,
   Hero as PricingHero,
   StudentBanner,
   LandlordPricing,
@@ -8,14 +7,10 @@ import {
   PricingFAQ,
   CTA,
 } from "@/components/sections/Pricing";
-import { Footer } from "@/components/sections/Home";
 
 export default function PricingPage() {
   return (
     <>
-      <Header />
-
-      <main>
         <PricingHero />
         <StudentBanner />
         <LandlordPricing />
@@ -24,9 +19,6 @@ export default function PricingPage() {
         </div>
         <PricingFAQ />
         <CTA />
-      </main>
-
-      <Footer />
     </>
   );
 }

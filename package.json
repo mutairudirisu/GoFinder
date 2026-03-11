@@ -16,7 +16,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.16",
+    "@nestjs/cli": "^7.6.0",
     "@tailwindcss/postcss": "^4.2.0",
     "@types/estree": "^1.0.8",
     "prettier": "^3.8.1",
