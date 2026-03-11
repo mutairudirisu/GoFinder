@@ -1,4 +1,3 @@
-export { Header } from "./Header";
 export { Hero } from "./Hero";
 export { ContactForm } from "./ContactForm";
 export { ContactInfo } from "./ContactInfo";

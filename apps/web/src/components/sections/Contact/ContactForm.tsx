@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 export const ContactForm = () => {
-  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -166,12 +165,12 @@ export const ContactForm = () => {
                 <div>
                   <h4 className="font-display font-bold text-xl mb-2">Check our FAQ</h4>
                   <p className="text-gray-300 text-sm mb-4">Most questions are already answered in our help center.</p>
-                  <button
-                    onClick={() => router.push("/#faq")}
+                  <Link
+                    href="/#faq"
                     className="text-brand-400 font-bold text-sm hover:underline flex items-center gap-2"
                   >
                     Browse FAQ <i className="ph-bold ph-arrow-right"></i>
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

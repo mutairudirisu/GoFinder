@@ -1,6 +1,5 @@
 import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
 
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
@@ -20,10 +19,10 @@ const ThemeImage = (props: Props) => {
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
+    <div className="min-h-screen p-8">
+      <main className="flex flex-col gap-8 max-w-4xl mx-auto">
         <ThemeImage
-          className={styles.logo}
+          className="logo w-45 h-10"
           srcLight="turborepo-dark.svg"
           srcDark="turborepo-light.svg"
           alt="Turborepo logo"
@@ -31,22 +30,22 @@ export default function Home() {
           height={38}
           priority
         />
-        <ol>
+        <ol className="list-decimal list-inside space-y-2 text-gray-700">
           <li>
-            Get started by editing <code>apps/docs/app/page.tsx</code>
+            Get started by editing <code className="bg-gray-100 px-2 py-1 rounded">apps/docs/app/page.tsx</code>
           </li>
           <li>Save and see your changes instantly.</li>
         </ol>
 
-        <div className={styles.ctas}>
+        <div className="flex gap-4 flex-wrap">
           <a
-            className={styles.primary}
+            className="inline-flex items-center gap-3 px-6 py-3 bg-black text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
             href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
             target="_blank"
             rel="noopener noreferrer"
           >
             <Image
-              className={styles.logo}
+              className="w-5 h-5"
               src="/vercel.svg"
               alt="Vercel logomark"
               width={20}
@@ -58,17 +57,18 @@ export default function Home() {
             href="https://turborepo.dev/docs?utm_source"
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.secondary}
+            className="inline-flex items-center px-6 py-3 bg-gray-200 text-black font-semibold rounded-lg hover:bg-gray-300 transition-colors"
           >
             Read our docs
           </a>
         </div>
-        <Button appName="docs" className={styles.secondary}>
+        <Button appName="docs" className="inline-flex items-center px-6 py-3 bg-gray-200 text-black font-semibold rounded-lg hover:bg-gray-300 transition-colors">
           Open alert
         </Button>
       </main>
-      <footer className={styles.footer}>
+      <footer className="fixed bottom-0 left-0 right-0 flex gap-8 flex-wrap p-8 bg-white border-t border-gray-200">
         <a
+          className="inline-flex items-center gap-2 hover:text-gray-600 transition-colors"
           href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
           target="_blank"
           rel="noopener noreferrer"
@@ -83,6 +83,7 @@ export default function Home() {
           Examples
         </a>
         <a
+          className="inline-flex items-center gap-2 hover:text-gray-600 transition-colors"
           href="https://turborepo.dev?utm_source=create-turbo"
           target="_blank"
           rel="noopener noreferrer"

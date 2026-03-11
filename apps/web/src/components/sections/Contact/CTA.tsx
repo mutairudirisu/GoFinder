@@ -1,9 +1,8 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export const CTA = () => {
-  const router = useRouter();
 
   return (
     <section className="py-20 bg-brand-dark text-white">
@@ -16,9 +15,9 @@ export const CTA = () => {
           <button className="px-8 py-4 bg-brand-500 text-brand-dark font-bold text-lg rounded-xl border-2 border-brand-dark shadow-brutal hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
             Help Center
           </button>
-          <button onClick={() => router.push('/listings')} className="px-8 py-4 bg-white/10 text-white font-bold text-lg rounded-xl border-2 border-white/20 hover:bg-white/20 transition-all">
+          <Link href="/listings" className="px-8 py-4 bg-white/10 text-white font-bold text-lg rounded-xl border-2 border-white/20 hover:bg-white/20 transition-all">
             Back to Home
-          </button>
+          </Link>
         </div>
       </div>
     </section>
