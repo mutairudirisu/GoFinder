@@ -148,11 +148,11 @@ export default function CreateListingPage({ searchParams }: { searchParams: Prom
     if (!storedUser) {
       // Save intended destination
       localStorage.setItem("auth_redirect", "/listings/create");
-      router.push("/signup");
+      router.push("/auth/signup");
     } else {
       const userData = JSON.parse(storedUser);
       if (!userData.isProfileComplete) {
-        router.push("/signup/profile");
+        router.push("/auth/signup/profile");
       }
     }
   }, [router]);
