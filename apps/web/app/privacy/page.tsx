@@ -1,7 +1,8 @@
 function Privacy() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50 px-4 py-16">
-      <h1 className="text-4xl md:text-6xl font-bold text-neutral-dark text-center">Privacy Policy</h1>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50">
+      <div className="sticky top-[90px] z-10 bg-gradient-to-br from-orange-50 via-white to-amber-50 flex flex-col items-center justify-center px-4 py-16">
+        <h1 className="text-4xl md:text-6xl font-bold text-neutral-dark text-center">Privacy Policy</h1>
       <p className="mt-2 text-center text-sm text-gray-500">Last Updated: March 11, 2026</p>
       <div className="prose prose-neutral max-w-3xl mt-8 text-base leading-relaxed">
         <div className="space-y-6">
@@ -122,6 +123,7 @@ function Privacy() {
           </section>
 
         </div>
+      </div>
       </div>
     </div>
   );

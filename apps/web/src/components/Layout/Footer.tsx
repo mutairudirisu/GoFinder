@@ -26,9 +26,9 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold mb-4">Platform</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-brand-dark">Search Listings</a></li>
-              <li><a href="#" className="hover:text-brand-dark">Roommate Match</a></li>
-              <li><a href="#" className="hover:text-brand-dark">For Landlords</a></li>
+              <li><Link href="http://localhost:3001/listings" className="hover:text-brand-dark">Search Listings</Link></li>
+              <li><Link href="/roommate-match" className="hover:text-brand-dark">Roommate Match</Link></li>
+              <li><Link href="/for-landlords" className="hover:text-brand-dark">For Landlords</Link></li>
               <li><Link href="/pricing" className="hover:text-brand-dark">Pricing</Link></li>
             </ul>
           </div>
@@ -37,8 +37,8 @@ export const Footer = () => {
             <h4 className="font-bold mb-4">Company</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link href="/about-us" className="hover:text-brand-dark">About Us</Link></li>
-              <li><a href="#" className="hover:text-brand-dark">Careers</a></li>
-              <li><a href="#" className="hover:text-brand-dark">Blog</a></li>
+              <li><Link href="/careers" className="hover:text-brand-dark">Careers</Link></li>
+              <li><Link href="/blog" className="hover:text-brand-dark">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-brand-dark">Contact</Link></li>
             </ul>
           </div>
@@ -46,8 +46,8 @@ export const Footer = () => {
           <div>
             <h4 className="font-bold mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><a href="#" className="hover:text-brand-dark">Help Center</a></li>
-              <li><a href="#" className="hover:text-brand-dark">Safety Guidelines</a></li>
+              <li><Link href="/help-center" className="hover:text-brand-dark">Help Center</Link></li>
+              <li><Link href="/safety-guidelines" className="hover:text-brand-dark">Safety Guidelines</Link></li>
               <li><Link href="/terms" className="hover:text-brand-dark">Terms of Service</Link></li>
               <li><Link href="/privacy" className="hover:text-brand-dark">Privacy Policy</Link></li>
             </ul>
