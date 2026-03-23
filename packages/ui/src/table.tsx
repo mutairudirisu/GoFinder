@@ -78,8 +78,8 @@ export default function Table<T extends Record<string, any>>({
                 <th
                   key={`${column.key}-${index}`}
                   className={`
-                    px-6 py-4
-                    font-heading text-sm font-semibold
+                    px-3 sm:px-6 py-3 sm:py-4
+                    font-heading text-xs sm:text-sm font-semibold
                     text-neutral-dark
                     ${getAlignmentClass(column.align)}
                     ${column.width || ''}
@@ -111,8 +111,8 @@ export default function Table<T extends Record<string, any>>({
                     <td
                       key={`${column.key}-${colIndex}`}
                       className={`
-                        px-6 py-4
-                        font-sans text-sm
+                        px-3 sm:px-6 py-2 sm:py-4
+                        font-sans text-xs sm:text-sm
                         text-neutral-dark
                         ${getAlignmentClass(column.align)}
                         ${column.width || ''}
