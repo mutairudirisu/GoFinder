@@ -52,7 +52,7 @@ function Cookies() {
             </p>
             <p>
               Hostel Finder<br />
-              Lagos, Nigeria<br />
+              Abuja, Nigeria<br />
               Email: <a href="mailto:privacy@hostelfinder.com" className="text-orange-500 hover:underline">privacy@hostelfinder.com</a>
             </p>
           </section>
