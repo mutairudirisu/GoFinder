@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import type { Property } from "@/app/listings/data";
+import type { Property } from "@/types/listings";
 
 interface ListingCardProps {
   property: Property;
