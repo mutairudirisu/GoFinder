@@ -2,7 +2,7 @@
 
 > **The ultimate rental platform for students and young professionals**
 
-![GIGS-Rental Preview](./preview.png)
+![GIGS-Rental Preview](./public/GIGS.png)
 
 A comprehensive, modern rental platform that connects students and young professionals with affordable accommodation, roommate matches, and local experiences. Built with cutting-edge technology for seamless browsing, secure bookings, and community engagement.
 
