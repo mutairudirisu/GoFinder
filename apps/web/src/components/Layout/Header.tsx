@@ -97,7 +97,7 @@ export const Header = () => {
             <i className="ph-bold ph-house-line text-lg sm:text-xl text-white"></i>
           </div>
           <span className="font-display font-bold text-xl sm:text-2xl md:text-3xl tracking-tight hidden sm:inline-block">
-            Hostel<span className="text-brand-600">Finder</span>
+            GIGS<span className="text-brand-600">Rentals</span>
           </span>
           <span className="font-display font-bold text-lg sm:hidden">
             <span className="text-brand-500">HF</span>
