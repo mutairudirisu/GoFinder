@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "./globals.css";
 import { FullPageLoader } from "@repo/ui/loader";
-import { Header, Footer } from "@/components/Layout";
+import { Header } from "@/components/Layout";
+import { Footer } from "@repo/ui";
 import { AuthProvider } from "@/context/AuthContext";
 
 
