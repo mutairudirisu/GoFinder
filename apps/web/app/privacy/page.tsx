@@ -10,7 +10,7 @@ function Privacy() {
           <section>
             <h2>Introduction</h2>
             <p className="mt-2">
-              At Hostel Finder, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services to search, discover, and book hostel and short-stay rental spaces across Nigeria and beyond.
+              At GIGS Rentals, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services to search, discover, and book hostel and short-stay rental spaces across Nigeria and beyond.
             </p>
           </section>
 
@@ -62,7 +62,7 @@ function Privacy() {
           <section>
             <h2>Cookies & Tracking Technologies</h2>
             <p className="mt-2">
-              Hostel Finder uses cookies and similar tracking technologies to enhance your browsing experience, remember your preferences, and analyze site traffic. You can control cookie settings through your browser at any time. Disabling cookies may affect certain features of our platform. For a more detailed explanation, see our <a href="/cookies" className="text-orange-500 hover:underline">Cookies Policy</a>.
+              GIGS Rentals uses cookies and similar tracking technologies to enhance your browsing experience, remember your preferences, and analyze site traffic. You can control cookie settings through your browser at any time. Disabling cookies may affect certain features of our platform. For a more detailed explanation, see our <a href="/cookies" className="text-orange-500 hover:underline">Cookies Policy</a>.
             </p>
           </section>
 
@@ -98,7 +98,7 @@ function Privacy() {
           <section>
             <h2>Children's Privacy</h2>
             <p className="mt-2">
-              Hostel Finder is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a child has provided us with personal data, we will take steps to delete such information promptly.
+              GIGS Rentals is not intended for use by individuals under the age of 18. We do not knowingly collect personal information from minors. If we become aware that a child has provided us with personal data, we will take steps to delete such information promptly.
             </p>
           </section>
 
@@ -115,7 +115,7 @@ function Privacy() {
               If you have any questions or concerns about this Privacy Policy or our data practices, please contact us at:
             </p>
             <p>
-              Hostel Finder<br />
+              GIGS Rentals<br />
               Lagos, Nigeria<br />
               Email: <a href="mailto:privacy@hostelfinder.com" className="text-orange-500 hover:underline">privacy@hostelfinder.com</a><br />
               Phone: +234 800 000 0000
@@ -130,7 +130,7 @@ function Privacy() {
 }
 
 export const metadata = {
-  title: 'Privacy Policy | Hostel Finder',
+  title: 'Privacy Policy | GIGS Rentals',
 };
 
 export default Privacy;

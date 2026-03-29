@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    ".": "./src/index.ts",
     "./*": "./src/*.tsx",
     "./button": "./src/button.tsx",
     "./card": "./src/card.tsx",
@@ -36,6 +37,7 @@
     "lucide-react": "^0.468.0"
   },
   "peerDependencies": {
+    "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   }

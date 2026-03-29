@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import "./globals.css";
 import { FullPageLoader } from "@repo/ui/loader";
-import { Header, Footer } from "@/components/Layout";
+import { Header } from "@/components/Layout";
+import { Footer } from "@repo/ui";
 import { AuthProvider } from "@/context/AuthContext";
 
 
@@ -31,6 +32,7 @@ export default function RootLayout({
 
   // Hide Header/Footer on property detail pages, create listing, and auth pages
   const isPropertyDetail = pathname.startsWith("/listings/") && pathname.split("/").length > 2;
+  const isLegalPage = pathname.startsWith("/privacy/") && pathname.split("/").length > 2;
   const isCreateListing = pathname === "/listings/create";
   const isAuthPage = pathname.startsWith("/auth") || pathname.startsWith("/signup");
 
@@ -65,7 +67,7 @@ export default function RootLayout({
           />
         ) : (
           <>
-          {!isPropertyDetail && !isCreateListing && !isAuthPage && <Header />}
+          {!isPropertyDetail && !isCreateListing && !isAuthPage&& !isLegalPage && <Header />}
           {children}
           {!isPropertyDetail && !isCreateListing && !isAuthPage && <Footer />}
           </>
