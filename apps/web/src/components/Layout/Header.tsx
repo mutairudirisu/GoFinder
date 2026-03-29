@@ -1,80 +1,18 @@
 "use client";
-
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-
-const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL || "http://localhost:3001";
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  phone?: string;
-  role: "lister" | "renter" | "both";
-  avatar?: string;
-  isProfileComplete: boolean;
-}
+import { useRef, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useHeaderAuth } from "./useHeaderAuth";
+import { Logo } from "./Logo";
+import { NavLinks } from "./NavLinks";
+import { AuthMenu } from "./AuthMenu";
+import { GuestMenu } from "./GuestMenu";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated, isListerMode, logout, switchToLister } = useHeaderAuth();
 
-  // Check auth state on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem("gigs_user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        localStorage.removeItem("gigs_user");
-      }
-    }
-    setIsLoading(false);
-
-    // Listen for auth changes
-    const handleStorageChange = () => {
-      const updatedUser = localStorage.getItem("gigs_user");
-      if (updatedUser) {
-        setUser(JSON.parse(updatedUser));
-      } else {
-        setUser(null);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    window.addEventListener("gigsAuthChange", handleStorageChange);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("gigsAuthChange", handleStorageChange);
-    };
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("gigs_user");
-    setUser(null);
-    setIsMenuOpen(false);
-    window.dispatchEvent(new Event("gigsAuthChange"));
-  };
-
-  const isAuthenticated = !!user;
-  const currentRole = user?.role || "renter";
-  const isListerMode = currentRole === "lister" || currentRole === "both";
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const closeMenu = () => setIsMenuOpen(false);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -90,7 +28,7 @@ export const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b-2 border-black">
-      <div className="max-w-7xl mx-auto px-2 sm:px-3 md:px-4 lg:px-6 h-16 sm:h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-16 sm:h-20 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
           <div className="w-8 sm:w-10 h-8 sm:h-10 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
@@ -475,6 +413,21 @@ export const Header = () => {
             ) : (
               /* Guest Desktop CTA */
               <>
+                <Link
+                  href={`${DASHBOARD_URL}/auth/signup?redirect=/listings/create`}
+                  className="hidden md:flex items-center gap-2 px-4 py-2 font-bold rounded-lg hover:border-orange-700 transition-all text-sm hover:text-brand-500"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                  Become a Lister
+                </Link>
+                <Link
+                  href={`${DASHBOARD_URL}/auth/login`}
+                  className="hidden md:block text-sm font-bold hover:text-brand-600 transition-colors"
+                >
+                  Log in
+                </Link>
                 <Link
                   href={`${DASHBOARD_URL}/auth/signup`}
                   className="px-5 py-2.5 bg-black text-white font-bold rounded-lg border-2 border-brand-dark hover:bg-brand-accent hover:border-brand-accent hover:-translate-y-1 hover:shadow-brutal transition-all text-sm"

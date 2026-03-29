@@ -6,6 +6,8 @@
         "/^node -e \"console\\.log\\('JSON is valid:', !!JSON\\.parse\\(require\\('fs'\\)\\.readFileSync\\('package\\.json', 'utf8'\\)\\)\\)\"$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "npx turbo": true,
+        "npm run check-types": true
     }
 }

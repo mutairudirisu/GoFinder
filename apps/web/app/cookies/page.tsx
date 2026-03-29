@@ -15,7 +15,7 @@ function Cookies() {
           <section>
             <h2>How We Use Cookies</h2>
             <p className="mt-2">
-              Hostel Finder uses cookies and similar tracking technologies for a variety of purposes, including:
+              GIGS Rentals uses cookies and similar tracking technologies for a variety of purposes, including:
             </p>
             <ul className="list-disc list-inside ml-6 space-y-2">
               <li>Remembering your preferences and settings</li>
@@ -51,7 +51,7 @@ function Cookies() {
               If you have any questions about our use of cookies, please contact us at:
             </p>
             <p>
-              Hostel Finder<br />
+              GIGS Rentals<br />
               Abuja, Nigeria<br />
               Email: <a href="mailto:privacy@hostelfinder.com" className="text-orange-500 hover:underline">privacy@hostelfinder.com</a>
             </p>
