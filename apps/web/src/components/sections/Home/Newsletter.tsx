@@ -2,7 +2,7 @@
 
 export const Newsletter = () => {
   return (
-    <section className="py-24 bg-brand-dark relative overflow-hidden">
+    <section className="py-24 bg-brand-dark relative overflow-hidden z-40">
       {/* Background decoration */}
       <div className="absolute top-0 right-0 p-12 opacity-10">
         <i className="ph-fill ph-paper-plane-tilt text-9xl text-white"></i>

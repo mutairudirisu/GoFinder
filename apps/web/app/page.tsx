@@ -1,5 +1,5 @@
 // use explicit Hero path or named import from index
-import { FAQ, FeaturesGrid, JourneyScroller, Marquee, Newsletter, PlatformShowcase, Testimonials } from "@/components/sections/Home";
+import { AgentsEnterprise, FAQ, FeaturesGrid, JourneyScroller, Marquee, Newsletter, PlatformShowcase, Testimonials } from "@/components/sections/Home";
 import Hero from "@/components/sections/Home/Hero";
 
 export default function Home() {
@@ -9,6 +9,7 @@ export default function Home() {
       <Marquee />
       <JourneyScroller />
       <PlatformShowcase />
+      <AgentsEnterprise />
       <FeaturesGrid />
       <Testimonials />
       <Newsletter />
