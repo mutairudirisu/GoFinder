@@ -1,322 +1,202 @@
 "use client";
 
-import { useState, use } from "react";
+import { use, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { mockProperties } from "../../data";
-import { Header } from "@/components/layout";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessageContext";
+import type { Listing } from "@/types/listing";
 
-export default function MessageHostPage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
-  const property = mockProperties.find(p => p.id === unwrappedParams.id);
+export default function ListingMessagePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const listingId = decodeURIComponent(String(id ?? "")).trim();
+
   const router = useRouter();
-  const { user } = useAuth();
-  const { startConversation, sendMessage } = useMessages();
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const { startConversation, sendMessage, markAsRead } = useMessages();
 
-  const [message, setMessage] = useState(
-    `Hi! I'm interested in ${property?.title || 'your property'}. Is it still available?`
-  );
-  const [isSending, setIsSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [loadingListing, setLoadingListing] = useState(true);
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
 
-  if (!property) {
-    return (
-      <main className="min-h-screen bg-gradient-to-b from-brand-50 via-white to-brand-50/30">
-        <Header />
-        <div className="max-w-2xl mx-auto px-6 pt-24">
-          <div className="text-center py-12">
-            <h1 className="font-display font-bold text-2xl text-brand-dark mb-4">
-              Property Not Found
-            </h1>
-            <Link href="/listings" className="text-brand-600 hover:text-brand-700 font-medium">
-              ← Back to Listings
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  useEffect(() => {
+    let isMounted = true;
+    void (async () => {
+      setLoadingListing(true);
+      try {
+        const res = await fetch(`/api/listings/${encodeURIComponent(listingId)}`, { cache: "no-store" });
+        const data = (await res.json()) as { listing?: Listing; error?: string };
+        if (!isMounted) return;
+        setListing(data.listing ?? null);
+      } finally {
+        if (isMounted) setLoadingListing(false);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
+  }, [listingId]);
 
-  const handleSendMessage = async () => {
-    if (!user) {
-      router.push('/auth/login?redirect=' + encodeURIComponent(window.location.pathname));
+  const host = useMemo(() => {
+    const h = listing?.host;
+    const hostId = String(h?.id ?? `host_${listingId}`);
+    const hostName = String(h?.name ?? "Host");
+    const hostAvatar = h?.avatar || "";
+    return { id: hostId, name: hostName, avatar: hostAvatar, phone: String(h?.phone ?? "") };
+  }, [listing?.host, listingId]);
+
+  const cover = listing?.photos?.[0] || "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop";
+
+  const handleSend = async () => {
+    if (!listing) return;
+    const content = message.trim();
+    if (!content) return;
+    if (!isAuthenticated || !user?.id) {
+      router.push(`/auth/signup?redirect=${encodeURIComponent(`/listings/${encodeURIComponent(listingId)}/message`)}`);
       return;
     }
 
-    setIsSending(true);
-
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const landlordId = `landlord_${property.landlord.name.replace(/\s+/g, '_').toLowerCase()}`;
-    
-    const conversationId = startConversation(
-      property.id,
-      property.title,
-      property.images[0] || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=400',
-      landlordId,
-      property.landlord.name,
-      user.id,
-      user.name
-    );
-
-    // Send the initial message
-    sendMessage(conversationId, user.id, message);
-
-    setIsSending(false);
-    setSent(true);
+    setSending(true);
+    try {
+      const conversationId = startConversation(
+        String(listing.id),
+        listing.title,
+        cover,
+        host.id,
+        host.name,
+        user.id,
+        user.name
+      );
+      sendMessage(conversationId, user.id, content);
+      markAsRead(conversationId, user.id);
+      router.push(`/user/messages?c=${encodeURIComponent(conversationId)}`);
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-brand-50 via-white to-brand-50/30 pb-20 lg:pb-0">
-      {/* Header - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Header />
-      </div>
-
-      {/* Mobile Header */}
-      <div className="fixed lg:hidden top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200 h-14 flex items-center px-4">
-        <Link href={`/listings/${property.id}`} className="flex items-center gap-2">
-          <i className="ph-bold ph-arrow-left text-xl text-slate-600"></i>
-        </Link>
-        <span className="ml-3 font-display font-bold text-brand-dark">Message</span>
-      </div>
-
-      {/* Navigation - hidden on mobile */}
-      <div className="bg-white border-b border-slate-100 pt-14 sm:pt-16 hidden lg:block">
-        <div className="max-w-4xl mx-auto px-6 py-4">
-          <Link 
-            href={`/listings/${property.id}`}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-brand-600 transition-colors font-medium"
-          >
-            <i className="ph-bold ph-arrow-left"></i>
-            Back to Property
-          </Link>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-              <i className="ph-bold ph-chat-circle-dots text-green-600 text-4xl"></i>
-            </div>
-            <h1 className="font-display font-bold text-3xl text-brand-dark mb-2">
-              Message Host
-            </h1>
-            <p className="text-slate-500">
-              Send a message to {property.landlord.name} about {property.title}
-            </p>
+    <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
+      <section className="pt-20 pb-16 px-4 md:px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <Link
+              href={`/listings/${encodeURIComponent(listingId)}`}
+              className="inline-flex items-center gap-2 text-slate-700 font-bold hover:text-brand-700"
+            >
+              <i className="ph-bold ph-arrow-left"></i>
+              Back
+            </Link>
+            <Link
+              href="/user/messages"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+            >
+              <i className="ph-bold ph-chats"></i>
+              Messages
+            </Link>
           </div>
 
-          {/* Property Preview Card */}
-          <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100 mb-6">
-            <div className="flex gap-4">
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-32 h-24 rounded-xl object-cover"
-              />
-              <div className="flex-1">
-                <h3 className="font-bold text-brand-dark text-lg">{property.title}</h3>
-                <div className="flex items-center gap-1 text-slate-500 text-sm mt-1">
-                  <i className="ph-bold ph-map-pin"></i>
-                  {property.location}
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="font-bold text-brand-600">${property.price}</span>
-                  <span className="text-slate-500 text-sm">/ {property.priceType}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-slate-100">
+                  <div className="text-2xl font-display font-bold text-slate-900">Message host</div>
+                  <div className="text-slate-500 mt-2">Ask about availability, rules, and anything you need before booking.</div>
 
-          {sent ? (
-            /* Success State */
-            <div className="bg-white rounded-3xl p-8 shadow-lg border border-slate-100 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
-                <i className="ph-bold ph-check text-green-600 text-4xl"></i>
-              </div>
-              <h2 className="font-display font-bold text-2xl text-brand-dark mb-2">
-                Message Sent!
-              </h2>
-              <p className="text-slate-500 mb-6">
-                Your message has been sent to {property.landlord.name}. They'll get back to you soon.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <Link
-                  href={`/listings/${property.id}`}
-                  className="px-6 py-3 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors"
-                >
-                  Back to Property
-                </Link>
-                <Link
-                  href="/messages"
-                  className="px-6 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors flex items-center gap-2"
-                >
-                  <i className="ph-bold ph-chat-circle-dots"></i>
-                  View Messages
-                </Link>
-              </div>
-            </div>
-          ) : (
-            /* Message Form */
-            <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100">
-              {/* Landlord Info */}
-              <div className="flex items-center gap-4 pb-6 border-b border-slate-100 mb-6">
-                <img
-                  src={property.landlord.image}
-                  alt={property.landlord.name}
-                  className="w-16 h-16 rounded-full object-cover border-4 border-green-100"
-                />
-                <div>
-                  <h3 className="font-bold text-brand-dark text-lg">{property.landlord.name}</h3>
-                  {property.landlord.verified && (
-                    <span className="inline-flex items-center gap-1 text-xs text-green-600">
-                      <i className="ph-fill ph-seal-check"></i>
-                      Verified Landlord
-                    </span>
-                  )}
-                  <p className="text-slate-500 text-sm mt-1">Usually responds within 2 hours</p>
+                  <div className="mt-6 rounded-[28px] border border-slate-200 overflow-hidden">
+                    <div className="aspect-[16/10] bg-slate-100 relative overflow-hidden">
+                      <img src={cover} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                        <div className="text-white font-bold text-sm line-clamp-1">{listing?.title ?? "Listing"}</div>
+                        {listing ? (
+                          <div className="text-white font-bold text-sm">₦{Number(listing.price).toLocaleString()}</div>
+                        ) : null}
+                      </div>
+                    </div>
+                    <div className="p-5">
+                      {loadingListing ? (
+                        <div className="text-sm text-slate-500">Loading listing...</div>
+                      ) : listing ? (
+                        <>
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white font-bold flex items-center justify-center">
+                              {host.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 line-clamp-1">{host.name}</div>
+                              <div className="text-xs text-slate-500 line-clamp-1">
+                                {listing.address.city}, {listing.address.province}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex items-center gap-2">
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-brand-50 text-brand-700 border border-brand-200">
+                              <i className="ph-fill ph-seal-check"></i>
+                              Verified listing
+                            </span>
+                            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-slate-100 text-slate-700 border border-slate-200">
+                              {listing.type.replaceAll("_", " ")}
+                            </span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-sm text-slate-500">Listing not found.</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              {/* Quick Messages */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Quick Messages
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Is this still available?",
-                    "Can I schedule a viewing?",
-                    "What's included in the price?",
-                    "Are there any move-in specials?"
-                  ].map((quickMsg) => (
+                <div className="p-6 md:p-8">
+                  <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">Your message</div>
+                    <textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Write a message..."
+                      rows={8}
+                      className="mt-3 w-full bg-transparent outline-none resize-none text-sm text-slate-900 placeholder:text-slate-400"
+                      disabled={sending || loadingListing || !listing}
+                    />
+                  </div>
+
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <div className="text-xs text-slate-500">
+                      {isLoading ? "Checking account..." : isAuthenticated ? "Signed in" : "You’ll be asked to sign up to send"}
+                    </div>
                     <button
-                      key={quickMsg}
-                      onClick={() => setMessage(quickMsg)}
-                      className={`px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                        message === quickMsg
-                          ? "bg-green-100 text-green-700 border-2 border-green-300"
-                          : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-2 border-transparent"
-                      }`}
+                      type="button"
+                      onClick={handleSend}
+                      disabled={sending || !message.trim() || loadingListing || !listing}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {quickMsg}
+                      <i className="ph-bold ph-arrow-right"></i>
+                      {sending ? "Sending..." : "Send"}
                     </button>
-                  ))}
+                  </div>
+
+                  <div className="mt-6 rounded-3xl border border-slate-200 p-5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-brand-50 text-brand-700 border border-brand-200 flex items-center justify-center">
+                        <i className="ph-bold ph-shield-check"></i>
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900">Keep it on GIGS</div>
+                        <div className="text-sm text-slate-600 mt-1">
+                          Messaging inside GIGS keeps you protected and helps us support you if anything goes wrong.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-
-              {/* Message Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-slate-700 mb-3">
-                  Your Message
-                </label>
-                <textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  rows={6}
-                  className="w-full px-4 py-3 bg-slate-50 border-2 border-slate-100 rounded-xl focus:border-green-300 focus:outline-none transition-colors resize-none"
-                  placeholder="Write your message here..."
-                />
-              </div>
-
-              {/* Contact Options */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                <button className="py-3 bg-green-50 text-green-700 font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-green-100 transition-colors">
-                  <i className="ph-bold ph-phone"></i>
-                  Request Call
-                </button>
-                <button className="py-3 bg-purple-50 text-purple-700 font-medium rounded-xl flex items-center justify-center gap-2 hover:bg-purple-100 transition-colors">
-                  <i className="ph-bold ph-video-camera"></i>
-                  Request Video Tour
-                </button>
-              </div>
-
-              {/* Send Button */}
-              <button
-                onClick={handleSendMessage}
-                disabled={isSending || !message.trim()}
-                className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                  isSending || !message.trim()
-                    ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                    : "bg-green-600 text-white hover:bg-green-700 shadow-lg shadow-green-500/30 hover:shadow-brutal hover:-translate-y-1"
-                }`}
-              >
-                {isSending ? (
-                  <>
-                    <i className="ph-bold ph-spinner animate-spin"></i>
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <i className="ph-bold ph-paper-plane-tilt"></i>
-                    Send Message
-                  </>
-                )}
-              </button>
             </div>
-          )}
-
-          {/* Safety Tips */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-2xl">
-            <div className="flex items-start gap-3">
-              <i className="ph-bold ph-shield-check text-blue-600 text-2xl mt-0.5"></i>
-              <div>
-                <h4 className="font-semibold text-blue-800">Safety Tips</h4>
-                <ul className="text-sm text-blue-700 mt-1 space-y-1">
-                  <li>• Never pay before viewing the property</li>
-                  <li>• Use our messaging system for all communication</li>
-                  <li>• Report any suspicious requests to our support team</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed lg:hidden bottom-4 left-4 right-4 z-40">
-        <div className="flex items-center justify-around h-16 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] border border-white/40">
-          <Link
-            href={`/listings/${property.id}`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-slate-500 hover:text-brand-600 transition-colors"
-          >
-            <i className="ph-bold ph-house text-xl"></i>
-            <span className="text-xs font-medium">Property</span>
-          </Link>
-          <Link
-            href={`/listings/${property.id}/message`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-green-600 hover:text-green-700 transition-colors"
-          >
-            <i className="ph-bold ph-chat-circle-dots text-xl"></i>
-            <span className="text-xs font-medium">Message</span>
-          </Link>
-          <Link
-            href={`/listings/${property.id}/contact`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-purple-600 hover:text-purple-700 transition-colors"
-          >
-            <i className="ph-bold ph-phone text-xl"></i>
-            <span className="text-xs font-medium">Contact</span>
-          </Link>
-          <Link
-            href="/listings/saved"
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-slate-500 hover:text-red-500 transition-colors"
-          >
-            <i className="ph-bold ph-heart text-xl"></i>
-            <span className="text-xs font-medium">Saved</span>
-          </Link>
+          </motion.div>
         </div>
-      </nav>
+      </section>
     </main>
   );
 }
+

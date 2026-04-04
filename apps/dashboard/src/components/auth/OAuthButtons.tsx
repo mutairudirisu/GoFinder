@@ -14,7 +14,7 @@ export const OAuthButtons = ({ isSignup = false }: OAuthButtonsProps) => {
     <div className="space-y-4">
       <button
         onClick={() => handleOAuthClick("google")}
-        className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-brand-dark rounded-xl font-bold text-brand-dark hover:bg-brand-50 transition-colors shadow-brutal-sm hover:shadow-none hover:translate-x-1 hover:translate-y-1"
+        className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white/10 border border-white/10 rounded-2xl font-bold text-white hover:bg-white/15 transition-colors"
       >
         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
           <path
@@ -38,11 +38,11 @@ export const OAuthButtons = ({ isSignup = false }: OAuthButtonsProps) => {
       </button>
 
       <div className="relative flex items-center gap-4">
-        <div className="flex-1 h-px bg-brand-200"></div>
-        <span className="text-sm font-medium text-brand-600">
+        <div className="flex-1 h-px bg-white/10"></div>
+        <span className="text-sm font-medium text-white/60">
           Or {isSignup ? "sign up" : "sign in"} with email
         </span>
-        <div className="flex-1 h-px bg-brand-200"></div>
+        <div className="flex-1 h-px bg-white/10"></div>
       </div>
     </div>
   );

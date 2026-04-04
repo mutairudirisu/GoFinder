@@ -49,7 +49,6 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
     }
     setIsLoading(true);
     try {
-      console.log("Resetting password with token:", token);
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setSuccess(true);
     } catch (error) {
@@ -62,15 +61,15 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
   if (success) {
     return (
       <AuthLayout
-        title="Password Reset Successful"
+        title="Password reset successful"
         subtitle="Your password has been updated"
         showImage={false}
       >
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-green-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/10">
               <svg
-                className="w-8 h-8 md:w-10 md:h-10 text-green-600"
+                className="w-8 h-8 md:w-10 md:h-10 text-brand-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -84,11 +83,10 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
               </svg>
             </div>
           </div>
-          <p className="text-center text-green-700">You can now sign in with your new password</p>
+          <p className="text-center text-white/80">You can now sign in with your new password</p>
           <Link
             href="/auth/login"
-            className="block text-center px-6 py-3 md:py-4 bg-green-600 hover:bg-green-700 text-white font-bold text-lg rounded-xl border-2 border-green-700 transition-all"
-            style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)' }}
+            className="block text-center px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold text-lg rounded-2xl transition-colors"
           >
             Sign In
           </Link>
@@ -99,7 +97,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
 
   return (
     <AuthLayout
-      title="Create New Password"
+      title="Create a new password"
       subtitle="Please enter a strong password"
       showImage={false}
     >
@@ -113,6 +111,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
           onChange={handleChange}
           error={errors.password}
           helperText="Must be at least 6 characters"
+          variant="dark"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -133,6 +132,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
           value={formData.confirmPassword}
           onChange={handleChange}
           error={errors.confirmPassword}
+          variant="dark"
           icon={
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
@@ -146,15 +146,14 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
           disabled={isLoading}
         />
         {errors.submit && (
-          <div className="p-3 bg-red-50 border-2 border-red-200 rounded-lg">
-            <p className="text-sm font-semibold text-red-600">{errors.submit}</p>
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
+            <p className="text-sm font-semibold text-red-200">{errors.submit}</p>
           </div>
         )}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full px-6 py-3 md:py-4 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold text-lg rounded-xl border-2 border-green-700 transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)' }}
+          className="w-full px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold text-lg rounded-2xl transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
@@ -170,7 +169,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
         </button>
         <Link
           href="/auth/login"
-          className="block text-center text-sm font-semibold text-green-600 hover:text-green-700 underline underline-offset-2"
+          className="block text-center text-sm font-semibold text-white/70 hover:text-white underline underline-offset-4"
         >
           Back to Sign In
         </Link>
