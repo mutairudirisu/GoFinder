@@ -1,0 +1,148 @@
+[
+  {
+    "id": "list_eio011pf9",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Landmark Tower",
+      "unit": "",
+      "street": "123 Ademola Adetokumbo Street",
+      "district": "Victorial Island",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "92004"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac",
+      "workspace",
+      "washer",
+      "study_room"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "The BeeHive",
+    "highlights": [
+      "spacious",
+      "family"
+    ],
+    "description": "Welcome to our spacious and family student accommodation in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a spacious experience. Enjoy easy access to local amenities while staying in a family environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-03T11:03:38.209Z"
+  },
+  {
+    "id": "list_3b316w57d",
+    "category": "home",
+    "type": "hotel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": ""
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
+    ],
+    "title": "First Hotel",
+    "highlights": [
+      "spacious"
+    ],
+    "description": "Welcome to our spacious hotel in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a spacious experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-03T12:05:15.595Z"
+  },
+  {
+    "id": "list_oxx9ysdru",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "room",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Danbari",
+      "unit": "",
+      "street": "123, kano street",
+      "district": "Kabuga",
+      "city": "Kano",
+      "province": "Kano",
+      "postalCode": "3388484"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": false
+    },
+    "amenities": [
+      "parking",
+      "kitchen",
+      "washer",
+      "wifi",
+      "study_room"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
+    ],
+    "title": "the cozy apartment",
+    "highlights": [
+      "central"
+    ],
+    "description": "Welcome to our central student accommodation in the heart of Kano. This space is designed for comfort and style, perfect for those looking for a central experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-04T08:31:51.958Z"
+  }
+]

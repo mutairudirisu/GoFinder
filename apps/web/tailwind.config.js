@@ -20,7 +20,9 @@ const config = {
         },
       },
       boxShadow: {
-        brutal: '0 25px 50px -12px rgba(34, 197, 94, 0.4)'
+        'brutal': '4px 4px 0px 0px rgba(0,0,0,1)',
+        'brutal-sm': '2px 2px 0px 0px rgba(0,0,0,1)',
+        'brutal-lg': '8px 8px 0px 0px rgba(0,0,0,1)',
       }
     },
   },

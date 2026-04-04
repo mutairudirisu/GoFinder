@@ -1,439 +1,620 @@
 "use client";
 
-import { useState, use } from "react";
-import { motion } from "framer-motion";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { mockProperties } from "../../data";
+import { motion } from "framer-motion";
+import type { Listing } from "@/types/listing";
 import { Header } from "@/components/layout";
+import { useAuth } from "@/context/AuthContext";
 
-export default function FindRoommatesPage({ params }: { params: Promise<{ id: string }> }) {
-  const unwrappedParams = use(params);
-  const property = mockProperties.find(p => p.id === unwrappedParams.id);
+type RoommatePost = {
+  id: string;
+  listingId: string;
+  createdAt: string;
+  name: string;
+  budget: number;
+  moveIn: string;
+  bio: string;
+  preferences: string[];
+};
 
-  const [roommatePreferences, setRoommatePreferences] = useState({
-    budgetMin: 200,
-    budgetMax: 500,
-    moveInDate: "",
-    duration: "6 months",
-    gender: "any",
-    smoking: "no",
-    pets: "no",
-    sleepSchedule: "any",
-    guests: "occasionally"
-  });
+type RoommateGroup = {
+  id: string;
+  listingId: string;
+  locationKey: string;
+  createdAt: string;
+  createdBy: { userId: string; name: string };
+  note: string;
+  desiredRoommates: number;
+  status: "OPEN" | "FULL" | "CLOSED";
+  members: { userId: string; name: string; joinedAt: string }[];
+};
 
-  const [matches, setMatches] = useState<number>(0);
-  const [searching, setSearching] = useState(false);
-  const [searched, setSearched] = useState(false);
+const POSTS_KEY = "gigs_roommate_posts";
 
-  if (!property) {
+function readPosts(): RoommatePost[] {
+  try {
+    const stored = localStorage.getItem(POSTS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) ? (parsed as RoommatePost[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function writePosts(posts: RoommatePost[]) {
+  localStorage.setItem(POSTS_KEY, JSON.stringify(posts));
+}
+
+export default function ListingRoommatesPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { user, isAuthenticated } = useAuth();
+  const [listing, setListing] = useState<Listing | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [posts, setPosts] = useState<RoommatePost[]>([]);
+
+  const [groups, setGroups] = useState<RoommateGroup[]>([]);
+  const [groupsLoading, setGroupsLoading] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteNote, setInviteNote] = useState("");
+  const [desiredRoommates, setDesiredRoommates] = useState(2);
+  const [createdGroup, setCreatedGroup] = useState<RoommateGroup | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const [name, setName] = useState("");
+  const [budget, setBudget] = useState<number>(0);
+  const [moveIn, setMoveIn] = useState("");
+  const [bio, setBio] = useState("");
+  const [preferenceInput, setPreferenceInput] = useState("");
+
+  useEffect(() => {
+    setPosts(readPosts());
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const normalizedId = decodeURIComponent(String(id ?? "")).trim();
+        if (!normalizedId) {
+          setListing(null);
+          return;
+        }
+        const res = await fetch(`/api/listings/${encodeURIComponent(normalizedId)}`, { cache: "no-store" });
+        if (res.ok) {
+          const data = (await res.json()) as { listing: Listing };
+          setListing(data.listing ?? null);
+          return;
+        }
+
+        const fallbackVerified = await fetch("/api/listings?status=VERIFIED", { cache: "no-store" });
+        if (fallbackVerified.ok) {
+          const verified = (await fallbackVerified.json()) as { listings: Listing[] };
+          const found = (Array.isArray(verified.listings) ? verified.listings : []).find(
+            (l) => decodeURIComponent(String(l.id)).trim() === normalizedId
+          );
+          setListing(found ?? null);
+          return;
+        }
+
+        const fallback = await fetch("/api/listings", { cache: "no-store" });
+        if (fallback.ok) {
+          const all = (await fallback.json()) as { listings: Listing[] };
+          const found = (Array.isArray(all.listings) ? all.listings : []).find(
+            (l) => decodeURIComponent(String(l.id)).trim() === normalizedId
+          );
+          setListing(found ?? null);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    void load();
+  }, [id]);
+
+  useEffect(() => {
+    const loadGroups = async () => {
+      const normalizedId = decodeURIComponent(String(id ?? "")).trim();
+      if (!normalizedId) return;
+      setGroupsLoading(true);
+      try {
+        const res = await fetch(`/api/roommates?listingId=${encodeURIComponent(normalizedId)}`, { cache: "no-store" });
+        const data = (await res.json()) as { groups: RoommateGroup[] };
+        setGroups(Array.isArray(data.groups) ? data.groups : []);
+      } finally {
+        setGroupsLoading(false);
+      }
+    };
+    void loadGroups();
+  }, [id]);
+
+  const listingPosts = useMemo(() => {
+    const normalizedId = decodeURIComponent(String(id)).trim();
+    return posts
+      .filter((p) => decodeURIComponent(String(p.listingId)).trim() === normalizedId)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  }, [id, posts]);
+
+  const requiresRoommates = useMemo(() => {
+    if (!listing) return false;
+    const type = String(listing.type);
+    return listing.spaceType === "shared" || type === "shared_room" || type === "student_accommodation" || type === "hostel";
+  }, [listing]);
+
+  const suggested = useMemo(() => {
+    if (!listing) return [];
+    const normalizedListingId = decodeURIComponent(String(id)).trim();
+    const city = listing.address.city;
+    return posts
+      .filter((p) => decodeURIComponent(String(p.listingId)).trim() !== normalizedListingId)
+      .filter((p) => p.bio.toLowerCase().includes(city.toLowerCase()) || p.preferences.some((x) => x.toLowerCase().includes(city.toLowerCase())))
+      .slice(0, 6);
+  }, [id, listing, posts]);
+
+  const createPost = () => {
+    if (!listing) return;
+    const normalizedId = decodeURIComponent(String(id)).trim();
+    const preferences = preferenceInput
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+    const next: RoommatePost[] = [
+      {
+        id: `rm_${Math.random().toString(36).slice(2, 10)}`,
+        listingId: normalizedId,
+        createdAt: new Date().toISOString(),
+        name: name.trim() || "Anonymous",
+        budget: Number.isFinite(budget) ? budget : 0,
+        moveIn,
+        bio: bio.trim(),
+        preferences,
+      },
+      ...posts,
+    ];
+    setPosts(next);
+    writePosts(next);
+    setCreateOpen(false);
+    setName("");
+    setBudget(0);
+    setMoveIn("");
+    setBio("");
+    setPreferenceInput("");
+  };
+
+  const locationKey = useMemo(() => {
+    if (!listing) return "";
+    return `${listing.address.city}, ${listing.address.province}`;
+  }, [listing]);
+
+  const inviteUrl = useMemo(() => {
+    if (!createdGroup) return "";
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/roommates/join/${encodeURIComponent(createdGroup.id)}`;
+  }, [createdGroup]);
+
+  const copyInvite = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+    }
+  };
+
+  const createInvite = async () => {
+    if (!listing) return;
+    if (!isAuthenticated || !user?.id) return;
+
+    const normalizedId = decodeURIComponent(String(id)).trim();
+    const createdByName = user.name || user.email?.split("@")[0] || "User";
+    const safeDesired = Math.max(1, Math.min(8, Number(desiredRoommates) || 1));
+
+    const res = await fetch("/api/roommates", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        listingId: normalizedId,
+        locationKey,
+        createdBy: { userId: user.id, name: createdByName },
+        note: inviteNote,
+        desiredRoommates: safeDesired,
+      }),
+    });
+    if (!res.ok) return;
+    const data = (await res.json()) as { group: RoommateGroup };
+    setCreatedGroup(data.group ?? null);
+    setInviteOpen(false);
+
+    const reload = await fetch(`/api/roommates?listingId=${encodeURIComponent(normalizedId)}`, { cache: "no-store" });
+    if (reload.ok) {
+      const next = (await reload.json()) as { groups: RoommateGroup[] };
+      setGroups(Array.isArray(next.groups) ? next.groups : []);
+    }
+  };
+
+  if (isLoading) {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-brand-50 via-white to-brand-50/30">
+      <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
         <Header />
-        <div className="max-w-4xl mx-auto px-6 pt-24">
-          <div className="text-center py-12">
-            <h1 className="font-display font-bold text-2xl text-brand-dark mb-4">
-              Property Not Found
-            </h1>
-            <Link href="/listings" className="text-brand-600 hover:text-brand-700 font-medium">
-              ← Back to Listings
-            </Link>
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-24 pb-10">
+          <div className="h-10 w-52 bg-slate-200 rounded-xl animate-pulse" />
+          <div className="mt-8 h-44 bg-slate-200 rounded-[32px] animate-pulse" />
+          <div className="mt-6 h-72 bg-slate-200 rounded-[32px] animate-pulse" />
+        </div>
+      </main>
+    );
+  }
+
+  if (!listing) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
+        <Header />
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-24 pb-10">
+          <Link href="/" className="inline-flex items-center gap-2 text-slate-600 hover:text-brand-600 font-bold">
+            <i className="ph ph-arrow-left"></i>
+            Back
+          </Link>
+          <div className="mt-8 bg-white rounded-[32px] border border-slate-200 p-10 text-center">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i className="ph ph-house-line text-3xl text-slate-300"></i>
+            </div>
+            <h1 className="text-xl font-bold text-slate-900">Listing not found</h1>
+            <p className="text-sm text-slate-500 mt-2">This listing may have been removed or is not available.</p>
           </div>
         </div>
       </main>
     );
   }
 
-  const handleSearch = async () => {
-    setSearching(true);
-    setSearched(false);
-    
-    // Simulate search
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate random matches (3-12)
-    setMatches(Math.floor(Math.random() * 10) + 3);
-    setSearching(false);
-    setSearched(true);
-  };
-
-  const mockRoommateMatches = [
-    {
-      id: 1,
-      name: "Alex Chen",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100",
-      age: 22,
-      university: "Lagos State University",
-      budget: 350,
-      bio: "Computer Science student looking for quiet roommates. I love gaming but keep it low-key.",
-      interests: ["gaming", "coding", "music"],
-      compatibility: 92
-    },
-    {
-      id: 2,
-      name: "Jordan Williams",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100",
-      age: 21,
-      university: "University of Lagos",
-      budget: 400,
-      bio: "Medical student with early morning classes. Looking for similar schedule roommates.",
-      interests: ["studying", "fitness", "cooking"],
-      compatibility: 87
-    },
-    {
-      id: 3,
-      name: "Sam Taylor",
-      image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&h=100",
-      age: 23,
-      university: "Bayero University",
-      budget: 300,
-      bio: "Final year engineering student. Neat and organized. Love weekend hangouts!",
-      interests: ["basketball", "music", "photography"],
-      compatibility: 81
-    }
-  ];
-
   return (
-    <main className="min-h-screen bg-gradient-to-b from-amber-50 via-white to-amber-50/30 pb-20 lg:pb-0">
-      {/* Header - hidden on mobile */}
-      <div className="hidden lg:block">
-        <Header />
-      </div>
-
-      {/* Mobile Header */}
-      <div className="fixed lg:hidden top-0 left-0 right-0 z-30 bg-white/90 backdrop-blur-lg border-b border-slate-200 h-14 flex items-center px-4">
-        <Link href={`/listings/${property.id}`} className="flex items-center gap-2">
-          <i className="ph-bold ph-arrow-left text-xl text-slate-600"></i>
-        </Link>
-        <span className="ml-3 font-display font-bold text-brand-dark">Roommates</span>
-      </div>
-
-      {/* Navigation - hidden on mobile */}
-      <div className="bg-white border-b border-slate-100 pt-14 sm:pt-16 hidden lg:block">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <Link 
-            href={`/listings/${property.id}`}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-brand-600 transition-colors font-medium"
-          >
-            <i className="ph-bold ph-arrow-left"></i>
-            Back to Property
+    <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
+      <Header />
+      <div className="max-w-5xl mx-auto px-4 md:px-6 pt-24 pb-10 space-y-8">
+        <div className="flex items-center justify-between gap-4">
+          <Link href={`/listings/${encodeURIComponent(String(listing.id))}`} className="inline-flex items-center gap-2 text-slate-600 hover:text-brand-600 font-bold">
+            <i className="ph ph-arrow-left"></i>
+            Back to listing
+          </Link>
+          <Link href="/roommates" className="text-sm font-bold text-brand-600 hover:text-brand-700">
+            Browse roommate listings
           </Link>
         </div>
-      </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-amber-100 rounded-full mb-4">
-              <i className="ph-bold ph-users-three text-amber-600 text-4xl"></i>
-            </div>
-            <h1 className="font-display font-bold text-3xl text-brand-dark mb-2">
-              Find Roommates
-            </h1>
-            <p className="text-slate-500">
-              Find compatible roommates for {property.title}
-            </p>
-          </div>
-
-          {/* Property Info */}
-          <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100 mb-8">
-            <div className="flex gap-4">
-              <img
-                src={property.images[0]}
-                alt={property.title}
-                className="w-32 h-24 rounded-xl object-cover"
-              />
-              <div className="flex-1">
-                <h3 className="font-bold text-brand-dark text-lg">{property.title}</h3>
-                <div className="flex items-center gap-1 text-slate-500 text-sm mt-1">
-                  <i className="ph-bold ph-map-pin"></i>
-                  {property.location}
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-semibold rounded-lg flex items-center gap-1">
-                    <i className="ph-bold ph-users-three"></i>
-                    Needs {property.roommatesNeeded || 2} roommates
+        <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm">
+          <div className="flex items-start justify-between gap-6">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-display font-bold text-slate-900">Roommates & sharing</h1>
+              <p className="text-slate-500">
+                {listing.title} • {listing.address.city}, {listing.address.province}
+              </p>
+              <div className="flex flex-wrap gap-2 pt-2">
+                {requiresRoommates ? (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                    Shared space
                   </span>
+                ) : (
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
+                    Optional roommates
+                  </span>
+                )}
+                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full">
+                  Verified listing
+                </span>
+              </div>
+              {!requiresRoommates ? (
+                <div className="text-sm text-slate-500 max-w-xl">
+                  This is not a shared listing, but you can still create a roommate invite to split rent with a friend or a colleague.
+                </div>
+              ) : null}
+            </div>
+            <div className="shrink-0 flex flex-col sm:flex-row gap-3">
+              <Link
+                href={`/listings/${encodeURIComponent(String(listing.id))}/split-bills`}
+                className="px-6 py-3 rounded-2xl bg-slate-100 text-slate-800 font-bold hover:bg-brand-50 hover:text-brand-700 transition-colors flex items-center gap-2 justify-center"
+              >
+                <i className="ph ph-calculator"></i>
+                Split bills
+              </Link>
+              <button
+                onClick={() => setInviteOpen(true)}
+                className="px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors flex items-center gap-2 justify-center"
+              >
+                <i className="ph ph-link"></i>
+                Create invite link
+              </button>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-800 font-bold hover:bg-brand-50 hover:border-brand-200 hover:text-brand-700 transition-colors flex items-center gap-2 justify-center"
+              >
+                <i className="ph ph-user-plus"></i>
+                Create profile
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {inviteOpen ? (
+          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Roommate invite link</h2>
+              <button onClick={() => setInviteOpen(false)} className="text-slate-500 hover:text-slate-800">
+                <i className="ph ph-x text-xl"></i>
+              </button>
+            </div>
+
+            {!isAuthenticated ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center">
+                  <i className="ph ph-lock text-slate-500"></i>
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-slate-900">Sign in to create an invite</div>
+                  <div className="text-sm text-slate-600 mt-1">
+                    Create a shareable link so your friends or colleagues can join your roommate plan.
+                  </div>
+                  <div className="mt-4">
+                    <Link
+                      href={`/auth/signup?redirect=${encodeURIComponent(`/listings/${encodeURIComponent(String(listing.id))}/roommates`)}`}
+                      className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
+                    >
+                      Continue
+                      <i className="ph ph-arrow-right"></i>
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-8">
-            {/* Preferences Form */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100 sticky top-24">
-                <h3 className="font-bold text-lg text-brand-dark mb-4 flex items-center gap-2">
-                  <i className="ph-bold ph-sliders-horizontal"></i>
-                  Your Preferences
-                </h3>
-
-                <div className="space-y-4">
-                  {/* Budget Range */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Budget Range (₦)
-                    </label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        value={roommatePreferences.budgetMin}
-                        onChange={(e) => setRoommatePreferences({...roommatePreferences, budgetMin: Number(e.target.value)})}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-300 focus:outline-none"
-                      />
-                      <span className="text-slate-400">-</span>
-                      <input
-                        type="number"
-                        value={roommatePreferences.budgetMax}
-                        onChange={(e) => setRoommatePreferences({...roommatePreferences, budgetMax: Number(e.target.value)})}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-300 focus:outline-none"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Move in Date */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Preferred Move-in Date
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-slate-200 p-4">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                      Roommates needed
                     </label>
                     <input
-                      type="date"
-                      value={roommatePreferences.moveInDate}
-                      onChange={(e) => setRoommatePreferences({...roommatePreferences, moveInDate: e.target.value})}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-300 focus:outline-none"
+                      value={String(desiredRoommates)}
+                      onChange={(e) => setDesiredRoommates(Number(e.target.value || 1))}
+                      type="number"
+                      min={1}
+                      max={8}
+                      className="w-full bg-transparent outline-none font-bold text-slate-900"
+                      placeholder="2"
+                    />
+                    <div className="text-xs text-slate-500 mt-1">Max 8</div>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200 p-4 sm:col-span-1">
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">
+                      Note (optional)
+                    </label>
+                    <input
+                      value={inviteNote}
+                      onChange={(e) => setInviteNote(e.target.value)}
+                      className="w-full bg-transparent outline-none font-bold text-slate-900"
+                      placeholder="Looking for a tidy roommate, student preferred..."
                     />
                   </div>
-
-                  {/* Duration */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Lease Duration
-                    </label>
-                    <select
-                      value={roommatePreferences.duration}
-                      onChange={(e) => setRoommatePreferences({...roommatePreferences, duration: e.target.value})}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:border-amber-300 focus:outline-none"
-                    >
-                      <option>3 months</option>
-                      <option>6 months</option>
-                      <option>9 months</option>
-                      <option>1 year</option>
-                    </select>
-                  </div>
-
-                  {/* Gender */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Preferred Gender
-                    </label>
-                    <div className="flex gap-2">
-                      {["any", "male", "female"].map((g) => (
-                        <button
-                          key={g}
-                          onClick={() => setRoommatePreferences({...roommatePreferences, gender: g})}
-                          className={`flex-1 py-2 rounded-xl text-sm font-medium capitalize transition-all ${
-                            roommatePreferences.gender === g
-                              ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
-                              : "bg-slate-50 text-slate-600 border-2 border-transparent"
-                          }`}
-                        >
-                          {g}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Smoking */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Smoking Preference
-                    </label>
-                    <div className="flex gap-2">
-                      {["no", "yes", "occasionally"].map((s) => (
-                        <button
-                          key={s}
-                          onClick={() => setRoommatePreferences({...roommatePreferences, smoking: s})}
-                          className={`flex-1 py-2 rounded-xl text-sm font-medium capitalize transition-all ${
-                            roommatePreferences.smoking === s
-                              ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
-                              : "bg-slate-50 text-slate-600 border-2 border-transparent"
-                          }`}
-                        >
-                          {s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Search Button */}
+                </div>
+                <div className="flex items-center justify-end gap-3">
                   <button
-                    onClick={handleSearch}
-                    disabled={searching}
-                    className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ${
-                      searching
-                        ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                        : "bg-amber-500 text-white hover:bg-amber-600 shadow-lg shadow-amber-500/30 hover:shadow-brutal hover:-translate-y-1"
-                    }`}
+                    onClick={() => setInviteOpen(false)}
+                    className="px-5 py-3 rounded-2xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200 transition-colors"
                   >
-                    {searching ? (
-                      <>
-                        <i className="ph-bold ph-spinner animate-spin"></i>
-                        Searching...
-                      </>
-                    ) : (
-                      <>
-                        <i className="ph-bold ph-magnifying-glass"></i>
-                        Find Roommates
-                      </>
-                    )}
+                    Cancel
+                  </button>
+                  <button
+                    onClick={createInvite}
+                    className="px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
+                  >
+                    Create link
                   </button>
                 </div>
+              </>
+            )}
+          </div>
+        ) : null}
+
+        {createdGroup ? (
+          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="font-bold text-slate-900">Invite created</div>
+                <div className="text-sm text-slate-500">
+                  Share this link so people can join your roommate plan.
+                </div>
+              </div>
+              <Link
+                href={`/roommates/join/${encodeURIComponent(createdGroup.id)}`}
+                className="px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
+              >
+                Preview
+              </Link>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="flex-1 px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 font-semibold text-slate-800 overflow-hidden text-ellipsis">
+                {inviteUrl || `roommates/join/${createdGroup.id}`}
+              </div>
+              <button
+                type="button"
+                onClick={() => copyInvite(inviteUrl || `roommates/join/${createdGroup.id}`)}
+                className="px-5 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Open roommate invites</h2>
+            <span className="text-xs font-bold text-slate-500">{groups.length}</span>
+          </div>
+
+          {groupsLoading ? (
+            <div className="h-24 rounded-3xl bg-slate-100 animate-pulse" />
+          ) : groups.length === 0 ? (
+            <div className="text-sm text-slate-500">
+              No invite links yet. Create one to start sharing this listing with potential roommates.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {groups.map((g) => (
+                <div key={g.id} className="rounded-3xl border border-slate-200 p-6 bg-white space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="font-bold text-slate-900">Roommate plan</div>
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full ${
+                      g.status === "OPEN" ? "text-brand-700 bg-brand-50" : g.status === "FULL" ? "text-amber-700 bg-amber-50" : "text-slate-700 bg-slate-100"
+                    }`}>
+                      {g.status}
+                    </span>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    Created by <span className="font-bold">{g.createdBy?.name || "User"}</span>
+                  </div>
+                  {g.note ? <div className="text-sm text-slate-700 line-clamp-2">{g.note}</div> : null}
+                  <div className="flex items-center justify-between pt-2">
+                    <div className="text-xs text-slate-500 font-bold">
+                      {g.members?.length ?? 0}/{Math.max(2, (g.desiredRoommates ?? 1) + 1)} joined
+                    </div>
+                    <Link
+                      href={`/roommates/join/${encodeURIComponent(g.id)}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors text-sm"
+                    >
+                      View
+                      <i className="ph ph-arrow-right"></i>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {createOpen && (
+          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Your roommate profile</h2>
+              <button onClick={() => setCreateOpen(false)} className="text-slate-500 hover:text-slate-800">
+                <i className="ph ph-x text-xl"></i>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Name</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full bg-transparent outline-none font-bold text-slate-900" placeholder="Your name" />
+              </div>
+              <div className="rounded-2xl border border-slate-200 p-4">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Budget (₦)</label>
+                <input
+                  value={budget ? String(budget) : ""}
+                  onChange={(e) => setBudget(Number(e.target.value || 0))}
+                  type="number"
+                  className="w-full bg-transparent outline-none font-bold text-slate-900"
+                  placeholder="150000"
+                />
+              </div>
+              <div className="rounded-2xl border border-slate-200 p-4 sm:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Move-in date</label>
+                <input value={moveIn} onChange={(e) => setMoveIn(e.target.value)} type="date" className="w-full bg-transparent outline-none font-bold text-slate-900" />
+              </div>
+              <div className="rounded-2xl border border-slate-200 p-4 sm:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Bio</label>
+                <textarea value={bio} onChange={(e) => setBio(e.target.value)} className="w-full bg-transparent outline-none text-slate-900 min-h-[110px]" placeholder="Tell roommates what you’re like, schedule, and expectations." />
+              </div>
+              <div className="rounded-2xl border border-slate-200 p-4 sm:col-span-2">
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Preferences (comma separated)</label>
+                <input
+                  value={preferenceInput}
+                  onChange={(e) => setPreferenceInput(e.target.value)}
+                  className="w-full bg-transparent outline-none font-bold text-slate-900"
+                  placeholder="quiet, tidy, student, non-smoker"
+                />
               </div>
             </div>
 
-            {/* Results */}
-            <div className="lg:col-span-2">
-              {!searched ? (
-                /* Empty State */
-                <div className="bg-white rounded-3xl p-12 shadow-lg border border-slate-100 text-center">
-                  <div className="inline-flex items-center justify-center w-24 h-24 bg-slate-100 rounded-full mb-4">
-                    <i className="ph-bold ph-users text-slate-400 text-5xl"></i>
-                  </div>
-                  <h3 className="font-bold text-xl text-brand-dark mb-2">
-                    Ready to Find Roommates?
-                  </h3>
-                  <p className="text-slate-500 max-w-md mx-auto">
-                    Set your preferences and click "Find Roommates" to discover people who match your lifestyle and budget.
-                  </p>
-                </div>
-              ) : (
-                /* Results */
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-lg text-brand-dark">
-                      {matches} Potential Roommates Found
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-500">Sort by:</span>
-                      <select className="text-sm bg-white border border-slate-200 rounded-lg px-2 py-1">
-                        <option>Best Match</option>
-                        <option>Budget</option>
-                        <option>University</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {mockRoommateMatches.map((roommate) => (
-                    <motion.div
-                      key={roommate.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white rounded-3xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all"
-                    >
-                      <div className="flex gap-4">
-                        <div className="relative">
-                          <img
-                            src={roommate.image}
-                            alt={roommate.name}
-                            className="w-20 h-20 rounded-full object-cover border-4 border-green-100"
-                          />
-                          <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                            {roommate.compatibility}%
-                          </div>
-                        </div>
-                        
-                        <div className="flex-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h4 className="font-bold text-brand-dark text-lg">{roommate.name}</h4>
-                              <p className="text-slate-500 text-sm">{roommate.age} years old • {roommate.university}</p>
-                            </div>
-                            <span className="font-bold text-green-600">₦{roommate.budget}/mo</span>
-                          </div>
-                          
-                          <p className="text-slate-600 text-sm mt-2">{roommate.bio}</p>
-                          
-                          <div className="flex flex-wrap gap-2 mt-3">
-                            {roommate.interests.map((interest) => (
-                              <span key={interest} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-lg capitalize">
-                                {interest}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3 mt-4 pt-4 border-t border-slate-100">
-                        <button className="flex-1 py-2.5 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                          <i className="ph-bold ph-chat-circle-dots"></i>
-                          Message
-                        </button>
-                        <button className="px-4 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl hover:border-green-300 hover:bg-green-50 transition-colors">
-                          <i className="ph-bold ph-user-plus"></i>
-                        </button>
-                        <button className="px-4 py-2.5 border-2 border-slate-200 text-slate-600 font-semibold rounded-xl hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                          <i className="ph-bold ph-share-network"></i>
-                        </button>
-                      </div>
-                    </motion.div>
-                  ))}
-
-                  {/* Create Group Chat */}
-                  <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl p-6 shadow-lg text-white text-center mt-6">
-                    <i className="ph-bold ph-users-three text-4xl mb-3"></i>
-                    <h3 className="font-bold text-xl mb-2">Create a Roommate Group</h3>
-                    <p className="text-white/80 mb-4">
-                      Start a group chat with your potential roommates to discuss and decide together.
-                    </p>
-                    <button className="px-6 py-3 bg-white text-green-600 font-semibold rounded-xl hover:bg-green-50 transition-colors">
-                      Create Group Chat
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="flex items-center justify-end gap-3">
+              <button onClick={() => setCreateOpen(false)} className="px-5 py-3 rounded-2xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200 transition-colors">
+                Cancel
+              </button>
+              <button onClick={createPost} className="px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">
+                Save profile
+              </button>
             </div>
           </div>
-        </motion.div>
-      </div>
+        )}
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="fixed lg:hidden bottom-4 left-4 right-4 z-40">
-        <div className="flex items-center justify-around h-16 bg-white/90 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.12),0_2px_8px_rgba(0,0,0,0.08)] border border-white/40">
-          <Link
-            href={`/listings/${property.id}`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-slate-500 hover:text-brand-600 transition-colors"
-          >
-            <i className="ph-bold ph-house text-xl"></i>
-            <span className="text-xs font-medium">Property</span>
-          </Link>
-          <Link
-            href={`/listings/${property.id}/message`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-green-600 hover:text-green-700 transition-colors"
-          >
-            <i className="ph-bold ph-chat-circle-dots text-xl"></i>
-            <span className="text-xs font-medium">Message</span>
-          </Link>
-          <Link
-            href={`/listings/${property.id}/contact`}
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-purple-600 hover:text-purple-700 transition-colors"
-          >
-            <i className="ph-bold ph-phone text-xl"></i>
-            <span className="text-xs font-medium">Contact</span>
-          </Link>
-          <Link
-            href="/listings/saved"
-            className="flex flex-col items-center justify-center gap-1 flex-1 py-2 text-slate-500 hover:text-red-500 transition-colors"
-          >
-            <i className="ph-bold ph-heart text-xl"></i>
-            <span className="text-xs font-medium">Saved</span>
-          </Link>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">People for this listing</h2>
+              <span className="text-xs font-bold text-slate-500">{listingPosts.length}</span>
+            </div>
+
+            {listingPosts.length === 0 ? (
+              <div className="text-sm text-slate-500">No roommate profiles yet. Create yours to start matching.</div>
+            ) : (
+              <div className="space-y-3">
+                {listingPosts.map((p) => (
+                  <div key={p.id} className="rounded-3xl border border-slate-200 p-5 bg-slate-50/50 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="font-bold text-slate-900">{p.name}</div>
+                      <div className="text-xs font-bold text-brand-700 bg-brand-50 px-3 py-1 rounded-full">₦{Number(p.budget || 0).toLocaleString()}</div>
+                    </div>
+                    <div className="text-xs text-slate-500">Move-in: {p.moveIn || "Flexible"}</div>
+                    <div className="text-sm text-slate-700 line-clamp-3">{p.bio || "No bio provided."}</div>
+                    {p.preferences.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {p.preferences.map((x) => (
+                          <span key={x} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 bg-white border border-slate-200 px-3 py-1 rounded-full">
+                            {x}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="pt-3">
+                      <button className="w-full py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+                        <i className="ph ph-chat-circle-dots"></i>
+                        Message to match
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">Suggested matches</h2>
+              <span className="text-xs font-bold text-slate-500">{suggested.length}</span>
+            </div>
+
+            {suggested.length === 0 ? (
+              <div className="text-sm text-slate-500">
+                No suggestions yet. Create more roommate profiles or browse the roommate marketplace.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {suggested.map((p) => (
+                  <motion.div key={p.id} whileHover={{ y: -2 }} className="rounded-3xl border border-slate-200 p-5 bg-white space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="font-bold text-slate-900">{p.name}</div>
+                      <div className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1 rounded-full">₦{Number(p.budget || 0).toLocaleString()}</div>
+                    </div>
+                    <div className="text-sm text-slate-600 line-clamp-2">{p.bio || "No bio provided."}</div>
+                    <button className="w-full py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">
+                      Invite to this listing
+                    </button>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      </nav>
+      </div>
     </main>
   );
 }

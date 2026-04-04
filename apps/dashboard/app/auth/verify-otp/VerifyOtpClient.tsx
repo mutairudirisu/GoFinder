@@ -3,18 +3,44 @@
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 interface VerifyOtpClientProps {
   email: string;
+  flow?: string;
 }
 
-export default function VerifyOtpClient({ email }: VerifyOtpClientProps) {
+export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
   const router = useRouter();
+  const auth = useAuth();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const didAutoSubmit = useRef(false);
+
+  const [resolvedEmail, setResolvedEmail] = useState(email);
+  const [resolvedFlow, setResolvedFlow] = useState<"login" | "signup">(
+    flow === "signup" ? "signup" : "login"
+  );
+
+  useEffect(() => {
+    if (email) setResolvedEmail(email);
+    if (flow === "signup" || flow === "login") setResolvedFlow(flow);
+    if (typeof window === "undefined") return;
+    if (!email) {
+      const pendingAuthRaw = localStorage.getItem("pending_auth");
+      if (pendingAuthRaw) {
+        try {
+          const pending = JSON.parse(pendingAuthRaw) as any;
+          if (pending?.email) setResolvedEmail(String(pending.email));
+          if (pending?.flow === "signup" || pending?.flow === "login") setResolvedFlow(pending.flow);
+        } catch {
+        }
+      }
+    }
+  }, [email, flow]);
 
   useEffect(() => {
     if (resendTimer <= 0) return;
@@ -51,37 +77,59 @@ export default function VerifyOtpClient({ email }: VerifyOtpClientProps) {
     setIsLoading(true);
     try {
       const otpCode = otp.join("");
-      // Demo: accept any 6-digit code
       await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Get pending signup data
-      const pending = localStorage.getItem("pending_signup");
-      if (pending) {
-        const { email } = JSON.parse(pending);
-        
-        // Create user object
-        const user = {
-          id: "user_" + Date.now(),
-          email,
-          name: email.split("@")[0] || "User",
-          role: "both" as const,
-          isProfileComplete: false,
-        };
-
-        localStorage.removeItem("pending_signup");
-        localStorage.setItem("gigs_user", JSON.stringify(user));
-
-        // Navigate to onboarding
-        router.push("/auth/onboarding");
-      } else {
-        router.push("/auth/onboarding");
+      if (otpCode.length !== 6) {
+        setError("Invalid code");
+        return;
       }
+
+      if (resolvedFlow === "signup") {
+        const ok = await auth.verifyOTP(otpCode);
+        if (!ok) {
+          setError("Invalid code. Please try again.");
+          return;
+        }
+        localStorage.removeItem("pending_auth");
+        router.push("/auth/onboarding");
+        return;
+      }
+
+      if (!resolvedEmail) {
+        setError("Missing email. Please restart sign in.");
+        return;
+      }
+
+      await auth.login(resolvedEmail, "");
+      localStorage.removeItem("pending_auth");
+      const adminCheck = await fetch(`/api/users?email=${encodeURIComponent(String(resolvedEmail).trim().toLowerCase())}`, { cache: "no-store" });
+      const adminData = (await adminCheck.json()) as { user: { role?: string; email?: string } | null };
+      const isAdmin = adminData.user?.role === "admin" || String(adminData.user?.email ?? "").toLowerCase() === "admin@gigs.app";
+      if (isAdmin) {
+        sessionStorage.removeItem("auth_redirect");
+        router.push("/admin");
+        return;
+      }
+      const redirect = sessionStorage.getItem("auth_redirect") || "/";
+      sessionStorage.removeItem("auth_redirect");
+      router.push(redirect);
     } catch (err) {
       setError("Invalid OTP. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (otp.some((d) => !d)) {
+      didAutoSubmit.current = false;
+      return;
+    }
+    if (didAutoSubmit.current) return;
+    didAutoSubmit.current = true;
+    const form = document.getElementById("otp-form") as HTMLFormElement | null;
+    if (form) form.requestSubmit();
+  }, [otp, isLoading]);
 
   const handleResend = async () => {
     setError("");
@@ -98,15 +146,13 @@ export default function VerifyOtpClient({ email }: VerifyOtpClientProps) {
 
   return (
     <AuthLayout
-      title="Verify your email"
-      subtitle={`We've sent a code to ${email}`}
+      title={resolvedFlow === "signup" ? "Confirm your email" : "Check your email"}
+      subtitle={resolvedEmail ? `We sent a 6-digit code to ${resolvedEmail}` : "We sent a 6-digit verification code"}
       showImage={true}
     >
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form id="otp-form" onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <label className="block text-sm font-semibold text-green-800">
-            Enter 6-digit code
-          </label>
+          <label className="block text-sm font-semibold text-white/80">Enter 6-digit code</label>
           <div className="flex gap-2 justify-center">
             {otp.map((digit, index) => (
               <input
@@ -123,40 +169,39 @@ export default function VerifyOtpClient({ email }: VerifyOtpClientProps) {
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 disabled={isLoading}
-                className="w-12 h-12 md:w-14 md:h-14 text-center text-xl md:text-2xl font-bold rounded-lg border-2 border-green-200 focus:border-green-600 focus:ring-2 focus:ring-green-200 focus:outline-none transition-all disabled:bg-green-50 disabled:cursor-not-allowed"
+                className="w-12 h-12 md:w-14 md:h-14 text-center text-xl md:text-2xl font-bold rounded-2xl border border-white/10 bg-white/5 text-white focus:border-brand-400/60 focus:ring-2 focus:ring-brand-accent/20 focus:outline-none transition-all disabled:cursor-not-allowed"
               />
             ))}
           </div>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border-2 border-red-200 rounded-lg">
-            <p className="text-sm font-semibold text-red-600">{error}</p>
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
+            <p className="text-sm font-semibold text-red-200">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isLoading || otp.some((digit) => !digit)}
-          className="w-full px-6 py-3 md:py-4 bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-bold text-lg rounded-xl border-2 border-green-700 transition-all disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          style={{ boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)' }}
+          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? "Verifying..." : "Verify & Continue"}
         </button>
 
         <div className="space-y-3 text-center">
-          <p className="text-sm text-green-700">Didn't receive the code?</p>
+          <p className="text-sm text-white/60">Didn&apos;t receive the code?</p>
           <button
             type="button"
             onClick={handleResend}
             disabled={resendTimer > 0 || isLoading}
-            className="text-sm font-bold text-green-600 hover:text-green-700 disabled:text-green-400 transition-colors"
+            className="text-sm font-bold text-white hover:text-white/90 disabled:text-white/40 transition-colors"
           >
             {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}
           </button>
         </div>
 
-        <p className="text-xs text-center text-green-500">Demo: Enter any 6-digit code</p>
+        <p className="text-xs text-center text-white/40">Demo: Enter any 6-digit code</p>
       </form>
     </AuthLayout>
   );

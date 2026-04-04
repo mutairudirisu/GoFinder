@@ -3,7 +3,33 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import type { Property } from "@/app/listings/data";
+
+interface Property {
+  id: string;
+  title: string;
+  location: string;
+  price: number;
+  priceType: "month" | "night" | "hour";
+  images: string[];
+  bedrooms: number;
+  bathrooms: number;
+  type: "hostel" | "apartment" | "house" | "room";
+  category: "accommodation" | "experience" | "services";
+  amenities: string[];
+  rating: number;
+  reviews: number;
+  verified: boolean;
+  available: boolean;
+  landlord: {
+    name: string;
+    image: string;
+    verified: boolean;
+  };
+  featured: boolean;
+  isStudentSpace?: boolean;
+  needsRoommates?: boolean;
+  roommatesNeeded?: number;
+}
 
 interface ListingCardProps {
   property: Property;
@@ -129,7 +155,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
             {/* Image Navigation Dots - Hide on mobile */}
             {property.images.length > 1 && (
               <div className="hidden sm:flex absolute bottom-3 left-1/2 -translate-x-1/2 gap-1.5">
-                {property.images.map((_, idx) => (
+                {property.images.map((_image: string, idx: number) => (
                   <button
                     key={idx}
                     onMouseEnter={() => setCurrentImageIndex(idx)}
@@ -264,7 +290,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
             <div className="flex items-center justify-between gap-2">
               {/* Amenities - Show compact on mobile */}
               <div className="flex flex-wrap gap-1">
-                {property.amenities.slice(0, 2).map((amenity) => (
+                {property.amenities.slice(0, 2).map((amenity: string) => (
                   <span 
                     key={amenity}
                     className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px] text-gray-600 flex items-center gap-0.5"
@@ -287,7 +313,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
 
             {/* Amenities Preview - Show on tablet+ */}
             <div className="hidden sm:flex flex-wrap gap-2 mb-4">
-              {property.amenities.slice(0, 4).map((amenity) => (
+              {property.amenities.slice(0, 4).map((amenity: string) => (
                 <span 
                   key={amenity}
                   className="px-2 py-1 bg-gray-100 rounded-lg text-xs text-gray-600 flex items-center gap-1"

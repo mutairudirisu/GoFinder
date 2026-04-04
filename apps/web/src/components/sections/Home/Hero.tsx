@@ -92,7 +92,7 @@ export const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
-            <Link href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3001'}/listings`} className="interactive-hover px-6 sm:px-8 py-3 sm:py-4 bg-brand-600 text-white font-semibold text-sm sm:text-base md:text-lg rounded-2xl shadow-lg shadow-brand-500/30 hover:shadow-brutal hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 border-2">
+            <Link href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3001'}/`} className="interactive-hover px-6 sm:px-8 py-3 sm:py-4 bg-brand-600 text-white font-semibold text-sm sm:text-base md:text-lg rounded-2xl shadow-lg shadow-brand-500/30 hover:shadow-brutal hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 border-2">
               <i className="ph-bold ph-magnifying-glass"></i>
               Start Searching
             </Link>
