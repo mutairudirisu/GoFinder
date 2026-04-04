@@ -29,6 +29,7 @@ export default function AdminMenuPage() {
           { label: "Overview", icon: "ph-bold ph-chart-pie-slice", href: "/admin" },
           { label: "Listings", icon: "ph-bold ph-buildings", href: "/admin/listings" },
           { label: "Users", icon: "ph-bold ph-users-three", href: "/admin/users" },
+          { label: "Newsletters", icon: "ph-bold ph-envelope", href: "/admin/newsletters" },
           { label: "Locations", icon: "ph-bold ph-map-pin", href: "/admin/locations" },
           { label: "Reports", icon: "ph-bold ph-warning-circle", href: "/admin/reports" },
           { label: "Settings", icon: "ph-bold ph-gear", href: "/admin/settings" },

@@ -22,6 +22,7 @@ export default function AdminSideNav() {
     { label: "Overview", icon: "ph-chart-pie-slice", href: "/admin" },
     { label: "Listings", icon: "ph-buildings", href: "/admin/listings" },
     { label: "Users", icon: "ph-users-three", href: "/admin/users" },
+    { label: "Newsletters", icon: "ph-envelope", href: "/admin/newsletters" },
     { label: "Locations", icon: "ph-map-pin", href: "/admin/locations" },
     { label: "Reports", icon: "ph-warning-circle", href: "/admin/reports" },
     { label: "Settings", icon: "ph-gear", href: "/admin/settings" },
