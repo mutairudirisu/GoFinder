@@ -69,12 +69,25 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/"
+            <button
+              onClick={() => {
+                try {
+                  // Clear any admin-related data
+                  localStorage.removeItem('adminSessionId');
+                  localStorage.removeItem('adminToken');
+                  sessionStorage.clear();
+                } catch (e) {
+                  console.error('Error clearing session:', e);
+                }
+                
+                // Navigate to web app
+                const webUrl = process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3001';
+                window.location.href = webUrl;
+              }}
               className="px-4 py-2 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold hover:bg-brand-50 hover:text-brand-700 transition-colors"
             >
               View site
-            </Link>
+            </button>
           </div>
         </header>
 

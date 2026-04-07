@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -240,7 +240,7 @@ function LocationRow({
 
 
 
-export default function ListingsPage() {
+function ListingsPageContent() {
   const { user } = useAuth();
   const { unreadCount } = useMessages();
   const router = useRouter();
@@ -525,5 +525,13 @@ export default function ListingsPage() {
         />
       ) : null}
     </main>
+  );
+}
+
+export default function ListingsPage() {
+  return (
+    <Suspense>
+      <ListingsPageContent />
+    </Suspense>
   );
 }

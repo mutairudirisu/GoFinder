@@ -8,6 +8,9 @@
             "matchCommandLine": true
         },
         "npx turbo": true,
-        "npm run check-types": true
+        "npm run check-types": true,
+        "mvn -B verify": true,
+        "npx eslint": true,
+        "netstat": true
     }
 }
