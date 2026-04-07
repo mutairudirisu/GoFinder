@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { ReferHostModal } from "./ReferHostModal";
@@ -20,7 +20,6 @@ export const Header = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { user, logout } = useAuth();
   const [currentMode, setCurrentMode] = useState<"guest" | "host">("guest");
   const [hostBookingCount, setHostBookingCount] = useState(0);
@@ -74,15 +73,16 @@ export const Header = ({
 
   useEffect(() => {
     if (pathname !== "/") return;
-    const t = searchParams.get("tab");
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const t = params.get("tab");
     if (t === "homes" || t === "experiences" || t === "services") setActiveTab(t);
     else setActiveTab("homes");
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   const selectTab = (tab: "homes" | "experiences" | "services") => {
     setActiveTab(tab);
     if (pathname === "/") {
-      const sp = new URLSearchParams(searchParams.toString());
+      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
       sp.set("tab", tab);
       router.replace(`/?${sp.toString()}`);
     }
