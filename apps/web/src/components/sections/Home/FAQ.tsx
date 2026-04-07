@@ -2,7 +2,7 @@
 
 export const FAQ = () => {
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white relative overflow-hidden z-40">
       <div className="max-w-3xl mx-auto px-6">
         <h2 className="font-display font-bold text-4xl text-center mb-12">Frequently Asked Questions</h2>
 

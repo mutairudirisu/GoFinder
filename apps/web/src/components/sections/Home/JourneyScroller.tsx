@@ -90,7 +90,7 @@ export function JourneyScroller() {
   }, [activeIndex]);
 
   return (
-    <section ref={sectionRef} className="relative bg-white">
+    <section ref={sectionRef} className="relative overflow-hidden z-40 bg-white h-screen">
       <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-brand-50" />
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-brand-500/10 rounded-full blur-[120px]" />
       <div className="absolute top-1/3 left-12 w-[360px] h-[360px] bg-emerald-400/10 rounded-full blur-[90px]" />

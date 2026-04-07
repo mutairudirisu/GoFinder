@@ -26,7 +26,7 @@ export const Hero = () => {
 
   return (
     // Hero Section
-    <section className="pt-16 relative min-h-[90vh] flex items-center bg-brand-50 overflow-hidden">
+    <section className="pt-16 relative min-h-[90vh] flex items-center bg-brand-50 overflow-hidden z-40">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-[url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80')] bg-cover bg-center opacity-10 hidden lg:block"></div>
       <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px]"></div>

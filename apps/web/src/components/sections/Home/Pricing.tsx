@@ -19,7 +19,7 @@ export const Pricing = () => {
   };
 
   return (
-    <section className="py-24 bg-brand-50 relative overflow-hidden">
+    <section className="py-24 bg-brand-50 relative overflow-hidden z-40">
       <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-30"></div>
       
       {/* Background Glows */}

@@ -6,7 +6,7 @@ import { DASHBOARD_URL } from "./header.constants";
  
 export const Header = () => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b-2 border-black">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b-2 border-black">
       <div className="max-w-7xl mx-auto px-2 md:px-4 h-16 sm:h-20 flex items-center justify-between">
         <Logo />
         <NavLinks />
