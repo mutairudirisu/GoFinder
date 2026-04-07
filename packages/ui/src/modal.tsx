@@ -73,7 +73,7 @@ export default function Modal({
           relative bg-white rounded-2xl shadow-2xl
           w-full ${sizeClasses[size]}
           max-h-[90vh] flex flex-col
-          transition-all duration-300
+          transition-all duration-300 mt-12
         `}
         style={{ zIndex: 50 }}
         onClick={(e) => e.stopPropagation()}
