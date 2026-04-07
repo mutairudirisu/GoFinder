@@ -14,9 +14,11 @@
     "@repo/ui": "file:../../packages/ui",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.38.0",
+    "lucide-react": "^1.7.0",
     "next": "^16.2.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "file:../../packages/eslint-config",

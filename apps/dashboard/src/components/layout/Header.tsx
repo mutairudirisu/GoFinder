@@ -2,9 +2,10 @@
 
 import { useState, useRef, useEffect, ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { ReferHostModal } from "./ReferHostModal";
 
 export const Header = ({
   hideCenterTabs = false,
@@ -15,10 +16,10 @@ export const Header = ({
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'homes' | 'experiences' | 'services'>('homes');
+  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { user, logout } = useAuth();
   const [currentMode, setCurrentMode] = useState<"guest" | "host">("guest");
   const [hostBookingCount, setHostBookingCount] = useState(0);
@@ -72,15 +73,16 @@ export const Header = ({
 
   useEffect(() => {
     if (pathname !== "/") return;
-    const t = searchParams.get("tab");
+    const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
+    const t = params.get("tab");
     if (t === "homes" || t === "experiences" || t === "services") setActiveTab(t);
     else setActiveTab("homes");
-  }, [pathname, searchParams]);
+  }, [pathname]);
 
   const selectTab = (tab: "homes" | "experiences" | "services") => {
     setActiveTab(tab);
     if (pathname === "/") {
-      const sp = new URLSearchParams(searchParams.toString());
+      const sp = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "");
       sp.set("tab", tab);
       router.replace(`/?${sp.toString()}`);
     }
@@ -124,7 +126,8 @@ export const Header = ({
   if (isAuthenticated) {
     // Return authenticated header component
     return (
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
+      <>
+        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
@@ -388,7 +391,14 @@ export const Header = ({
 
                     {/* Help Center */}
                     <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
-                      <button className="flex items-center gap-3 text-left w-full">
+                      <button 
+                        onClick={() => {
+                          const helpUrl = `${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8888'}/help-center`;
+                          window.open(helpUrl, '_blank');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
                         <i className="ph-bold ph-question text-lg text-slate-600"></i>
                         <span className="font-medium text-slate-700">Help Center</span>
                       </button>
@@ -421,7 +431,13 @@ export const Header = ({
 
                         {/* Refer a Host */}
                         <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
-                          <button className="flex items-center gap-3 text-left w-full">
+                          <button 
+                            onClick={() => {
+                              setIsReferralModalOpen(true);
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex items-center gap-3 text-left w-full"
+                          >
                             <i className="ph-bold ph-share-network text-lg text-slate-600"></i>
                             <span className="font-medium text-slate-700">Refer a Host</span>
                           </button>
@@ -468,7 +484,18 @@ export const Header = ({
             </div>
           </div>
         </div>
-      </header>
+        </header>
+        
+        {/* Refer Host Modal */}
+        {user && (
+          <ReferHostModal
+            isOpen={isReferralModalOpen}
+            onClose={() => setIsReferralModalOpen(false)}
+            userName={user.name || user.email || "User"}
+            userId={user.id}
+          />
+        )}
+      </>
     );
   }
 
@@ -578,7 +605,14 @@ export const Header = ({
                 >
                   {/* Help Center */}
                   <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
-                    <button className="flex items-center gap-3 text-left w-full">
+                    <button 
+                      onClick={() => {
+                        const helpUrl = `${process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:8888'}/help-center`;
+                        window.open(helpUrl, '_blank');
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 text-left w-full"
+                    >
                       <i className="ph-bold ph-question text-lg text-slate-600"></i>
                       <span className="font-medium text-slate-700">Help Center</span>
                     </button>
@@ -608,7 +642,13 @@ export const Header = ({
 
                   {/* Refer a Host */}
                   <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
-                    <button className="flex items-center gap-3 text-left w-full">
+                    <button 
+                      onClick={() => {
+                        router.push('/auth/login');
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 text-left w-full"
+                    >
                       <i className="ph-bold ph-share-network text-lg text-slate-600"></i>
                       <span className="font-medium text-slate-700">Refer a Host</span>
                     </button>
