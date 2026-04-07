@@ -1,67 +1,31 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { useMessages } from "@/context/MessageContext";
-import { mockProperties } from "@/app/listings/data";
 
-type ListingType = "experience" | "accommodation" | "services";
-
-export const Header = () => {
+export const Header = ({
+  hideCenterTabs = false,
+  centerContent,
+}: {
+  hideCenterTabs?: boolean;
+  centerContent?: ReactNode;
+}) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [savedCount, setSavedCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<'homes' | 'experiences' | 'services'>('homes');
   const menuRef = useRef<HTMLDivElement>(null);
-  const { user, logout, switchRole } = useAuth();
-  const { unreadCount } = useMessages();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { user, logout } = useAuth();
+  const [currentMode, setCurrentMode] = useState<"guest" | "host">("guest");
+  const [hostBookingCount, setHostBookingCount] = useState(0);
 
-  // Determine user role state
   const isAuthenticated = !!user;
-  const isLister = user?.role === 'lister' || user?.role === 'both';
-  const isRenter = user?.role === 'renter' || user?.role === 'both';
-
-  // Handle role switching
-  const handleSwitchToLister = () => {
-    if (user?.role === 'both') {
-      switchRole('lister');
-      router.push('/hosting');
-    } else if (user?.role === 'renter') {
-      switchRole('lister');
-      router.push('/listings/create');
-    }
-  };
-
-  const handleSwitchToViewer = () => {
-    if (user?.role === 'both') {
-      switchRole('renter');
-      router.push('/listings');
-    } else if (user?.role === 'lister') {
-      switchRole('renter');
-      router.push('/listings');
-    }
-  };
-
-  // Load saved count from localStorage
-  useEffect(() => {
-    const updateSavedCount = () => {
-      const savedLikes = localStorage.getItem('gigs_liked_properties');
-      if (savedLikes) {
-        const likedIds = JSON.parse(savedLikes);
-        setSavedCount(likedIds.length);
-      } else {
-        setSavedCount(0);
-      }
-    };
-
-    updateSavedCount();
-
-    // Listen for updates to likes
-    window.addEventListener('likesUpdated', updateSavedCount);
-    return () => window.removeEventListener('likesUpdated', updateSavedCount);
-  }, []);
+  const isHostingRoute = pathname.startsWith("/hosting");
+  const isHostMode = isHostingRoute || user?.role === "lister" || (user?.role === "both" && currentMode === "host");
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -75,106 +39,534 @@ export const Header = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleListProperty = (type: ListingType) => {
-    // Navigate based on category type
-    if (type === 'experience') {
-      if (user) {
-        window.location.href = `/listings/create?category=experience`;
-      } else {
-        window.location.href = `/auth/signup?redirect=/listings/create?category=experience`;
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("gigs_current_mode");
+      if (stored === "host" || stored === "guest") setCurrentMode(stored);
+    } catch {
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const recompute = () => {
+      try {
+        const raw = localStorage.getItem("gigs_bookings");
+        const parsed = raw ? JSON.parse(raw) : [];
+        const items = Array.isArray(parsed) ? (parsed as Array<{ hostId?: string; seenByHost?: boolean }>) : [];
+        const count = items.filter((b) => String(b?.hostId ?? "") === String(user.id) && !b?.seenByHost).length;
+        setHostBookingCount(count);
+      } catch {
+        setHostBookingCount(0);
       }
-    } else if (type === 'services') {
-      if (user) {
-        window.location.href = `/listings/create?category=services`;
-      } else {
-        window.location.href = `/auth/signup?redirect=/listings/create?category=services`;
-      }
-    } else {
-      // Default to accommodation
-      if (user) {
-        window.location.href = `/listings/create`;
-      } else {
-        window.location.href = `/auth/signup?redirect=/listings/create`;
-      }
+    };
+    recompute();
+    const handler = () => recompute();
+    window.addEventListener("bookingsUpdated", handler as EventListener);
+    window.addEventListener("storage", handler as EventListener);
+    return () => {
+      window.removeEventListener("bookingsUpdated", handler as EventListener);
+      window.removeEventListener("storage", handler as EventListener);
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+    const t = searchParams.get("tab");
+    if (t === "homes" || t === "experiences" || t === "services") setActiveTab(t);
+    else setActiveTab("homes");
+  }, [pathname, searchParams]);
+
+  const selectTab = (tab: "homes" | "experiences" | "services") => {
+    setActiveTab(tab);
+    if (pathname === "/") {
+      const sp = new URLSearchParams(searchParams.toString());
+      sp.set("tab", tab);
+      router.replace(`/?${sp.toString()}`);
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    setIsMenuOpen(false);
-    router.push("/listings");
+  const switchToHost = () => {
+    try {
+      localStorage.setItem("gigs_current_mode", "host");
+    } catch {
+    }
+    setCurrentMode("host");
+    router.push("/hosting");
   };
 
-  return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-14 sm:h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/listings" className="flex items-center gap-2 group flex-shrink-0">
-          <div className="w-8 sm:w-9 h-8 sm:h-9 bg-brand-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <i className="ph-bold ph-house-line text-base sm:text-lg text-white"></i>
+  const switchToFinder = () => {
+    try {
+      localStorage.setItem("gigs_current_mode", "guest");
+    } catch {
+    }
+    setCurrentMode("guest");
+    router.push("/");
+  };
+
+  const handleSwitchMode = () => {
+    if (user?.role !== "both") return;
+    if (isHostingRoute) {
+      switchToFinder();
+    } else {
+      switchToHost();
+    }
+  };
+
+  const handleBecomeHost = () => {
+    if (isAuthenticated) {
+      router.push('/becoming-a-host');
+    } else {
+      router.push('/auth/signup');
+    }
+  };
+
+  if (isAuthenticated) {
+    // Return authenticated header component
+    return (
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+            <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
+              <i className="ph-bold ph-house-line text-lg text-white"></i>
+            </div>
+            <span className="font-display font-bold text-lg text-brand-dark hidden sm:inline-block">
+              GIGS<span className="text-brand-600">Rentals</span>
+            </span>
+            <span className="font-display font-bold text-base sm:hidden">
+              <span className="text-brand-500">GR</span>
+            </span>
+          </Link>
+
+          {centerContent ? (
+            <div className="hidden md:flex flex-1 justify-center px-6">
+              <div className="w-full max-w-3xl">{centerContent}</div>
+            </div>
+          ) : hideCenterTabs ? (
+            <div className="hidden md:block flex-1" />
+          ) : (
+            <nav className="hidden md:flex items-center gap-8">
+              <button
+                onClick={() => selectTab('homes')}
+                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                  activeTab === 'homes'
+                    ? 'border-brand-500 text-brand-700 font-medium'
+                    : 'border-transparent text-slate-600 hover:text-brand-700'
+                }`}
+              >
+                <i className="ph-bold ph-house-line text-xl"></i>
+                <span>Homes</span>
+              </button>
+
+              <button
+                onClick={() => selectTab('experiences')}
+                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                  activeTab === "experiences"
+                    ? "border-brand-500 text-brand-700 font-medium"
+                    : "border-transparent text-slate-600 hover:text-brand-700"
+                }`}
+              >
+                <i className="ph-bold ph-balloon text-xl"></i>
+                <span>Experiences</span>
+                <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
+                  NEW
+                </span>
+              </button>
+
+              <button
+                onClick={() => selectTab('services')}
+                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                  activeTab === "services"
+                    ? "border-brand-500 text-brand-700 font-medium"
+                    : "border-transparent text-slate-600 hover:text-brand-700"
+                }`}
+              >
+                <i className="ph-bold ph-wrench text-xl"></i>
+                <span>Services</span>
+                <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
+                  NEW
+                </span>
+              </button>
+            </nav>
+          )}
+
+          {/* Right Side - CTA and Menu */}
+          <div className="flex items-center gap-3">
+            {!isHostingRoute ? (
+              <Link
+                href="/user/favorites"
+                className="hidden md:flex w-10 h-10 items-center justify-center rounded-full hover:bg-brand-50 transition-colors text-slate-700 hover:text-brand-700"
+                aria-label="Wishlists"
+              >
+                <i className="ph-bold ph-heart text-lg"></i>
+              </Link>
+            ) : null}
+
+            {(user?.role === "both") && (
+              <button
+                onClick={handleSwitchMode}
+                className="hidden md:flex items-center gap-2 px-4 py-2 text-slate-700 font-medium hover:bg-brand-50 hover:text-brand-700 rounded-full transition-colors"
+              >
+                {isHostingRoute ? "Switch to Finder" : "Switch to host"}
+              </button>
+            )}
+
+            {/* Hamburger Menu */}
+            <div className="relative" ref={menuRef}>
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="h-11 pl-4 pr-2 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center gap-3"
+              >
+                <i className="ph-bold ph-list text-lg text-slate-700"></i>
+                <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-sm">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+              </button>
+
+              {/* Dropdown Menu */}
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
+                  >
+                    {/* Wishlists */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push('/user/favorites');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-heart text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Wishlists</span>
+                      </button>
+                    </div>
+
+                    {/* Trips */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push('/user/bookings');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-suitcase text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Trips</span>
+                      </button>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push(isHostingRoute ? "/hosting/messages" : "/user/messages");
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-chat-circle-dots text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">{isHostingRoute ? "Inbox" : "Messages"}</span>
+                      </button>
+                    </div>
+
+                    {isHostingRoute ? (
+                      <>
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button
+                            onClick={() => {
+                              router.push("/hosting/listings");
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex items-center gap-3 text-left w-full"
+                          >
+                            <i className="ph-bold ph-storefront text-lg text-slate-600"></i>
+                            <span className="font-medium text-slate-700">Listings</span>
+                          </button>
+                        </div>
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button
+                            onClick={() => {
+                              router.push("/hosting/bookings");
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex items-center justify-between gap-3 text-left w-full"
+                          >
+                            <span className="flex items-center gap-3">
+                              <i className="ph-bold ph-suitcase text-lg text-slate-600"></i>
+                              <span className="font-medium text-slate-700">Bookings</span>
+                            </span>
+                            {hostBookingCount > 0 ? (
+                              <span className="min-w-[26px] h-6 px-2 rounded-full bg-brand-500 text-white text-xs font-bold flex items-center justify-center">
+                                {hostBookingCount > 99 ? "99+" : hostBookingCount}
+                              </span>
+                            ) : null}
+                          </button>
+                        </div>
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button
+                            onClick={() => {
+                              router.push("/hosting/calendar");
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex items-center gap-3 text-left w-full"
+                          >
+                            <i className="ph-bold ph-calendar text-lg text-slate-600"></i>
+                            <span className="font-medium text-slate-700">Calendar</span>
+                          </button>
+                        </div>
+                      </>
+                    ) : null}
+
+                    {/* Profile */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push(isHostingRoute ? "/hosting/profile" : "/user/profile");
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-user text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Profile</span>
+                      </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-slate-200"></div>
+
+                    {/* Switch Mode - Only for users with both roles */}
+                    {user?.role === 'both' && (
+                      <>
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button
+                            onClick={() => {
+                              handleSwitchMode();
+                              setIsMenuOpen(false);
+                            }}
+                            className="flex items-center gap-3 text-left w-full"
+                          >
+                            <i className={`ph-bold ${isHostingRoute ? "ph-magnifying-glass" : "ph-storefront"} text-lg text-slate-600`}></i>
+                            <span className="font-medium text-slate-700">
+                              {isHostingRoute ? "Switch to Finder" : "Switch to host"}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="h-px bg-slate-200"></div>
+                      </>
+                    )}
+
+                    {/* Account settings */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push(isHostingRoute ? "/hosting/settings" : "/user/settings");
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-gear text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Account settings</span>
+                      </button>
+                    </div>
+
+                    {/* Languages & currency */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button className="flex items-center gap-3 text-left w-full">
+                        <i className="ph-bold ph-globe text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Languages & currency</span>
+                      </button>
+                    </div>
+
+                    {/* Help Center */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button className="flex items-center gap-3 text-left w-full">
+                        <i className="ph-bold ph-question text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Help Center</span>
+                      </button>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="h-px bg-slate-200"></div>
+
+                    {/* Become a Host Section - Show if not already in host mode or if user is renter only */}
+                    {!isHostMode && (
+                      <>
+                        <div className="px-4 py-4 hover:bg-brand-50 transition-colors">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <h3 className="font-bold text-slate-900 mb-1">Become a host</h3>
+                              <p className="text-sm text-slate-600">It's easy to start hosting and earn extra income.</p>
+                            </div>
+                            <button
+                              onClick={() => {
+                                if (user?.role === "both") switchToHost();
+                                else router.push("/becoming-a-host");
+                                setIsMenuOpen(false);
+                              }}
+                              className="ml-3"
+                            >
+                              <i className="ph-fill ph-person text-3xl text-slate-300"></i>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Refer a Host */}
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button className="flex items-center gap-3 text-left w-full">
+                            <i className="ph-bold ph-share-network text-lg text-slate-600"></i>
+                            <span className="font-medium text-slate-700">Refer a Host</span>
+                          </button>
+                        </div>
+
+                        {/* Find a co-host */}
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button className="flex items-center gap-3 text-left w-full">
+                            <i className="ph-bold ph-users-three text-lg text-slate-600"></i>
+                            <span className="font-medium text-slate-700">Find a co-host</span>
+                          </button>
+                        </div>
+
+                        {/* Gift cards */}
+                        <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                          <button className="flex items-center gap-3 text-left w-full">
+                            <i className="ph-bold ph-gift text-lg text-slate-600"></i>
+                            <span className="font-medium text-slate-700">Gift cards</span>
+                          </button>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="h-px bg-slate-200"></div>
+                      </>
+                    )}
+
+                    {/* Log out */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsMenuOpen(false);
+                          router.push('/');
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-sign-out text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Log out</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-          <span className="font-display font-bold text-lg sm:text-xl text-brand-dark hidden sm:inline-block">
-            GIGS<span className="text-brand-500">Rentals</span>
+        </div>
+      </header>
+    );
+  }
+
+  // Unauthenticated Header - Airbnb Style
+  return (
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
+          <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
+            <i className="ph-bold ph-house-line text-lg text-white"></i>
+          </div>
+          <span className="font-display font-bold text-lg text-brand-dark hidden sm:inline-block">
+            GIGS<span className="text-brand-600">Rentals</span>
+          </span>
+          <span className="font-display font-bold text-base sm:hidden">
+            <span className="text-brand-500">GR</span>
           </span>
         </Link>
 
-        {/* User Menu */}
-        <div className="flex items-center gap-1 sm:gap-3">
-          {/* === GUEST STATE === */}
-          {!isAuthenticated && (
-            /* No additional buttons - just hamburger menu */
-            null
-          )}
+        {centerContent ? (
+          <div className="hidden md:flex flex-1 justify-center px-6">
+            <div className="w-full max-w-3xl">{centerContent}</div>
+          </div>
+        ) : hideCenterTabs ? (
+          <div className="hidden md:block flex-1" />
+        ) : (
+          <nav className="hidden md:flex items-center gap-8">
+            <button
+              onClick={() => selectTab('homes')}
+              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                activeTab === 'homes'
+                  ? 'border-brand-500 text-brand-700 font-medium'
+                  : 'border-transparent text-slate-600 hover:text-brand-700'
+              }`}
+            >
+              <i className="ph-bold ph-house-line text-xl"></i>
+              <span>Homes</span>
+            </button>
 
-          {/* === AUTHENTICATED STATE === */}
-          {isAuthenticated && (
-            <>
-              {/* Hosting Dashboard Button - visible when authenticated */}
-              <button 
-                onClick={() => router.push('/hosting')}
-                className="hidden md:flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border-2 border-brand-500 text-brand-600 font-semibold hover:bg-brand-50 transition-all duration-200 text-xs sm:text-sm"
-              >
-                <div className="w-6 sm:w-7 h-6 sm:h-7 rounded-full flex items-center justify-center bg-brand-100">
-                  <i className="ph-bold ph-house-line text-brand-600 text-xs sm:text-sm"></i>
-                </div>
-                <span>Hosting</span>
-              </button>
+            <button
+              onClick={() => selectTab('experiences')}
+              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                activeTab === "experiences"
+                  ? "border-brand-500 text-brand-700 font-medium"
+                  : "border-transparent text-slate-600 hover:text-brand-700"
+              }`}
+            >
+              <i className="ph-bold ph-balloon text-xl"></i>
+              <span>Experiences</span>
+              <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
+                NEW
+              </span>
+            </button>
 
-              {/* Saved/Favorites Button - shown when authenticated */}
-              <Link href="/listings/saved" className="relative flex items-center justify-center w-7 sm:w-9 h-7 sm:h-9 rounded-full hover:bg-slate-100 transition-colors flex-shrink-0">
-                <i className="ph ph-heart text-lg sm:text-xl text-slate-600"></i>
-                {savedCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 sm:w-5 h-4 sm:h-5 bg-brand-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                    {savedCount > 9 ? '9+' : savedCount}
-                  </span>
-                )}
-              </Link>
+            <button
+              onClick={() => selectTab('services')}
+              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                activeTab === "services"
+                  ? "border-brand-500 text-brand-700 font-medium"
+                  : "border-transparent text-slate-600 hover:text-brand-700"
+              }`}
+            >
+              <i className="ph-bold ph-wrench text-xl"></i>
+              <span>Services</span>
+              <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
+                NEW
+              </span>
+            </button>
+          </nav>
+        )}
 
-              {/* Profile Avatar */}
-              <Link href="/profile" className="flex items-center flex-shrink-0">
-                <div className="w-7 sm:w-9 h-7 sm:h-9 bg-brand-500 rounded-full flex items-center justify-center text-white font-bold hover:bg-brand-600 transition-colors text-xs sm:text-sm">
-                  {user.avatar ? (
-                    <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-                  ) : (
-                    user.name?.charAt(0).toUpperCase() || 'U'
-                  )}
-                </div>
-              </Link>
-            </>
-          )}
+        {/* Right Side - CTA and Menu */}
+        <div className="flex items-center gap-4">
+          {/* Become a Host Button */}
+          <button
+            onClick={handleBecomeHost}
+            className="hidden md:flex items-center gap-2 px-4 py-2 text-slate-700 font-medium hover:bg-brand-50 hover:text-brand-700 rounded-full transition-colors"
+          >
+            <i className="ph-bold ph-storefront text-lg"></i>
+            Become a host
+          </button>
 
-          {/* Hamburger Menu - Always visible */}
+          {/* Language/Menu Icon */}
+          <button className="p-2 hover:bg-brand-50 rounded-full transition-colors">
+            <i className="ph-bold ph-globe text-lg text-slate-600"></i>
+          </button>
 
-          {/* Hamburger Menu with Dropdown */}
+          {/* Hamburger Menu */}
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="flex items-center gap-2 px-1 py-1 rounded-full hover:bg-slate-100 transition-colors flex-shrink-0"
+              className="p-2 hover:bg-brand-50 rounded-full transition-colors"
             >
-              <i className="ph-bold ph-list text-lg sm:text-xl text-slate-600"></i>
+              <i className="ph-bold ph-list text-lg text-slate-600"></i>
             </button>
 
-            {/* Mobile Dropdown Menu */}
+            {/* Dropdown Menu */}
             <AnimatePresence>
               {isMenuOpen && (
                 <motion.div
@@ -182,178 +574,77 @@ export const Header = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-brand-100 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
                 >
-                  {/* Menu Sections */}
-                  <div className="py-2">
-                    {isAuthenticated ? (
-                      // === AUTHENTICATED USER MENU ===
-                      <>
-                        {/* User Info Header */}
-                        <div className="px-4 py-3 border-b border-brand-100 bg-brand-50">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-brand-500 rounded-full flex items-center justify-center text-white font-bold">
-                              {user?.name?.charAt(0).toUpperCase() || 'U'}
-                            </div>
-                            <div>
-                              <p className="font-bold text-brand-dark">{user?.name || 'User'}</p>
-                              <p className="text-xs text-gray-500">{user?.email}</p>
-                            </div>
-                          </div>
-                        </div>
+                  {/* Help Center */}
+                  <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                    <button className="flex items-center gap-3 text-left w-full">
+                      <i className="ph-bold ph-question text-lg text-slate-600"></i>
+                      <span className="font-medium text-slate-700">Help Center</span>
+                    </button>
+                  </div>
 
-                        {/* === VIEWER/RENTER STATE === */}
-                        {isRenter && !isLister && (
-                          <div className="py-2">
-                            <Link
-                              href="/listings/saved"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-heart text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Saved Listings</span>
-                            </Link>
-                            <Link
-                              href="/messages"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-chat-circle-dots text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Messages</span>
-                              {unreadCount > 0 && (
-                                <span className="ml-auto bg-brand-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                  {unreadCount}
-                                </span>
-                              )}
-                            </Link>
-                            <Link
-                              href="/profile"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-user text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Profile</span>
-                            </Link>
-                            
-                            {/* Switch to Lister */}
-                            <button
-                              onClick={() => {
-                                handleSwitchToLister();
-                                setIsMenuOpen(false);
-                              }}
-                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-house-line text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Switch to Lister</span>
-                            </button>
-                          </div>
-                        )}
+                  {/* Divider */}
+                  <div className="h-px bg-slate-200"></div>
 
-                        {/* === LISTER/HOST STATE === */}
-                        {isLister && (
-                          <div className="py-2">
-                            <Link
-                              href="/hosting/listings"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-buildings text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">My Properties</span>
-                            </Link>
-                            <Link
-                              href="/hosting"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-calendar-check text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Reservations</span>
-                            </Link>
-                            <Link
-                              href="/hosting/messages"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-chat-circle-dots text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Messages</span>
-                              {unreadCount > 0 && (
-                                <span className="ml-auto bg-brand-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                                  {unreadCount}
-                                </span>
-                              )}
-                            </Link>
-                            <Link
-                              href="/hosting/earnings"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-currency-dollar text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Earnings</span>
-                            </Link>
-                            <Link
-                              href="/hosting/settings"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                            >
-                              <i className="ph ph-user-gear text-xl text-brand-500"></i>
-                              <span className="font-medium text-brand-700">Settings</span>
-                            </Link>
-                            
-                            {/* Switch to Viewer (only if user has both roles) */}
-                            {user?.role === 'both' && (
-                              <button
-                                onClick={() => {
-                                  handleSwitchToViewer();
-                                  setIsMenuOpen(false);
-                                }}
-                                className="w-full flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-                              >
-                                <i className="ph ph-eye text-xl text-brand-500"></i>
-                                <span className="font-medium text-brand-700">Switch to Viewer</span>
-                              </button>
-                            )}
-                          </div>
-                        )}
+                  {/* Become a Host Section */}
+                  <div className="px-4 py-4 hover:bg-brand-50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-bold text-slate-900 mb-1">Become a host</h3>
+                        <p className="text-sm text-slate-600">It's easy to start hosting and earn extra income.</p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          handleBecomeHost();
+                          setIsMenuOpen(false);
+                        }}
+                        className="ml-3"
+                      >
+                        <i className="ph-fill ph-person text-3xl text-slate-300"></i>
+                      </button>
+                    </div>
+                  </div>
 
-                        {/* Divider */}
-                        <div className="border-t border-brand-100 my-2"></div>
+                  {/* Refer a Host */}
+                  <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                    <button className="flex items-center gap-3 text-left w-full">
+                      <i className="ph-bold ph-share-network text-lg text-slate-600"></i>
+                      <span className="font-medium text-slate-700">Refer a Host</span>
+                    </button>
+                  </div>
 
-                        {/* Logout */}
-                        <div className="py-2">
-                          <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left"
-                          >
-                            <i className="ph ph-sign-out text-xl text-red-500"></i>
-                            <span className="font-medium text-red-600">Log out</span>
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      // === GUEST STATE ===
-                      <>
-                        {/* Sign Up / Log in */}
-                        <div className="px-4 py-3 border-b border-brand-100">
-                          <div className="space-y-2">
-                            <Link
-                              href="/auth/signup"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center justify-between px-4 py-3 bg-brand-500 text-white rounded-xl font-bold hover:bg-brand-600 transition-colors"
-                            >
-                              <span>Sign Up</span>
-                              <i className="ph-bold ph-arrow-right"></i>
-                            </Link>
-                            <Link
-                              href="/auth/login"
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center justify-between px-4 py-3 border-2 border-brand-200 rounded-xl font-bold text-brand-600 hover:bg-brand-50 transition-colors"
-                            >
-                              <span>Log in</span>
-                              <i className="ph-bold ph-arrow-right"></i>
-                            </Link>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                  {/* Find a co-host */}
+                  <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                    <button className="flex items-center gap-3 text-left w-full">
+                      <i className="ph-bold ph-users-three text-lg text-slate-600"></i>
+                      <span className="font-medium text-slate-700">Find a co-host</span>
+                    </button>
+                  </div>
+
+                  {/* Gift cards */}
+                  <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                    <button className="flex items-center gap-3 text-left w-full">
+                      <i className="ph-bold ph-gift text-lg text-slate-600"></i>
+                      <span className="font-medium text-slate-700">Gift cards</span>
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-slate-200"></div>
+
+                  {/* Log in or sign up */}
+                  <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                    <button
+                      onClick={() => {
+                        router.push('/auth/login');
+                        setIsMenuOpen(false);
+                      }}
+                      className="flex items-center gap-3 text-left w-full"
+                    >
+                      <i className="ph-bold ph-sign-in text-lg text-slate-600"></i>
+                      <span className="font-medium text-slate-700">Log in or sign up</span>
+                    </button>
                   </div>
                 </motion.div>
               )}

@@ -26,7 +26,7 @@ export const Hero = () => {
 
   return (
     // Hero Section
-    <section className="pt-16 relative min-h-[90vh] flex items-center bg-brand-50 overflow-hidden">
+    <section className="pt-16 relative min-h-[90vh] flex items-center bg-brand-50 overflow-hidden z-40">
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-1/2 h-full bg-[url('https://images.unsplash.com/photo-1555854877-bab0e564b8d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80')] bg-cover bg-center opacity-10 hidden lg:block"></div>
       <div className="absolute inset-0 bg-grid-pattern bg-[length:40px_40px]"></div>
@@ -92,7 +92,7 @@ export const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
-            <Link href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3001'}/listings`} className="interactive-hover px-6 sm:px-8 py-3 sm:py-4 bg-brand-600 text-white font-semibold text-sm sm:text-base md:text-lg rounded-2xl shadow-lg shadow-brand-500/30 hover:shadow-brutal hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 border-2">
+            <Link href={`${process.env.NEXT_PUBLIC_DASHBOARD_URL || 'http://localhost:3001'}/`} className="interactive-hover px-6 sm:px-8 py-3 sm:py-4 bg-brand-600 text-white font-semibold text-sm sm:text-base md:text-lg rounded-2xl shadow-lg shadow-brand-500/30 hover:shadow-brutal hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 border-2">
               <i className="ph-bold ph-magnifying-glass"></i>
               Start Searching
             </Link>

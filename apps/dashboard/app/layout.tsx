@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { MessageProvider } from "@/context/MessageContext";
+import { AdminRouteGuard } from "@/components/auth/AdminRouteGuard";
+import { ToastProvider } from "@repo/ui/toast";
 
 export const metadata: Metadata = {
   title: "GIGS Rentals - Student Housing Platform",
@@ -34,7 +36,9 @@ export default function RootLayout({
       <body className="antialiased font-sans">
         <AuthProvider>
           <MessageProvider>
-            {children}
+            <ToastProvider>
+              <AdminRouteGuard>{children}</AdminRouteGuard>
+            </ToastProvider>
           </MessageProvider>
         </AuthProvider>
       </body>

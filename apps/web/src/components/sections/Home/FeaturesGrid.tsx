@@ -23,7 +23,7 @@ export const FeaturesGrid = () => {
   };
 
   return (
-    <section className="py-24 bg-brand-50 relative overflow-hidden">
+    <section className="py-24 bg-brand-50 relative overflow-hidden z-40">
       <div className="absolute top-0 right-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent mix-blend-overlay"></div>
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         {/* Header */}

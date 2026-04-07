@@ -9,11 +9,12 @@ export const Marquee = () => {
     "Trusted by 10,000+ Students",
     "Easy Payments",
     "Verified Landlords",
+    "Great Experience",
   ];
 
   return (
-    <div className="bg-brand-dark py-4 overflow-hidden border-y-2 border-brand-dark">
-      <div className="flex gap-12 animate-marquee whitespace-nowrap" style={{ animationDuration: "20s" }}>
+    <div className="bg-brand-dark py-4 z-50 border-y-2 border-brand-dark">
+      <div className=" flex gap-12 animate-marquee whitespace-nowrap" style={{ animationDuration: "20s" }}>
         {/* Repeat items to fill marquee */}
         {[...items, ...items].map((item, idx) => (
           <span

@@ -36,7 +36,7 @@ const features = [
 
 export const PlatformShowcase = () => {
   return (
-    <section className="py-16 sm:py-20 lg:py-24 bg-white relative overflow-hidden">
+    <section className="py-16 sm:py-20 lg:py-24 bg-white relative overflow-hidden z-40">
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-pattern bg-[length:30px_30px] opacity-30"></div>
       
