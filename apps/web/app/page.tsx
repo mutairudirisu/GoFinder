@@ -8,7 +8,7 @@ export default function Home() {
       <Hero />
       <Marquee />
       <JourneyScroller />
-      <PlatformShowcase />
+      {/* <PlatformShowcase /> */}
       <AgentsEnterprise />
       <FeaturesGrid />
       <Testimonials />
