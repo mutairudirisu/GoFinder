@@ -90,12 +90,12 @@ export function JourneyScroller() {
   }, [activeIndex]);
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden z-40 bg-white h-screen">
+    <section ref={sectionRef} className="relative overflow-hidden z-50 bg-white">
       <div className="absolute inset-0 bg-gradient-to-b from-white via-white to-brand-50" />
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[480px] bg-brand-500/10 rounded-full blur-[120px]" />
       <div className="absolute top-1/3 left-12 w-[360px] h-[360px] bg-emerald-400/10 rounded-full blur-[90px]" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm">
             <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
