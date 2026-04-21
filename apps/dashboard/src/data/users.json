@@ -77,5 +77,21 @@
       "hasPassword": true,
       "passwordSetAt": "2026-04-03T10:00:00.000Z"
     }
+  },
+  {
+    "id": "user_41cvtvia",
+    "email": "bn.usmann22@gmail.com",
+    "name": "bn.usmann22",
+    "role": "renter",
+    "avatar": "",
+    "isProfileComplete": false,
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-04-08T10:37:20.433Z"
+      }
+    },
+    "createdAt": "2026-04-08T10:37:20.466Z",
+    "updatedAt": "2026-04-08T10:37:20.466Z"
   }
 ]

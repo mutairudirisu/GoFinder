@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import OAuthButtons from "@/components/auth/OAuthButtons";
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:8888";
 
 export default function SignupClient() {
   const router = useRouter();
@@ -220,11 +221,11 @@ export default function SignupClient() {
 
         <p className="text-xs text-center text-slate-500 lg:text-white/50 leading-relaxed">
           By continuing, you agree to our{" "}
-          <a href="/terms" className="font-semibold hover:text-slate-900 lg:hover:text-white underline underline-offset-4">
+          <a href="/terms" className="font-semibold hover:text-white underline underline-offset-4">
             Terms
           </a>{" "}
           and{" "}
-          <a href="/privacy" className="font-semibold hover:text-slate-900 lg:hover:text-white underline underline-offset-4">
+          <a href="/privacy" className="font-semibold hover:text-white underline underline-offset-4">
             Privacy Policy
           </a>
           .

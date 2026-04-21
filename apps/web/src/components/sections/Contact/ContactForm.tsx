@@ -123,7 +123,7 @@ export const ContactForm = () => {
                     <h4 className="font-bold mb-1">Email Us</h4>
                     <p className="text-sm text-slate-600 mb-2">For general inquiries and support</p>
                     <a href="mailto:hello@hostelfinder.com" className="text-brand-600 font-bold text-sm hover:underline">
-                      hello@hostelfinder.com
+                      hello@gigsrentals.com
                     </a>
                   </div>
                 </div>
@@ -136,8 +136,8 @@ export const ContactForm = () => {
                   <div>
                     <h4 className="font-bold mb-1">Call Us</h4>
                     <p className="text-sm text-slate-600 mb-2">Mon-Fri, 9AM-6PM EST</p>
-                    <a href="tel:+15551234567" className="text-brand-600 font-bold text-sm hover:underline">
-                      +1 (555) 123-4567
+                    <a href="tel:+2340811234567" className="text-brand-600 font-bold text-sm hover:underline">
+                      +234 (081) 123-45678
                     </a>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export const ContactForm = () => {
                     <h4 className="font-bold mb-1">Visit Us</h4>
                     <p className="text-sm text-slate-600">
                       123 Campus Drive, Suite 200<br />
-                      San Francisco, CA 94102
+                      Lagos, Nigeria 100001
                     </p>
                   </div>
                 </div>
@@ -166,7 +166,7 @@ export const ContactForm = () => {
                   <h4 className="font-display font-bold text-xl mb-2">Check our FAQ</h4>
                   <p className="text-gray-300 text-sm mb-4">Most questions are already answered in our help center.</p>
                   <Link
-                    href="/#faq"
+                    href="/faq"
                     className="text-brand-400 font-bold text-sm hover:underline flex items-center gap-2"
                   >
                     Browse FAQ <i className="ph-bold ph-arrow-right"></i>
