@@ -74,6 +74,10 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const drawerScrollRef = useRef<HTMLDivElement | null>(null);
   const lastDrawerScrollTopRef = useRef(0);
   const [drawerScrollTop, setDrawerScrollTop] = useState(0);
+  const headerMaxHRef = useRef(0);
+  const fullBleedHRef = useRef(0);
+  const peekHRef = useRef(0);
+  const isDraggingRef = useRef(false);
   const [mapButtonDismissed, setMapButtonDismissed] = useState(false);
   const { hidden: mobileNavHidden } = useAutoHideOnScroll({
     mode: "element",
@@ -283,9 +287,12 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   }, [locationKey]);
 
   const topLimit = topBarBottom ? topBarBottom + 12 : 0;
-  const fullH = viewportH ? Math.max(280, viewportH - topLimit) : 680;
-  const peekH = viewportH ? Math.min(Math.round(viewportH * 0.42), fullH) : 320;
-  const midH = viewportH ? Math.min(Math.round(viewportH * 0.6), fullH) : 520;
+  const bottomNavH = 64;
+  const availableH = viewportH ? Math.max(280, viewportH - bottomNavH) : 680;
+  const headerMaxH = viewportH ? Math.max(280, viewportH - topLimit - bottomNavH) : 680;
+  const fullBleedH = viewportH ? availableH : 740;
+  const peekH = viewportH ? Math.min(Math.round(availableH * 0.42), headerMaxH) : 320;
+  const midH = viewportH ? Math.min(Math.round(availableH * 0.6), headerMaxH) : 520;
   const topBarElevated = (sheetH || peekH) > midH - 24;
   const collapsedH = Math.min(124, peekH);
   const sheetCurrentH = sheetH || peekH;
@@ -293,9 +300,16 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const mapButtonVisible = !isCollapsed && !mapButtonDismissed && drawerScrollTop > 80;
 
   useEffect(() => {
+    headerMaxHRef.current = headerMaxH;
+    fullBleedHRef.current = fullBleedH;
+    peekHRef.current = peekH;
+    isDraggingRef.current = isDragging;
+  }, [fullBleedH, headerMaxH, isDragging, peekH]);
+
+  useEffect(() => {
     if (!viewportH) return;
-    setSheetH((prev) => (prev > 0 ? Math.min(Math.max(prev, peekH), fullH) : peekH));
-  }, [fullH, peekH, viewportH]);
+    setSheetH((prev) => (prev > 0 ? Math.min(Math.max(prev, peekH), headerMaxH) : peekH));
+  }, [headerMaxH, peekH, viewportH]);
 
   useEffect(() => {
     if (!isCollapsed) setMapButtonDismissed(false);
@@ -303,7 +317,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   const snapSheet = (next: number) => {
     let target = peekH;
-    const options = [collapsedH, peekH, midH, fullH];
+    const options = [collapsedH, peekH, midH, headerMaxH];
     for (const v of options) {
       if (Math.abs(v - next) < Math.abs(target - next)) target = v;
     }
@@ -320,7 +334,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const onHandlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
     const delta = dragStartYRef.current - e.clientY;
-    const next = Math.min(fullH, Math.max(collapsedH, dragStartHRef.current + delta));
+    const next = Math.min(headerMaxH, Math.max(collapsedH, dragStartHRef.current + delta));
     setSheetH(next);
   };
 
@@ -338,8 +352,28 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       raf = window.requestAnimationFrame(() => {
         raf = 0;
         const top = el.scrollTop;
+        const prevTop = lastDrawerScrollTopRef.current;
+        const delta = top - prevTop;
         lastDrawerScrollTopRef.current = top;
         setDrawerScrollTop(top);
+
+        if (isDraggingRef.current) return;
+
+        if (delta > 0) {
+          setSheetH((prev) => {
+            const base = prev > 0 ? prev : peekHRef.current;
+            const next = Math.min(
+              fullBleedHRef.current,
+              Math.max(base, headerMaxHRef.current) + Math.min(24, delta)
+            );
+            return next;
+          });
+          return;
+        }
+
+        if (delta < 0 && top <= 6) {
+          setSheetH(peekHRef.current);
+        }
       });
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -351,15 +385,15 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      <div className="fixed top-0 z-50 w-full flex flex-col">
+      <div ref={topBarRef} className="fixed top-0 z-50 w-full flex flex-col bg-red-200">
         <Header
           hideCenterTabs
           centerContent={
-            <div className=" px-24">
-              <div className="flex items-center justify-center gap-2 ">
+            <div className="">
+              <div className="flex gap-4 items-center mb-6 md:mb-0">
                 <Link
                   href="/"
-                  className="md:hidden shrink-0 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-colors"
+                  className=" shrink-0 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-colors"
                   aria-label="Back to dashboard"
                 >
                   <i className="ph-bold ph-arrow-left text-lg" />
@@ -386,7 +420,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                           queryCloseTimerRef.current = window.setTimeout(() => setQueryDropdownOpen(false), 120);
                         }}
                         placeholder={`Search in ${locationCity}...`}
-                        className="w-full bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400"
+                        className="w-full bg-transparent outline-none py-2 text-sm text-slate-900 placeholder:text-slate-400"
                       />
                       {query.trim() !== "" ? (
                         <button
@@ -404,14 +438,14 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                   {/* search suggestions */}
 
                   {queryDropdownOpen ? (
-                    <div className="absolute w-full left-0 right-0 top-full mt-3 bg-white rounded-[18px] border border-slate-200 shadow-2xl overflow-hidden">
+                    <div className="absolute w-[360px] items-center -left-[52px] right-0 top-full mt-3 bg-white rounded-[18px] border border-slate-200 shadow-2xl overflow-hidden">
                       <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
                         <div className="text-xs font-bold text-slate-600">Suggested</div>
                         <button
                           type="button"
                           onMouseDown={(e) => e.preventDefault()}
                           onClick={() => setQueryDropdownOpen(false)}
-                          className="text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+                          className="text-xs underline font-bold text-red-500 hover:text-slate-900 transition-colors"
                         >
                           Cancel
                         </button>
@@ -459,7 +493,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 <button
                   type="button"
                   onClick={() => setFiltersOpen(true)}
-                  className="shrink-0 px-5 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center gap-2 font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+                  className="shrink-0 px-4 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center gap-2 font-bold text-slate-800 hover:bg-slate-50 transition-colors"
                 >
                   <i className="ph-bold ph-sliders-horizontal text-lg" />
                   <span className="text-sm hidden md:block">Filters</span>
@@ -476,11 +510,11 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       </div>
 
         {/* Listings Section */}
-      <section className="hidden md:block mt-16 pt-16 md:pt-22 pb-16 hidden">
-        <div className=" mx-auto px-4 md:px-12">
+      <section className="mt-0 md:pt-12 pb-0 md:mt-24 md:pt-22 md:pb-16">
+        <div className="mx-auto px-0 md:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:items-start">
             {/* Card grid area */}
-            <div className="lg:h-[calc(100vh-9rem)] flex flex-col gap-4">
+            <div className="hidden md:flex lg:h-[calc(100vh-9rem)] flex-col gap-4">
               <div className=" items-center justify-between gap-4">
                 <div className="text-xl text-slate-900 font-medium font-display">
                   {filteredListings.length} {itemLabel.toLowerCase()}
@@ -552,8 +586,10 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
               </div>
             </div>
 
-            <div className="h-[520px] mt-20 lg:h-[calc(100vh-9rem)]">
-              <div className="relative w-full h-full bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+            {/* Map area */}
+
+            <div className="h-[100dvh] md:h-[calc(100vh-9rem)] lg:h-[calc(100vh-9rem)]">
+              <div className="relative w-full h-full bg-white rounded-none border-0 overflow-hidden shadow-none md:rounded-[32px] md:border md:border-slate-200 md:shadow-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100" />
                 <div className="absolute inset-0 bg-grid-pattern bg-[length:32px_32px] opacity-40" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 via-transparent to-brand-accent/10" />
@@ -646,7 +682,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 })}
 
                 {activeListing ? (
-                  <div className="absolute left-6 right-6 bottom-6">
+                  <div className="absolute left-6 right-6 bottom-6 hidden">
                     <div className="bg-white rounded-[28px] border border-slate-200 shadow-xl overflow-hidden">
                       <div className="flex gap-4 p-4">
                         <div className="w-24 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
@@ -712,7 +748,85 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
         </div>
       </section>
 
-      {/* {filtersOpen ? (
+      {/* Mobile Drawer */}
+
+      <div className="fixed inset-x-0 bottom-16 z-40 md:hidden">
+        <div
+          className="w-full bg-white rounded-t-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
+          style={{ height: sheetCurrentH }}
+        >
+          <div
+            className="px-4 pt-3 pb-2 touch-none"
+            onPointerDown={onHandlePointerDown}
+            onPointerMove={onHandlePointerMove}
+            onPointerUp={onHandlePointerUp}
+            onPointerCancel={onHandlePointerUp}
+          >
+            <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-300" />
+          </div>
+
+          <div ref={drawerScrollRef} className="flex-1 overflow-y-auto px-6 pb-8">
+            <div className="flex items-center justify-between gap-6 py-2">
+              <div className="text-sm font-bold text-slate-900 ">
+                {filteredListings.length} {itemLabel.toLowerCase()}
+                {filteredListings.length === 1 ? "" : "s"}
+              </div>
+              <button
+                type="button"
+                onClick={() => snapSheet(isCollapsed ? midH : collapsedH)}
+                className="text-xs font-bold text-slate-700 underline underline-offset-4"
+              >
+                {isCollapsed ? "Expand" : "Collapse"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto py-6 no-scrollbar">
+              {typeOptions.map((t) => {
+                const isActive = selectedType === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSelectedType(t)}
+                    className={`shrink-0 px-4 py-2 rounded-full border font-bold text-xs transition-colors ${
+                      isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                    }`}
+                  >
+                    {t === "ALL" ? "All" : t.replaceAll("_", " ")}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isLoading ? (
+              <div className="py-12 text-center text-sm text-slate-500">Loading...</div>
+            ) : filteredListings.length === 0 ? (
+              <div className="py-12 text-center text-sm text-slate-500">No listings found</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-5">
+                {filteredListings.map((listing) => {
+                  const id = String(listing.id);
+                  const isActive = id === activeId;
+                  return (
+                    <ListingResultCard
+                      key={listing.id}
+                      listing={listing}
+                      variant="drawer"
+                      isActive={isActive}
+                      liked={likedIds.has(id)}
+                      onToggleLike={() => toggleLike(id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {filtersOpen ? (
         <div className="fixed inset-0 z-[80]">
           <div className="absolute inset-0 bg-black/40" onClick={() => setFiltersOpen(false)} />
           <div className="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
@@ -844,11 +958,38 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
             </div>
           </div>
         </div>
-      ) : null} */}
+      ) : null}
 
       <div className="hidden md:block">
         <Footer />
       </div>
+
+      {!authLoading ? (
+        <BottomTabNav
+          hidden={isAuthenticated ? mobileNavHidden : false}
+          items={
+            isAuthenticated
+              ? [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "trips", href: "/user/bookings", label: "Trips", iconClassName: "ph-bold ph-suitcase text-xl" },
+                  {
+                    key: "messages",
+                    href: "/user/messages",
+                    label: "Messages",
+                    iconClassName: "ph-bold ph-chats-circle text-xl",
+                    badgeCount: unreadCount,
+                  },
+                  { key: "profile", href: "/user/profile", label: "Profile", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+              : [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "login", href: "/auth/login", label: "Log in", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+          }
+        />
+      ) : null}
     </main>
   );
 }

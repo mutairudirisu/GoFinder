@@ -145,7 +145,7 @@ export const Header = ({
     return (
       <>
       <header className=" z-50 bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto md:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="hidden md:flex items-center gap-2 group flex-shrink-0">
             <div className=" w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
