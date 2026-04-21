@@ -2,13 +2,15 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
 type Mode = "host" | "guest";
 
 export function AccountProfile({ mode }: { mode: Mode }) {
-  const { user, completeProfile, isLoading } = useAuth();
+  const router = useRouter();
+  const { user, completeProfile, isLoading, logout } = useAuth();
   const [modal, setModal] = useState<null | "name" | "phone">(null);
   const [fullNameDraft, setFullNameDraft] = useState("");
   const [phoneDraft, setPhoneDraft] = useState("");
@@ -91,6 +93,7 @@ export function AccountProfile({ mode }: { mode: Mode }) {
   }, [settingsHref, user?.email, user?.username, user?.verifications?.email?.status, user?.verifications?.id?.status, user?.verifications?.phone?.status]);
 
   const canEdit = Boolean(user?.id);
+  const canLogout = Boolean(user?.id);
 
   const closeModal = () => {
     setModal(null);
@@ -145,12 +148,144 @@ export function AccountProfile({ mode }: { mode: Mode }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="max-w-6xl">
-      <div className="mb-8">
+      <div className="md:hidden pb-24">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-display font-bold text-slate-900">Profile</h1>
+          <Link
+            href="/user/notifications"
+            className="w-11 h-11 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700"
+            aria-label="Notifications"
+          >
+            <i className="ph-bold ph-bell text-xl"></i>
+          </Link>
+        </div>
+
+        <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-3xl">
+              {user?.name?.charAt(0).toUpperCase() || "U"}
+            </div>
+            <div className="mt-4 font-display font-bold text-2xl text-slate-900">{user?.name || "User"}</div>
+            <div className="mt-1 text-sm text-slate-500">{mode === "host" ? "Host" : "Guest"}</div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <Link
+            href="/user/bookings"
+            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:bg-slate-50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                <i className="ph-bold ph-suitcase text-xl text-slate-700"></i>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded-full">
+                New
+              </span>
+            </div>
+            <div className="mt-4 font-bold text-slate-900">Past trips</div>
+          </Link>
+
+          <Link
+            href="/user/connections"
+            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:bg-slate-50 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                <i className="ph-bold ph-users-three text-xl text-slate-700"></i>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded-full">
+                New
+              </span>
+            </div>
+            <div className="mt-4 font-bold text-slate-900">Connections</div>
+          </Link>
+        </div>
+
+        <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+              <i className="ph-bold ph-storefront text-2xl text-slate-700"></i>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-bold text-slate-900">Become a host</div>
+              <div className="text-sm text-slate-500 mt-1">It’s easy to start hosting and earn extra income.</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 bg-white rounded-3xl border border-slate-200 overflow-hidden">
+          {[
+            { icon: "ph-gear", label: "Account settings", href: "/user/settings" },
+            { icon: "ph-question", label: "Get help", href: null },
+            { icon: "ph-user", label: "View profile", href: "/user/profile/edit" },
+            { icon: "ph-lock", label: "Privacy", href: "/user/settings" },
+          ].map((item) => (
+            <div key={item.label} className="border-b border-slate-100 last:border-b-0">
+              {item.href ? (
+                <Link
+                  href={item.href}
+                  className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <i className={`ph-bold ${item.icon} text-xl text-slate-700`} />
+                    <span className="font-bold text-slate-900">{item.label}</span>
+                  </div>
+                  <i className="ph ph-caret-right text-slate-400 text-xl" />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="w-full flex items-center justify-between gap-4 px-6 py-5 opacity-60 cursor-not-allowed"
+                >
+                  <div className="flex items-center gap-4">
+                    <i className={`ph-bold ${item.icon} text-xl text-slate-700`} />
+                    <span className="font-bold text-slate-900">{item.label}</span>
+                  </div>
+                  <i className="ph ph-caret-right text-slate-400 text-xl" />
+                </button>
+              )}
+            </div>
+          ))}
+
+          {canLogout ? (
+            <button
+              type="button"
+              onClick={() => {
+                logout();
+                router.push("/auth/login");
+              }}
+              className="w-full flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <i className="ph-bold ph-sign-out text-xl text-slate-700" />
+                <span className="font-bold text-slate-900">Log out</span>
+              </div>
+              <i className="ph ph-caret-right text-slate-400 text-xl" />
+            </button>
+          ) : null}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            localStorage.setItem("gigs_current_mode", "host");
+            router.push("/hosting");
+          }}
+          className="fixed left-1/2 -translate-x-1/2 bottom-[84px] z-40 px-6 py-3 rounded-full bg-slate-900 text-white font-bold shadow-2xl border border-slate-900/10 flex items-center gap-2"
+        >
+          <i className="ph-bold ph-storefront" />
+          Switch to hosting
+        </button>
+      </div>
+
+      <div className="hidden md:block mb-8">
         <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-800 mb-2">Profile</h1>
         <p className="text-slate-500">Manage your account details</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center gap-4">

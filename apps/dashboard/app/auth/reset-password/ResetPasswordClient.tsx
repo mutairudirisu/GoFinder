@@ -67,7 +67,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
       >
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/10">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 lg:bg-white/10 lg:border-white/10">
               <svg
                 className="w-8 h-8 md:w-10 md:h-10 text-brand-400"
                 fill="none"
@@ -83,7 +83,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
               </svg>
             </div>
           </div>
-          <p className="text-center text-white/80">You can now sign in with your new password</p>
+          <p className="text-center text-slate-700 lg:text-white/80">You can now sign in with your new password</p>
           <Link
             href="/auth/login"
             className="block text-center px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 text-white font-bold text-lg rounded-2xl transition-colors"
@@ -147,13 +147,13 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
         />
         {errors.submit && (
           <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
-            <p className="text-sm font-semibold text-red-200">{errors.submit}</p>
+            <p className="text-sm font-semibold text-red-700 lg:text-red-200">{errors.submit}</p>
           </div>
         )}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold text-lg rounded-2xl transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold text-lg rounded-2xl transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
@@ -169,7 +169,7 @@ export default function ResetPasswordClient({ token }: ResetPasswordClientProps)
         </button>
         <Link
           href="/auth/login"
-          className="block text-center text-sm font-semibold text-white/70 hover:text-white underline underline-offset-4"
+          className="block text-center text-sm font-semibold text-slate-600 hover:text-slate-900 lg:text-white/70 lg:hover:text-white underline underline-offset-4"
         >
           Back to Sign In
         </Link>

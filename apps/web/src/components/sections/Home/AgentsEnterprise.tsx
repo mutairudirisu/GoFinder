@@ -71,7 +71,7 @@ export function AgentsEnterprise() {
                 transition={{ duration: 0.6 }}
               >
                 <div
-                  className={`mb-6 px-6 md:px-16 flex justify-center rounded-3xl w-full pt-16 overflow-hidden bg-cover bg-center`}
+                  className={`mb-6 px-6 md:px-16 flex justify-center rounded-3xl w-full pt-16 overflow-hidden bg-cover bg-center relative`}
                   style={{
                     backgroundColor: item.bgColor,
                     backgroundImage: "url('/assets/images/agents-enterprise/noise.svg')",
@@ -83,7 +83,8 @@ export function AgentsEnterprise() {
                     width={280}
                     height={560}
                     priority={index === 0}
-                    className="select-none"
+                    className="select-none w-auto h-auto max-w-full"
+                    style={{ height: "auto" }}
                   />
                 </div>
 
@@ -101,4 +102,3 @@ export function AgentsEnterprise() {
     </div>
   );
 }
-

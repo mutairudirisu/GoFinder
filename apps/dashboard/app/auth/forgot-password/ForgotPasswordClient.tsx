@@ -38,7 +38,7 @@ export default function ForgotPasswordClient() {
       <AuthLayout title="Check Your Email" subtitle="We've sent a password reset link" showImage={false}>
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/10 rounded-full flex items-center justify-center border border-white/10">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-slate-100 rounded-full flex items-center justify-center border border-slate-200 lg:bg-white/10 lg:border-white/10">
               <svg
                 className="w-8 h-8 md:w-10 md:h-10 text-brand-400"
                 fill="none"
@@ -55,10 +55,10 @@ export default function ForgotPasswordClient() {
             </div>
           </div>
           <div className="text-center space-y-2">
-            <p className="text-white/80">
-              We&apos;ve sent a password reset link to <span className="font-bold text-white">{email}</span>
+            <p className="text-slate-700 lg:text-white/80">
+              We&apos;ve sent a password reset link to <span className="font-bold text-slate-900 lg:text-white">{email}</span>
             </p>
-            <p className="text-sm text-white/60">
+            <p className="text-sm text-slate-500 lg:text-white/60">
               The link will expire in 24 hours. Check your spam folder if you don&apos;t see the
               email.
             </p>
@@ -71,7 +71,7 @@ export default function ForgotPasswordClient() {
           </Link>
           <button
             onClick={() => setSuccess(false)}
-            className="w-full text-center text-sm font-semibold text-white/70 hover:text-white underline underline-offset-4"
+            className="w-full text-center text-sm font-semibold text-slate-600 hover:text-slate-900 lg:text-white/70 lg:hover:text-white underline underline-offset-4"
           >
             Try a different email
           </button>
@@ -114,7 +114,7 @@ export default function ForgotPasswordClient() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold text-lg rounded-2xl transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-3 md:py-4 bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold text-lg rounded-2xl transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
@@ -130,7 +130,7 @@ export default function ForgotPasswordClient() {
         </button>
         <Link
           href="/auth/login"
-          className="block text-center text-sm font-semibold text-white/70 hover:text-white underline underline-offset-4"
+          className="block text-center text-sm font-semibold text-slate-600 hover:text-slate-900 lg:text-white/70 lg:hover:text-white underline underline-offset-4"
         >
           Back to Sign In
         </Link>

@@ -143,9 +143,9 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
     return (
       <AuthLayout title="Setting things up" subtitle="One moment..." showImage>
         <div className="space-y-4">
-          <div className="h-10 rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
-          <div className="h-10 rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
-          <div className="h-10 rounded-2xl bg-white/5 border border-white/10 animate-pulse" />
+          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
+          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
+          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
         </div>
       </AuthLayout>
     );
@@ -163,13 +163,13 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
             <div key={step.id} className="flex items-center">
               <div
                 className={`flex items-center justify-center w-9 h-9 rounded-full font-bold text-xs transition-all ${
-                  currentStep >= step.id ? "bg-brand-500 text-white" : "bg-white/10 text-white/60"
+                  currentStep >= step.id ? "bg-brand-500 text-white" : "bg-slate-100 text-slate-600 lg:bg-white/10 lg:text-white/60"
                 }`}
               >
                 {step.id}
               </div>
               {index < onboardingSteps.length - 1 ? (
-                <div className={`w-10 h-1 mx-1 rounded-full transition-all ${currentStep > step.id ? "bg-brand-500" : "bg-white/10"}`} />
+                <div className={`w-10 h-1 mx-1 rounded-full transition-all ${currentStep > step.id ? "bg-brand-500" : "bg-slate-200 lg:bg-white/10"}`} />
               ) : null}
             </div>
           ))}
@@ -178,11 +178,11 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
         <div className="space-y-1 text-center">
           {currentStepData ? (
             <>
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-white/10 rounded-full text-white">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full text-slate-900 lg:bg-white/10 lg:text-white">
                 {currentStepData.icon}
               </div>
               <h2 className="text-xl font-bold">{currentStepData.title}</h2>
-              <p className="text-sm text-white/60">{currentStepData.description}</p>
+              <p className="text-sm text-slate-600 lg:text-white/60">{currentStepData.description}</p>
             </>
           ) : null}
         </div>
@@ -233,7 +233,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   <button
                     type="button"
                     onClick={() => setPasswordData((p) => ({ ...p, showPassword: !p.showPassword }))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 lg:text-white/60 lg:hover:text-white"
                     aria-label={passwordData.showPassword ? "Hide password" : "Show password"}
                   >
                     <i className={`ph ${passwordData.showPassword ? "ph-eye-slash" : "ph-eye"} text-xl`} />
@@ -257,7 +257,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   <button
                     type="button"
                     onClick={() => setPasswordData((p) => ({ ...p, showConfirm: !p.showConfirm }))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 lg:text-white/60 lg:hover:text-white"
                     aria-label={passwordData.showConfirm ? "Hide password" : "Show password"}
                   >
                     <i className={`ph ${passwordData.showConfirm ? "ph-eye-slash" : "ph-eye"} text-xl`} />
@@ -276,7 +276,9 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   <span
                     key={r.label}
                     className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                      r.ok ? "bg-brand-500/20 text-white border-brand-400/40" : "bg-white/5 text-white/60 border-white/10"
+                      r.ok
+                        ? "bg-brand-50 text-brand-700 border-brand-200 lg:bg-brand-500/20 lg:text-white lg:border-brand-400/40"
+                        : "bg-slate-50 text-slate-600 border-slate-200 lg:bg-white/5 lg:text-white/60 lg:border-white/10"
                     }`}
                   >
                     {r.label}
@@ -285,8 +287,8 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold border ${
                     passwordData.password && passwordData.password === passwordData.confirm
-                      ? "bg-brand-500/20 text-white border-brand-400/40"
-                      : "bg-white/5 text-white/60 border-white/10"
+                      ? "bg-brand-50 text-brand-700 border-brand-200 lg:bg-brand-500/20 lg:text-white lg:border-brand-400/40"
+                      : "bg-slate-50 text-slate-600 border-slate-200 lg:bg-white/5 lg:text-white/60 lg:border-white/10"
                   }`}
                 >
                   Password match
@@ -294,7 +296,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
               </div>
 
               <div className="space-y-2 pt-2">
-                <label className="flex items-start gap-3 text-sm text-white/70">
+                <label className="flex items-start gap-3 text-sm text-slate-600 lg:text-white/70">
                   <input
                     type="checkbox"
                     checked={passwordData.agree}
@@ -302,24 +304,24 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                       setPasswordData((p) => ({ ...p, agree: e.target.checked }));
                       if (errors.agree) setErrors((prev) => ({ ...prev, agree: "" }));
                     }}
-                    className="mt-1 w-5 h-5 rounded border-white/20 bg-white/10 text-brand-500 focus:ring-brand-accent/30"
+                    className="mt-1 w-5 h-5 rounded border-slate-300 bg-white text-brand-600 focus:ring-brand-200 lg:border-white/20 lg:bg-white/10 lg:focus:ring-brand-accent/30"
                   />
                   <span>
                     I agree to the{" "}
-                    <a href="/terms" className="font-bold text-white underline underline-offset-4">
+                    <a href="/terms" className="font-bold text-slate-900 lg:text-white underline underline-offset-4">
                       Terms and Conditions
                     </a>
                     .
                   </span>
                 </label>
-                {errors.agree ? <div className="text-sm font-semibold text-red-200">{errors.agree}</div> : null}
+                {errors.agree ? <div className="text-sm font-semibold text-red-700 lg:text-red-200">{errors.agree}</div> : null}
               </div>
             </div>
           ) : null}
 
           {errors.submit ? (
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
-              <p className="text-sm font-semibold text-red-200">{errors.submit}</p>
+              <p className="text-sm font-semibold text-red-700 lg:text-red-200">{errors.submit}</p>
             </div>
           ) : null}
         </div>
@@ -328,7 +330,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
           <button
             onClick={handleBack}
             disabled={currentStep === 1 || isLoading}
-            className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-slate-900 font-bold hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors lg:bg-white/5 lg:border-white/10 lg:text-white lg:hover:bg-white/10"
           >
             Back
           </button>
@@ -347,7 +349,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   passwordData.password.length < 8
                 : false)
             }
-            className="flex-1 px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? "Saving..." : currentStep === 2 ? "Create account" : "Continue"}
           </button>

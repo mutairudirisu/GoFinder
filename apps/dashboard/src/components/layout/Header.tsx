@@ -23,6 +23,7 @@ export const Header = ({
   const { user, logout } = useAuth();
   const [currentMode, setCurrentMode] = useState<"guest" | "host">("guest");
   const [hostBookingCount, setHostBookingCount] = useState(0);
+  const [tabsCompact, setTabsCompact] = useState(false);
 
   const isAuthenticated = !!user;
   const isHostingRoute = pathname.startsWith("/hosting");
@@ -79,6 +80,22 @@ export const Header = ({
     else setActiveTab("homes");
   }, [pathname]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (pathname !== "/") {
+      setTabsCompact(false);
+      return;
+    }
+
+    const onScroll = () => {
+      setTabsCompact(window.scrollY > 48);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [pathname]);
+
   const selectTab = (tab: "homes" | "experiences" | "services") => {
     setActiveTab(tab);
     if (pathname === "/") {
@@ -127,75 +144,72 @@ export const Header = ({
     // Return authenticated header component
     return (
       <>
-        <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
+      <header className=" z-50 bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-            <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
+          <Link href="/" className="hidden md:flex items-center gap-2 group flex-shrink-0">
+            <div className=" w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
               <i className="ph-bold ph-house-line text-lg text-white"></i>
             </div>
             <span className="font-display font-bold text-lg text-brand-dark hidden sm:inline-block">
               GIGS<span className="text-brand-600">Rentals</span>
             </span>
-            <span className="font-display font-bold text-base sm:hidden">
-              <span className="text-brand-500">GR</span>
-            </span>
           </Link>
 
           {centerContent ? (
-            <div className="hidden md:flex flex-1 justify-center px-6">
+            <div className="md:flex flex-1 justify-center px-4">
               <div className="w-full max-w-3xl">{centerContent}</div>
             </div>
           ) : hideCenterTabs ? (
-            <div className="hidden md:block flex-1" />
+            <div className=" md:block flex-1" />
           ) : (
-            <nav className="hidden md:flex items-center gap-8">
+            <nav className={`flex gap-12 md:gap-12 items-center justify-center mx-auto ${tabsCompact ? "pb-0" : "pb-0"}`}>
               <button
                 onClick={() => selectTab('homes')}
-                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors ${
                   activeTab === 'homes'
                     ? 'border-brand-500 text-brand-700 font-medium'
                     : 'border-transparent text-slate-600 hover:text-brand-700'
                 }`}
               >
-                <i className="ph-bold ph-house-line text-xl"></i>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-house-line text-xl"></i></div>
                 <span>Homes</span>
               </button>
 
               <button
                 onClick={() => selectTab('experiences')}
-                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
                   activeTab === "experiences"
                     ? "border-brand-500 text-brand-700 font-medium"
                     : "border-transparent text-slate-600 hover:text-brand-700"
                 }`}
               >
-                <i className="ph-bold ph-balloon text-xl"></i>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-balloon text-xl"></i></div>
                 <span>Experiences</span>
-                <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
-                  NEW
+                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-5 md:-top-5 md:right-12 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                  SOON
                 </span>
               </button>
 
               <button
                 onClick={() => selectTab('services')}
-                className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
                   activeTab === "services"
                     ? "border-brand-500 text-brand-700 font-medium"
                     : "border-transparent text-slate-600 hover:text-brand-700"
                 }`}
               >
-                <i className="ph-bold ph-wrench text-xl"></i>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-wrench text-xl"></i></div>
                 <span>Services</span>
-                <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
-                  NEW
+                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-8 md:-top-5 md:right-5 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                  SOON
                 </span>
               </button>
             </nav>
           )}
 
           {/* Right Side - CTA and Menu */}
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             {!isHostingRoute ? (
               <Link
                 href="/user/favorites"
@@ -495,81 +509,79 @@ export const Header = ({
             userId={user.id}
           />
         )}
+        
       </>
     );
   }
 
   // Unauthenticated Header - Airbnb Style
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+    <header className=" z-50 bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
+      <div className=" mx-auto px-2 md:px-6 h-16 flex items-center justify-between mr-2">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-          <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
-            <i className="ph-bold ph-house-line text-lg text-white"></i>
-          </div>
-          <span className="font-display font-bold text-lg text-brand-dark hidden sm:inline-block">
-            GIGS<span className="text-brand-600">Rentals</span>
-          </span>
-          <span className="font-display font-bold text-base sm:hidden">
-            <span className="text-brand-500">GR</span>
-          </span>
-        </Link>
+          <Link href="/" className="hidden md:flex items-center gap-2 group flex-shrink-0">
+            <div className=" w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
+              <i className="ph-bold ph-house-line text-lg text-white"></i>
+            </div>
+            <span className="font-display font-bold text-lg text-brand-dark hidden sm:inline-block">
+              GIGS<span className="text-brand-600">Rentals</span>
+            </span>
+          </Link>
 
-        {centerContent ? (
-          <div className="hidden md:flex flex-1 justify-center px-6">
-            <div className="w-full max-w-3xl">{centerContent}</div>
-          </div>
-        ) : hideCenterTabs ? (
-          <div className="hidden md:block flex-1" />
-        ) : (
-          <nav className="hidden md:flex items-center gap-8">
-            <button
-              onClick={() => selectTab('homes')}
-              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
-                activeTab === 'homes'
-                  ? 'border-brand-500 text-brand-700 font-medium'
-                  : 'border-transparent text-slate-600 hover:text-brand-700'
-              }`}
-            >
-              <i className="ph-bold ph-house-line text-xl"></i>
-              <span>Homes</span>
-            </button>
+          {centerContent ? (
+            <div className="md:flex flex-1 justify-center px-4">
+              <div className="w-full max-w-3xl">{centerContent}</div>
+            </div>
+          ) : hideCenterTabs ? (
+            <div className=" md:block flex-1" />
+          ) : (
+            <nav className={`flex gap-12 md:gap-12 items-center justify-center mx-auto ${tabsCompact ? "pb-0" : "pb-0"}`}>
+              <button
+                onClick={() => selectTab('homes')}
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors ${
+                  activeTab === 'homes'
+                    ? 'border-brand-500 text-brand-700 font-medium'
+                    : 'border-transparent text-slate-600 hover:text-brand-700'
+                }`}
+              >
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-house-line text-xl"></i></div>
+                <span>Homes</span>
+              </button>
 
-            <button
-              onClick={() => selectTab('experiences')}
-              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
-                activeTab === "experiences"
-                  ? "border-brand-500 text-brand-700 font-medium"
-                  : "border-transparent text-slate-600 hover:text-brand-700"
-              }`}
-            >
-              <i className="ph-bold ph-balloon text-xl"></i>
-              <span>Experiences</span>
-              <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
-                NEW
-              </span>
-            </button>
+              <button
+                onClick={() => selectTab('experiences')}
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
+                  activeTab === "experiences"
+                    ? "border-brand-500 text-brand-700 font-medium"
+                    : "border-transparent text-slate-600 hover:text-brand-700"
+                }`}
+              >
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-balloon text-xl"></i></div>
+                <span>Experiences</span>
+                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-5 md:-top-5 md:right-12 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                  SOON
+                </span>
+              </button>
 
-            <button
-              onClick={() => selectTab('services')}
-              className={`flex items-center gap-2 pb-2 border-b-2 transition-colors ${
-                activeTab === "services"
-                  ? "border-brand-500 text-brand-700 font-medium"
-                  : "border-transparent text-slate-600 hover:text-brand-700"
-              }`}
-            >
-              <i className="ph-bold ph-wrench text-xl"></i>
-              <span>Services</span>
-              <span className="ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full">
-                NEW
-              </span>
-            </button>
-          </nav>
-        )}
+              <button
+                onClick={() => selectTab('services')}
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
+                  activeTab === "services"
+                    ? "border-brand-500 text-brand-700 font-medium"
+                    : "border-transparent text-slate-600 hover:text-brand-700"
+                }`}
+              >
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-wrench text-xl"></i></div>
+                <span>Services</span>
+                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-8 md:-top-5 md:right-5 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                  SOON
+                </span>
+              </button>
+            </nav>
+          )}
 
         {/* Right Side - CTA and Menu */}
-        <div className="flex items-center gap-4">
+        <div className="hidden md:flex items-center gap-3">
           {/* Become a Host Button */}
           <button
             onClick={handleBecomeHost}

@@ -79,13 +79,13 @@ export default function SignupClient() {
       <form onSubmit={handleContinue} className="space-y-5">
         <div className="flex items-center justify-center gap-3">
           <div className={`h-1.5 rounded-full transition-all ${step === "ROLE" ? "w-10 bg-brand-500" : "w-10 bg-brand-500/50"}`} />
-          <div className={`h-1.5 rounded-full transition-all ${step === "EMAIL" ? "w-10 bg-brand-500" : "w-10 bg-white/10"}`} />
-          <div className="h-1.5 w-10 rounded-full bg-white/10" />
+          <div className={`h-1.5 rounded-full transition-all ${step === "EMAIL" ? "w-10 bg-brand-500" : "w-10 bg-slate-200 lg:bg-white/10"}`} />
+          <div className="h-1.5 w-10 rounded-full bg-slate-200 lg:bg-white/10" />
         </div>
 
         {step === "ROLE" ? (
           <div className="space-y-4">
-            <div className="text-sm text-white/70">How would you like to use GIGS Rentals?</div>
+            <div className="text-sm text-slate-600 lg:text-white/70">How would you like to use GIGS Rentals?</div>
             <div className="space-y-3">
               <button
                 type="button"
@@ -94,18 +94,26 @@ export default function SignupClient() {
                   setError("");
                 }}
                 className={`w-full text-left p-5 rounded-3xl border transition-all ${
-                  intent === "renter" ? "border-brand-400/60 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                  intent === "renter"
+                    ? "border-slate-900 bg-slate-50 lg:border-brand-400/60 lg:bg-white/10"
+                    : "border-slate-200 bg-white hover:bg-slate-50 lg:border-white/10 lg:bg-white/5 lg:hover:bg-white/10"
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${intent === "renter" ? "bg-brand-500 text-white" : "bg-white/10 text-white/70"}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                    intent === "renter"
+                      ? "bg-slate-900 text-white lg:bg-brand-500"
+                      : "bg-slate-100 text-slate-700 lg:bg-white/10 lg:text-white/70"
+                  }`}>
                     <i className="ph-bold ph-magnifying-glass text-xl"></i>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white">Individual / Student</div>
-                    <div className="text-sm text-white/60 mt-1">Find accommodation, message hosts, save wishlists, and join roommates.</div>
+                    <div className="font-bold text-slate-900 lg:text-white">Individual / Student</div>
+                    <div className="text-sm text-slate-600 lg:text-white/60 mt-1">Find accommodation, message hosts, save wishlists, and join roommates.</div>
                   </div>
-                  <i className={`ph ph-check-circle text-xl ${intent === "renter" ? "text-brand-300" : "text-white/20"}`}></i>
+                  <i className={`ph ph-check-circle text-xl ${
+                    intent === "renter" ? "text-brand-600 lg:text-brand-300" : "text-slate-300 lg:text-white/20"
+                  }`}></i>
                 </div>
               </button>
 
@@ -116,18 +124,26 @@ export default function SignupClient() {
                   setError("");
                 }}
                 className={`w-full text-left p-5 rounded-3xl border transition-all ${
-                  intent === "lister" ? "border-brand-400/60 bg-white/10" : "border-white/10 bg-white/5 hover:bg-white/10"
+                  intent === "lister"
+                    ? "border-slate-900 bg-slate-50 lg:border-brand-400/60 lg:bg-white/10"
+                    : "border-slate-200 bg-white hover:bg-slate-50 lg:border-white/10 lg:bg-white/5 lg:hover:bg-white/10"
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${intent === "lister" ? "bg-brand-500 text-white" : "bg-white/10 text-white/70"}`}>
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                    intent === "lister"
+                      ? "bg-slate-900 text-white lg:bg-brand-500"
+                      : "bg-slate-100 text-slate-700 lg:bg-white/10 lg:text-white/70"
+                  }`}>
                     <i className="ph-bold ph-storefront text-xl"></i>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-white">Agent / Landlord</div>
-                    <div className="text-sm text-white/60 mt-1">Host verified listings, manage inquiries, and publish properties.</div>
+                    <div className="font-bold text-slate-900 lg:text-white">Agent / Landlord</div>
+                    <div className="text-sm text-slate-600 lg:text-white/60 mt-1">Host verified listings, manage inquiries, and publish properties.</div>
                   </div>
-                  <i className={`ph ph-check-circle text-xl ${intent === "lister" ? "text-brand-300" : "text-white/20"}`}></i>
+                  <i className={`ph ph-check-circle text-xl ${
+                    intent === "lister" ? "text-brand-600 lg:text-brand-300" : "text-slate-300 lg:text-white/20"
+                  }`}></i>
                 </div>
               </button>
             </div>
@@ -161,7 +177,7 @@ export default function SignupClient() {
             />
             <button
               type="button"
-              className="text-left text-sm font-semibold text-white/70 hover:text-white underline underline-offset-4"
+              className="text-left text-sm font-semibold text-slate-600 hover:text-slate-900 lg:text-white/70 lg:hover:text-white underline underline-offset-4"
               onClick={() => {
                 setStep("ROLE");
                 setError("");
@@ -176,7 +192,7 @@ export default function SignupClient() {
         <button
           type="submit"
           disabled={isLoading || (step === "ROLE" ? !intent : !email.trim())}
-          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? (
             <>
@@ -195,20 +211,20 @@ export default function SignupClient() {
           )}
         </button>
 
-        <p className="text-center text-sm text-white/70">
+        <p className="text-center text-sm text-slate-600 lg:text-white/70">
           Already have an account?{" "}
-          <Link href="/auth/login" className="font-bold text-white hover:text-white/90 underline underline-offset-4">
+          <Link href="/auth/login" className="font-bold text-slate-900 hover:text-slate-900/90 lg:text-white lg:hover:text-white/90 underline underline-offset-4">
             Sign in
           </Link>
         </p>
 
-        <p className="text-xs text-center text-white/50 leading-relaxed">
+        <p className="text-xs text-center text-slate-500 lg:text-white/50 leading-relaxed">
           By continuing, you agree to our{" "}
-          <a href="/terms" className="font-semibold hover:text-white underline underline-offset-4">
+          <a href="/terms" className="font-semibold hover:text-slate-900 lg:hover:text-white underline underline-offset-4">
             Terms
           </a>{" "}
           and{" "}
-          <a href="/privacy" className="font-semibold hover:text-white underline underline-offset-4">
+          <a href="/privacy" className="font-semibold hover:text-slate-900 lg:hover:text-white underline underline-offset-4">
             Privacy Policy
           </a>
           .
