@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, useEffect } from "react";
+import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout";
 import { Footer } from "@repo/ui";
 import type { Listing } from "@/types/listing";
-import { ListingsSearchBar } from "@/components/listings/ListingsSearchBar";
+import { ExploreLocationSearch } from "@/components/listings/ExploreLocationSearch";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessageContext";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
@@ -26,7 +26,6 @@ function LocationRow({
   likedIds: Set<string>;
   onToggleLike: (id: string) => void;
 }) {
-  const router = useRouter();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -39,12 +38,6 @@ function LocationRow({
   const visibleListings = listings.slice(0, 8);
   const hasMore = listings.length > 8;
   const sectionTitle =
-    browseTab === "homes"
-      ? `Available in ${locationKey}`
-      : browseTab === "experiences"
-        ? `Experiences in ${locationKey}`
-        : `Services in ${locationKey}`;
-  const sectionTitleMobile =
     browseTab === "homes"
       ? `Available in ${cityShort}`
       : browseTab === "experiences"
@@ -69,37 +62,27 @@ function LocationRow({
     const amount = Math.max(320, Math.floor(el.clientWidth * 0.9));
     el.scrollBy({ left: direction === "left" ? -amount : amount, behavior: "smooth" });
   };
-
+  //The 3 circle buttons (view-all + scroll left/right):
   return (
     <section className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-3">
-            <Link href={href} className="min-w-0">
+          <div className="">
+            <Link href={href} className="flex items-center md:justify-start md:gap-6 justify-between">
               <h2 className="font-display font-bold text-base sm:text-lg text-slate-900 truncate">
-                <span className="md:hidden">{sectionTitleMobile}</span>
-                <span className="hidden md:inline">{sectionTitle}</span>
+                {/* <span className="md:hidden">{sectionTitleMobile}</span> */}
+                <span className="font-display tracking-wide text-lg">{sectionTitle}</span>
               </h2>
-            </Link>
-            <span className="hidden md:flex w-8 h-8 rounded-full bg-white border border-slate-200 items-center justify-center shadow-sm hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 transition-colors">
-              <i className="ph ph-arrow-right"></i>
-            </span>
+              <span className="flex justify-center items-center w-8 h-8 rounded-full bg-white border border-slate-200 items-center justify-center shadow-sm hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 transition-colors">
+                <i className="ph ph-arrow-right"></i>
+              </span>
+            </Link>  
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-sm sm:text-sm text-slate-500">
             {listings.length} verified {itemLabel}
             {listings.length === 1 ? "" : "s"}
           </p>
         </div>
-
-        <button
-          type="button"
-          onClick={() => router.push(href)}
-          className="sm:hidden w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-700 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 transition-colors flex-shrink-0 relative z-10"
-          aria-label={`View all in ${locationKey}`}
-        >
-          <i className="ph ph-arrow-right"></i>
-        </button>
-
         <div className="hidden lg:flex items-center gap-2">
           <button
             type="button"
@@ -131,10 +114,10 @@ function LocationRow({
           <Link
             key={listing.id}
             href={`/listings/${encodeURIComponent(listing.id)}`}
-            className="snap-start shrink-0 w-[280px] sm:w-[320px] group bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:border-brand-200 block"
+            className="snap-start shrink-0 w-[280px] sm:w-[300px] group rounded-[32px] transition-all hover:shadow-sm hover:border-brand-200 block"
           >
             <motion.div whileHover={{ y: -4 }}>
-              <div className="aspect-[4/3] relative overflow-hidden">
+              <div className="aspect-[4/3] relative overflow-hidden rounded-[32px]">
                 <img
                   src={
                     listing.photos[0] ||
@@ -167,19 +150,19 @@ function LocationRow({
                   <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-xl`}></i>
                 </button>
               </div>
-              <div className="p-6">
+              <div className="px-4 pt-2 bg-none">
                 <div className="flex items-center justify-between gap-3 mb-1">
-                  <h3 className="font-bold text-slate-900 text-lg line-clamp-1 group-hover:text-brand-600 transition-colors">
+                  {/* <h3 className="font-bold text-slate-900 text-lg line-clamp-1 group-hover:text-brand-600 transition-colors">
                     {listing.title}
-                  </h3>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
+                  </h3> */}
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-100 px-4 py-2 rounded-full">
                     {listing.type.replaceAll("_", " ")}
                   </span>
                 </div>
-                <p className="text-slate-500 text-sm line-clamp-2 mb-4">
-                  {listing.address.street}, {listing.address.city}, {listing.address.province}
+                <p className="text-slate-500 text-sm line-clamp-2 pb-1">
+                  {listing.address.city}, {listing.address.province}
                 </p>
-                <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between border-t pb-4 border-slate-100">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-bold text-slate-900">₦{listing.price.toLocaleString()}</span>
                     <span className="text-xs text-slate-500">/ {listing.paymentFrequency.toLowerCase()}</span>
@@ -240,18 +223,19 @@ function LocationRow({
 
 
 
-export default function ListingsPage() {
-  const { user } = useAuth();
+function ListingsPageContent() {
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { unreadCount } = useMessages();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
-  const [query, setQuery] = useState("");
-  const [selectedType, setSelectedType] = useState<string>("ALL");
-  const [selectedCity, setSelectedCity] = useState<string>("ALL");
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [browseTab, setBrowseTab] = useState<"homes" | "experiences" | "services">("homes");
-  const { hidden: mobileNavHidden } = useAutoHideOnScroll({ mode: "window", enabled: !!user });
+  const { hidden: mobileNavHidden } = useAutoHideOnScroll({ mode: "window", enabled: !authLoading && isAuthenticated });
+  const [mobileTabsCompact, setMobileTabsCompact] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [mobileWhereOpen, setMobileWhereOpen] = useState(false);
+  const [mobileWhereQuery, setMobileWhereQuery] = useState("");
 
   useEffect(() => {
     const t = searchParams.get("tab");
@@ -295,6 +279,30 @@ export default function ListingsPage() {
     return () => window.removeEventListener("likesUpdated", sync);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      setMobileTabsCompact(window.scrollY > 48);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!mobileSearchOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileSearchOpen]);
+
+  useEffect(() => {
+    if (mobileSearchOpen) return;
+    setMobileWhereOpen(false);
+    setMobileWhereQuery("");
+  }, [mobileSearchOpen]);
+
   const toggleLike = (id: string) => {
     if (typeof window === "undefined") return;
     try {
@@ -321,39 +329,25 @@ export default function ListingsPage() {
     });
   }, [browseTab, listings]);
 
-  const typeOptions = useMemo(() => Array.from(new Set(listingsForTab.map((l) => l.type))).sort(), [listingsForTab]);
-  const cityOptions = useMemo(() => Array.from(new Set(listingsForTab.map((l) => l.address.city))).sort(), [listingsForTab]);
-
-  useEffect(() => {
-    if (selectedType !== "ALL" && !typeOptions.includes(selectedType)) setSelectedType("ALL");
-    if (selectedCity !== "ALL" && !cityOptions.includes(selectedCity)) setSelectedCity("ALL");
-  }, [browseTab, cityOptions, selectedCity, selectedType, typeOptions]);
-
-  const filtered = listingsForTab.filter((l) => {
-    const matchesType = selectedType === "ALL" ? true : l.type === selectedType;
-    const matchesCity = selectedCity === "ALL" ? true : l.address.city === selectedCity;
-    const haystack = [
-      l.title,
-      l.address.building,
-      l.address.street,
-      l.address.district,
-      l.address.city,
-      l.address.province,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    const matchesQuery = query.trim() === "" ? true : haystack.includes(query.trim().toLowerCase());
-    return matchesType && matchesCity && matchesQuery;
-  });
-
   const groupedByLocation = useMemo(() => {
-    return filtered.reduce<Record<string, Listing[]>>((acc, listing) => {
+    return listingsForTab.reduce<Record<string, Listing[]>>((acc, listing) => {
       const key = `${listing.address.city}, ${listing.address.province}`;
       acc[key] = acc[key] ? [...acc[key], listing] : [listing];
       return acc;
     }, {});
-  }, [filtered]);
+  }, [listingsForTab]);
+
+  const searchLocationOptions = useMemo(() => {
+    const unique = new Set<string>();
+    for (const listing of listings) {
+      const city = listing.address?.city ?? "";
+      const province = listing.address?.province ?? "";
+      const key = `${city}, ${province}`.trim();
+      if (key && key !== ",") unique.add(key);
+    }
+    return Array.from(unique).sort((a, b) => a.localeCompare(b));
+  }, [listings]);
+
 
   const emptyTitle =
     browseTab === "homes" ? "No Listings Yet" : browseTab === "experiences" ? "No experiences yet" : "No services yet";
@@ -364,19 +358,23 @@ export default function ListingsPage() {
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      {/* Header */}
-      <div className="hidden md:block">
-        <Header />
+      {/* sm:screen header */}
+      <div className="fixed right-0 top-0 z-50 gap-16 w-full">
+        <div className="md:hidden bg-white py-3 px-3">
+            <ExploreLocationSearch browseTab={browseTab} locationOptions={searchLocationOptions} />
+        </div>
+        <div className="md:block shadow-md md:shadow-sm">
+          <Header />
+        </div>
       </div>
 
       {/* Hero Section for Listings */}
-      <section className="relative pt-6 md:pt-24 pb-6 md:pb-12 overflow-visible z-10 bg-gradient-to-b from-gray-100 via-gray-50 to-gray-100">
+      <section className="hidden md:block relative mt-16 md:mt-4 pt-2 md:pt-28 pb-6 md:pb-12 overflow-visible z-10 bg-gradient-to-b from-gray-100 via-gray-50 to-gray-100">
         {/* Background Effects */}
         <div className="absolute inset-0 bg-grid-pattern bg-[length:30px_30px] opacity-50" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-brand-400/10 rounded-full blur-[120px]" />
-        
-        <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-          {/* Page Title */}
+
+        <div className="max-w-7xl mx-auto mt-16 md:mt-4 md:px-6 relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -391,82 +389,17 @@ export default function ListingsPage() {
             </p>
           </motion.div>
 
-          {/* Search Bar */}
-          <div className="max-w-4xl mx-auto">
-            <ListingsSearchBar
-              query={query}
-              onQueryChange={setQuery}
-              selectedCity={selectedCity}
-              onCityChange={setSelectedCity}
-              cityOptions={[{ label: "All locations", value: "ALL" }, ...cityOptions.map((c) => ({ label: c, value: c }))]}
-              selectedType={selectedType}
-              onTypeChange={setSelectedType}
-              typeOptions={[{ label: "All types", value: "ALL" }, ...typeOptions.map((t) => ({ label: t.replaceAll("_", " "), value: t }))]}
-              showCity
-              showType
-              showSearchButton
-              variant="hero"
-            />
-          </div>
-
-          <div className="md:hidden mt-4 flex items-center justify-center">
-            <div className="bg-white/80 backdrop-blur rounded-2xl border border-slate-200 shadow-sm px-4 py-3 w-full max-w-2xl">
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  type="button"
-                  onClick={() => updateTab("homes")}
-                  className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-colors ${
-                    browseTab === "homes" ? "text-slate-900" : "text-slate-500"
-                  }`}
-                >
-                  <i className="ph-bold ph-house-line text-2xl"></i>
-                  <span className="text-xs font-bold">Homes</span>
-                  <span className={`h-1 w-10 rounded-full ${browseTab === "homes" ? "bg-slate-900" : "bg-transparent"}`} />
-                </button>
-                <button
-                  disabled
-                  type="button"
-                  onClick={() => updateTab("experiences")}
-                  className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-colors ${
-                    browseTab === "experiences" ? "text-slate-900" : "text-slate-500"
-                  }`}
-                >
-                  <div className="relative">
-                    <i className="ph-bold ph-balloon text-2xl"></i>
-                    <span className="absolute -top-2 -right-4 text-[10px] font-bold bg-slate-900 text-white px-2 py-0.5 rounded-full">
-                      soon
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold">Experiences</span>
-                  <span className={`h-1 w-10 rounded-full ${browseTab === "experiences" ? "bg-slate-900" : "bg-transparent"}`} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateTab("services")}
-                  className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl transition-colors ${
-                    browseTab === "services" ? "text-slate-900" : "text-slate-500"
-                  }`}
-                >
-                  <div className="relative">
-                    <i className="ph-bold ph-bell-ringing text-2xl"></i>
-                    <span className="absolute -top-2 -right-4 text-[10px] font-bold bg-slate-900 text-white px-2 py-0.5 rounded-full">
-                      soon
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold">Services</span>
-                  <span className={`h-1 w-10 rounded-full ${browseTab === "services" ? "bg-slate-900" : "bg-transparent"}`} />
-                </button>
-              </div>
-            </div>
+          <div className="hidden md:block w-full max-w-4xl mx-auto sm:px-16">
+            <ExploreLocationSearch browseTab={browseTab} locationOptions={searchLocationOptions} />
           </div>
         </div>
       </section>
-
+      
       {/* Results Section */}
-      <section className="px-4 pb-24 pt-2 md:p-16">
+      <section className="pb-24 pt-[60px] mt-[160px] md:mt-4 md:p-16 md:pt-12">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           {Object.keys(groupedByLocation).length > 0 ? (
-            <div className="space-y-10 md:space-y-12">
+            <div className="space-y-6 md:space-y-8">
               {Object.entries(groupedByLocation).map(([locationKey, locationListings]) => (
                 <LocationRow
                   key={locationKey}
@@ -506,24 +439,40 @@ export default function ListingsPage() {
         <Footer />
       </div>
 
-      {user ? (
+      {!authLoading ? (
         <BottomTabNav
-          hidden={mobileNavHidden}
-          items={[
-            { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
-            { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
-            { key: "trips", href: "/user/bookings", label: "Trips", iconClassName: "ph-bold ph-suitcase text-xl" },
-            {
-              key: "messages",
-              href: "/user/messages",
-              label: "Messages",
-              iconClassName: "ph-bold ph-chats-circle text-xl",
-              badgeCount: unreadCount,
-            },
-            { key: "profile", href: "/user/profile", label: "Profile", iconClassName: "ph-bold ph-user text-xl" },
-          ]}
+          hidden={isAuthenticated ? mobileNavHidden : false}
+          items={
+            isAuthenticated
+              ? [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "trips", href: "/user/bookings", label: "Trips", iconClassName: "ph-bold ph-suitcase text-xl" },
+                  {
+                    key: "messages",
+                    href: "/user/messages",
+                    label: "Messages",
+                    iconClassName: "ph-bold ph-chats-circle text-xl",
+                    badgeCount: unreadCount,
+                  },
+                  { key: "profile", href: "/user/profile", label: "Profile", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+              : [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "login", href: "/auth/login", label: "Log in", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+          }
         />
       ) : null}
     </main>
+  );
+}
+
+export default function ListingsPage() {
+  return (
+    <Suspense>
+      <ListingsPageContent />
+    </Suspense>
   );
 }

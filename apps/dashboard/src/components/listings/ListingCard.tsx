@@ -124,7 +124,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
           border-2 border-transparent
           shadow-[0_0_0_1px_rgba(0,0,0,0.05)]
           transition-all duration-500 ease-out h-full
-          ${isHovered ? 'shadow-[0_20px_50px_rgba(34,197,94,0.15)] border-green-100' : 'shadow-lg'}
+          ${isHovered ? 'shadow-[0_20px_50px_rgba(34,197,94,0.15)] border-green-100' : 'shadow-sm'}
         `}>
           {/* Background Glow Effect */}
           <div className={`
@@ -134,7 +134,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
           `} />
 
           {/* Image Section - Compact on mobile */}
-          <div className="relative h-32 sm:h-48 md:h-56 overflow-hidden">
+          <div className="relative h-32 md:h-12 overflow-hidden">
             {/* Main Image */}
             <AnimatePresence mode="wait">
               <motion.img
@@ -235,7 +235,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
           </div>
 
           {/* Content Section - Compact on mobile */}
-          <div className="relative p-2 sm:p-4 md:p-5 pb-4 sm:pb-16">
+          <div className="relative p-2 md:p- pb-4">
             {/* Property Type Badge - Hide on mobile */}
             <div className="hidden sm:mb-3 sm:flex items-center gap-2">
               <span className={`

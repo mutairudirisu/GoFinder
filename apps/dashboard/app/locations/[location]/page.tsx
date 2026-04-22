@@ -3,10 +3,10 @@
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import { Header } from "@/components/layout";
 import { Footer } from "@repo/ui";
 import type { Listing } from "@/types/listing";
+import { ListingResultCard } from "@/components/listings/ListingResultCard";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessageContext";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
@@ -31,8 +31,9 @@ function toMarkerPosition(listing: Listing) {
 export default function LocationListingsPage({ params }: { params: Promise<{ location: string }> }) {
   const { location } = use(params);
   const locationKey = decodeURIComponent(String(location ?? "")).trim();
+  const locationCity = locationKey.split(",")[0]?.trim() || locationKey;
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { unreadCount } = useMessages();
 
   const browseTab = useMemo(() => {
@@ -49,6 +50,17 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("ALL");
   const [query, setQuery] = useState("");
+  const [queryDropdownOpen, setQueryDropdownOpen] = useState(false);
+  const queryCloseTimerRef = useRef<number | null>(null);
+  const [mobileQueryOpen, setMobileQueryOpen] = useState(false);
+  const [mobileQueryDraft, setMobileQueryDraft] = useState("");
+  const mobileQueryInputRef = useRef<HTMLInputElement | null>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [priceMin, setPriceMin] = useState<number | "">("");
+  const [priceMax, setPriceMax] = useState<number | "">("");
+  const [bedroomsMin, setBedroomsMin] = useState(0);
+  const [bedsMin, setBedsMin] = useState(0);
+  const [guestsMin, setGuestsMin] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
@@ -62,10 +74,14 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const drawerScrollRef = useRef<HTMLDivElement | null>(null);
   const lastDrawerScrollTopRef = useRef(0);
   const [drawerScrollTop, setDrawerScrollTop] = useState(0);
+  const headerMaxHRef = useRef(0);
+  const fullBleedHRef = useRef(0);
+  const peekHRef = useRef(0);
+  const isDraggingRef = useRef(false);
   const [mapButtonDismissed, setMapButtonDismissed] = useState(false);
   const { hidden: mobileNavHidden } = useAutoHideOnScroll({
     mode: "element",
-    enabled: !!user,
+    enabled: !authLoading && isAuthenticated,
     elementRef: drawerScrollRef,
   });
 
@@ -100,6 +116,27 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     return () => window.removeEventListener("likesUpdated", sync);
   }, []);
 
+  useEffect(() => {
+    if (!filtersOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [filtersOpen]);
+
+  useEffect(() => {
+    if (!mobileQueryOpen) return;
+    setMobileQueryDraft(query);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const t = window.setTimeout(() => mobileQueryInputRef.current?.focus(), 50);
+    return () => {
+      window.clearTimeout(t);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileQueryOpen, query]);
+
   const toggleLike = (id: string) => {
     if (typeof window === "undefined") return;
     try {
@@ -133,6 +170,35 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     return ["ALL", ...Array.from(unique).sort()];
   }, [locationListings]);
 
+  const querySuggestions = useMemo(() => {
+    const seen = new Set<string>();
+    const out: { value: string; kind: "location" | "district" | "street" | "building" | "listing"; subtitle: string }[] = [];
+
+    const add = (value: unknown, kind: "location" | "district" | "street" | "building" | "listing", subtitle: string) => {
+      const v = String(value ?? "").trim();
+      if (!v) return;
+      const key = `${kind}:${v.toLowerCase()}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ value: v, kind, subtitle });
+    };
+
+    add(locationCity, "location", "City");
+    for (const l of locationListings) {
+      add(l.address?.district, "district", "District");
+      add(l.address?.street, "street", "Street");
+      add(l.address?.building, "building", "Building");
+      add(l.title, "listing", itemLabel);
+    }
+    return out;
+  }, [itemLabel, locationCity, locationListings]);
+
+  const visibleQuerySuggestions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    const base = q ? querySuggestions.filter((s) => s.value.toLowerCase().includes(q)) : querySuggestions;
+    return base.slice(0, 10);
+  }, [query, querySuggestions]);
+
   useEffect(() => {
     if (selectedType !== "ALL" && !typeOptions.includes(selectedType)) setSelectedType("ALL");
   }, [selectedType, typeOptions]);
@@ -140,22 +206,52 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const filteredListings = useMemo(() => {
     const byType = selectedType === "ALL" ? locationListings : locationListings.filter((l) => l.type === selectedType);
     const q = query.trim().toLowerCase();
-    if (!q) return byType;
-    return byType.filter((l) => {
-      const hay = [
-        l.title,
-        l.address.building,
-        l.address.street,
-        l.address.district,
-        l.address.city,
-        l.address.province,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(q);
+    const base = q
+      ? byType.filter((l) => {
+          const hay = [
+            l.title,
+            l.address.building,
+            l.address.street,
+            l.address.district,
+            l.address.city,
+            l.address.province,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return hay.includes(q);
+        })
+      : byType;
+
+    const min = priceMin === "" ? null : Number(priceMin);
+    const max = priceMax === "" ? null : Number(priceMax);
+
+    return base.filter((l) => {
+      if (min !== null && Number.isFinite(min) && l.price < min) return false;
+      if (max !== null && Number.isFinite(max) && l.price > max) return false;
+      if (bedroomsMin > 0 && Number(l.basics?.bedrooms ?? 0) < bedroomsMin) return false;
+      if (bedsMin > 0 && Number(l.basics?.beds ?? 0) < bedsMin) return false;
+      if (guestsMin > 1 && Number(l.basics?.guests ?? 0) < guestsMin) return false;
+      return true;
     });
-  }, [locationListings, selectedType, query]);
+  }, [locationListings, selectedType, query, priceMin, priceMax, bedroomsMin, bedsMin, guestsMin]);
+
+  const activeFiltersCount =
+    (selectedType !== "ALL" ? 1 : 0) +
+    (priceMin !== "" ? 1 : 0) +
+    (priceMax !== "" ? 1 : 0) +
+    (bedroomsMin > 0 ? 1 : 0) +
+    (bedsMin > 0 ? 1 : 0) +
+    (guestsMin > 1 ? 1 : 0);
+
+  const clearFilters = () => {
+    setSelectedType("ALL");
+    setPriceMin("");
+    setPriceMax("");
+    setBedroomsMin(0);
+    setBedsMin(0);
+    setGuestsMin(1);
+  };
 
   const activeListing = useMemo(() => {
     if (!activeId) return null;
@@ -191,9 +287,12 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   }, [locationKey]);
 
   const topLimit = topBarBottom ? topBarBottom + 12 : 0;
-  const fullH = viewportH ? Math.max(280, viewportH - topLimit) : 680;
-  const peekH = viewportH ? Math.min(Math.round(viewportH * 0.42), fullH) : 320;
-  const midH = viewportH ? Math.min(Math.round(viewportH * 0.6), fullH) : 520;
+  const bottomNavH = 64;
+  const availableH = viewportH ? Math.max(280, viewportH - bottomNavH) : 680;
+  const headerMaxH = viewportH ? Math.max(280, viewportH - topLimit - bottomNavH) : 680;
+  const fullBleedH = viewportH ? availableH : 740;
+  const peekH = viewportH ? Math.min(Math.round(availableH * 0.42), headerMaxH) : 320;
+  const midH = viewportH ? Math.min(Math.round(availableH * 0.6), headerMaxH) : 520;
   const topBarElevated = (sheetH || peekH) > midH - 24;
   const collapsedH = Math.min(124, peekH);
   const sheetCurrentH = sheetH || peekH;
@@ -201,9 +300,16 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const mapButtonVisible = !isCollapsed && !mapButtonDismissed && drawerScrollTop > 80;
 
   useEffect(() => {
+    headerMaxHRef.current = headerMaxH;
+    fullBleedHRef.current = fullBleedH;
+    peekHRef.current = peekH;
+    isDraggingRef.current = isDragging;
+  }, [fullBleedH, headerMaxH, isDragging, peekH]);
+
+  useEffect(() => {
     if (!viewportH) return;
-    setSheetH((prev) => (prev > 0 ? Math.min(Math.max(prev, peekH), fullH) : peekH));
-  }, [fullH, peekH, viewportH]);
+    setSheetH((prev) => (prev > 0 ? Math.min(Math.max(prev, peekH), headerMaxH) : peekH));
+  }, [headerMaxH, peekH, viewportH]);
 
   useEffect(() => {
     if (!isCollapsed) setMapButtonDismissed(false);
@@ -211,7 +317,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   const snapSheet = (next: number) => {
     let target = peekH;
-    const options = [collapsedH, peekH, midH, fullH];
+    const options = [collapsedH, peekH, midH, headerMaxH];
     for (const v of options) {
       if (Math.abs(v - next) < Math.abs(target - next)) target = v;
     }
@@ -228,7 +334,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const onHandlePointerMove = (e: React.PointerEvent) => {
     if (!isDragging) return;
     const delta = dragStartYRef.current - e.clientY;
-    const next = Math.min(fullH, Math.max(collapsedH, dragStartHRef.current + delta));
+    const next = Math.min(headerMaxH, Math.max(collapsedH, dragStartHRef.current + delta));
     setSheetH(next);
   };
 
@@ -246,8 +352,28 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       raf = window.requestAnimationFrame(() => {
         raf = 0;
         const top = el.scrollTop;
+        const prevTop = lastDrawerScrollTopRef.current;
+        const delta = top - prevTop;
         lastDrawerScrollTopRef.current = top;
         setDrawerScrollTop(top);
+
+        if (isDraggingRef.current) return;
+
+        if (delta > 0) {
+          setSheetH((prev) => {
+            const base = prev > 0 ? prev : peekHRef.current;
+            const next = Math.min(
+              fullBleedHRef.current,
+              Math.max(base, headerMaxHRef.current) + Math.min(24, delta)
+            );
+            return next;
+          });
+          return;
+        }
+
+        if (delta < 0 && top <= 6) {
+          setSheetH(peekHRef.current);
+        }
       });
     };
     el.addEventListener("scroll", onScroll, { passive: true });
@@ -259,275 +385,143 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      <div className="hidden md:block">
+      <div ref={topBarRef} className="fixed top-0 z-50 w-full flex flex-col bg-red-200">
         <Header
           hideCenterTabs
           centerContent={
-            <div className="w-full bg-white border border-slate-200 rounded-full shadow-sm overflow-hidden flex items-center">
-              <div className="flex items-center gap-2 px-4 py-3 font-bold text-slate-800 shrink-0">
-                <i className={`ph ${headerIcon} text-slate-600`}></i>
-                <span className="truncate max-w-[220px]">
-                  {browseTab === "homes" ? "Homes" : browseTab === "experiences" ? "Experiences" : "Services"} in {locationKey}
-                </span>
-              </div>
-              <div className="h-8 w-px bg-slate-200" />
-              <div className="flex-1 flex items-center gap-3 px-4 py-3">
-                <i className="ph ph-magnifying-glass text-slate-400"></i>
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search in ${locationKey}...`}
-                  className="w-full bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400"
-                />
-                {query.trim() !== "" ? (
-                  <button
-                    type="button"
-                    onClick={() => setQuery("")}
-                    className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-brand-50 hover:text-brand-700 transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <i className="ph ph-x text-sm"></i>
-                  </button>
-                ) : null}
+            <div className="">
+              <div className="flex gap-4 items-center mb-6 md:mb-0">
+                <Link
+                  href="/"
+                  className=" shrink-0 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-colors"
+                  aria-label="Back to dashboard"
+                >
+                  <i className="ph-bold ph-arrow-left text-lg" />
+                </Link>
+                <div className="relative flex-1 w-[230px] md:max-w-[760px]">
+                  <div className="bg-white border border-slate-200 rounded-full shadow-sm overflow-hidden flex items-center">
+                    <div className="flex items-center gap-2 px-4 py-3 font-bold text-slate-800 shrink-0 hidden md:flex">
+                      <i className={`ph ${headerIcon} text-slate-600`}></i>
+                      <span className="truncate max-w-[220px]">
+                        {browseTab === "homes" ? "Homes" : browseTab === "experiences" ? "Experiences" : "Services"} in {locationCity}
+                      </span>
+                    </div>
+                    <div className="h-8 w-px bg-slate-200" />
+                    <div className="flex-1 flex items-center gap-3 px-4 py-3">
+                      <i className="ph ph-magnifying-glass text-slate-400"></i>
+                      <input
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onFocus={() => {
+                          if (queryCloseTimerRef.current) window.clearTimeout(queryCloseTimerRef.current);
+                          setQueryDropdownOpen(true);
+                        }}
+                        onBlur={() => {
+                          queryCloseTimerRef.current = window.setTimeout(() => setQueryDropdownOpen(false), 120);
+                        }}
+                        placeholder={`Search in ${locationCity}...`}
+                        className="w-full bg-transparent outline-none py-2 text-sm text-slate-900 placeholder:text-slate-400"
+                      />
+                      {query.trim() !== "" ? (
+                        <button
+                          type="button"
+                          onClick={() => setQuery("")}
+                          className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-brand-50 hover:text-brand-700 transition-colors"
+                          aria-label="Clear search"
+                        >
+                          <i className="ph ph-x text-sm"></i>
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+
+                  {/* search suggestions */}
+
+                  {queryDropdownOpen ? (
+                    <div className="absolute w-[360px] items-center -left-[52px] right-0 top-full mt-3 bg-white rounded-[18px] border border-slate-200 shadow-2xl overflow-hidden">
+                      <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
+                        <div className="text-xs font-bold text-slate-600">Suggested</div>
+                        <button
+                          type="button"
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => setQueryDropdownOpen(false)}
+                          className="text-xs underline font-bold text-red-500 hover:text-slate-900 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <div className="max-h-[45vh] overflow-y-auto px-2 pb-4">
+                        {visibleQuerySuggestions.map((s) => {
+                          const icon =
+                            s.kind === "location"
+                              ? "ph-map-pin"
+                              : s.kind === "district"
+                                ? "ph-compass"
+                                : s.kind === "street"
+                                  ? "ph-road-horizon"
+                                  : s.kind === "building"
+                                    ? "ph-buildings"
+                                    : "ph-house-line";
+                          return (
+                            <button
+                              key={`${s.kind}:${s.value}`}
+                              type="button"
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => {
+                                setQuery(s.value);
+                                setQueryDropdownOpen(false);
+                              }}
+                              className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-slate-50 transition-colors"
+                            >
+                              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
+                                <i className={`ph-bold ${icon} text-2xl text-slate-700`} />
+                              </div>
+                              <div className="text-left min-w-0">
+                                <div className="font-bold text-slate-900 truncate">{s.value}</div>
+                                <div className="text-sm text-slate-500 truncate">{s.subtitle}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+
+                {/* Filter button */}
+
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(true)}
+                  className="shrink-0 px-4 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center gap-2 font-bold text-slate-800 hover:bg-slate-50 transition-colors"
+                >
+                  <i className="ph-bold ph-sliders-horizontal text-lg" />
+                  <span className="text-sm hidden md:block">Filters</span>
+                  {activeFiltersCount > 0 ? (
+                    <span className="ml-1 min-w-6 h-6 px-2 rounded-full bg-slate-900 text-white text-xs font-bold inline-flex items-center justify-center">
+                      {activeFiltersCount}
+                    </span>
+                  ) : null}
+                </button>
               </div>
             </div>
           }
         />
       </div>
 
-      <div className="md:hidden fixed inset-0 bg-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100" />
-        <div className="absolute inset-0 bg-grid-pattern bg-[length:32px_32px] opacity-40" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 via-transparent to-brand-accent/10" />
-
-        <div ref={topBarRef} className="absolute left-4 right-4 top-4 z-40 flex items-center gap-3">
-          <Link
-            href={`/${browseTab === "homes" ? "" : `?tab=${encodeURIComponent(browseTab)}`}`}
-            className="w-11 h-11 rounded-full bg-white/90 backdrop-blur border border-slate-200 shadow-sm flex items-center justify-center text-slate-700"
-            aria-label="Back"
-          >
-            <i className="ph-bold ph-caret-left text-lg"></i>
-          </Link>
-          <div
-            className={`flex-1 bg-white/90 backdrop-blur border border-slate-200 rounded-full px-4 py-3 flex items-center justify-between gap-3 ${
-              topBarElevated ? "shadow-[0_12px_30px_rgba(0,0,0,0.14)]" : "shadow-sm"
-            }`}
-          >
-            <div className="min-w-0">
-              <div className="text-sm font-bold text-slate-900 truncate">
-                {browseTab === "homes" ? "Homes" : browseTab === "experiences" ? "Experiences" : "Services"} in {locationKey}
-              </div>
-              <div className="text-[11px] text-slate-500 truncate">{query.trim() ? query : "Tap a pin to preview"}</div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center">
-              <i className="ph-bold ph-sliders-horizontal"></i>
-            </div>
-          </div>
-        </div>
-
-        {filteredListings.map((listing) => {
-          const pos = toMarkerPosition(listing);
-          const isActive = String(listing.id) === activeId;
-          return (
-            <div
-              key={listing.id}
-              className="absolute -translate-x-1/2 -translate-y-1/2 z-20"
-              style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveId(String(listing.id));
-                  snapSheet(midH);
-                }}
-                className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all ${
-                  isActive
-                    ? "bg-slate-900 text-white border-slate-900 scale-105"
-                    : "bg-white text-slate-900 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
-                }`}
-              >
-                ₦{listing.price.toLocaleString()}
-              </button>
-            </div>
-          );
-        })}
-
-        <div
-          className={`fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-[28px] border-t border-slate-200 shadow-[0_-12px_40px_rgba(0,0,0,0.12)] ${
-            isDragging ? "" : "transition-[height] duration-200"
-          }`}
-          style={{ height: sheetH || peekH }}
-        >
-          <div
-            className="w-full pt-3 pb-2 flex flex-col items-center gap-2 touch-none"
-            onPointerDown={onHandlePointerDown}
-            onPointerMove={onHandlePointerMove}
-            onPointerUp={onHandlePointerUp}
-            onPointerCancel={onHandlePointerUp}
-          >
-            <div className="w-12 h-1.5 rounded-full bg-slate-300" />
-            <div className="flex items-center justify-between w-full px-4">
-              <div className="font-bold text-slate-900">
-                {filteredListings.length} {itemLabel.toLowerCase()}
-                {filteredListings.length === 1 ? "" : "s"}
-              </div>
-              <button
-                type="button"
-                onClick={() => snapSheet(sheetH > midH ? peekH : fullH)}
-                className="text-sm font-bold text-brand-700"
-              >
-                {sheetH > midH ? "Collapse" : "Expand"}
-              </button>
-            </div>
-          </div>
-
-          <div ref={drawerScrollRef} className="px-4 pb-24 h-[calc(100%-56px)] overflow-y-auto">
-            {isCollapsed ? (
-              <div className="h-2" />
-            ) : isLoading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="bg-white rounded-[22px] border border-slate-200 overflow-hidden shadow-sm">
-                    <div className="h-32 bg-slate-200 animate-pulse" />
-                    <div className="p-4 space-y-2">
-                      <div className="h-4 w-2/3 bg-slate-200 rounded-lg animate-pulse" />
-                      <div className="h-3 w-1/2 bg-slate-200 rounded-lg animate-pulse" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredListings.length === 0 ? (
-              <div className="bg-white rounded-[22px] border border-slate-200 p-8 text-center">
-                <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                  <i className={`ph ${headerIcon} text-2xl text-slate-300`}></i>
-                </div>
-                <div className="text-lg font-bold text-slate-900">No results</div>
-                <div className="text-sm text-slate-500 mt-1">Try changing filters.</div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredListings.map((listing) => {
-                  const isActive = String(listing.id) === activeId;
-                  return (
-                    <Link
-                      key={listing.id}
-                      href={`/listings/${encodeURIComponent(String(listing.id))}`}
-                      onClick={() => setActiveId(String(listing.id))}
-                      className={`group bg-white rounded-[24px] border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:border-brand-200 block ${
-                        isActive ? "border-brand-300 shadow-xl" : "border-slate-200"
-                      }`}
-                    >
-                      <div className="aspect-[4/3] relative overflow-hidden">
-                        <img
-                          src={
-                            listing.photos[0] ||
-                            "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=960&auto=format&fit=crop"
-                          }
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                        />
-                        <div className="absolute top-3 left-3">
-                          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-lg border border-slate-100">
-                            <div className="w-2 h-2 rounded-full bg-brand-500"></div>
-                            <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Verified</span>
-                          </div>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleLike(String(listing.id));
-                          }}
-                          className={`absolute top-3 right-3 w-10 h-10 rounded-full border border-white/50 backdrop-blur-md flex items-center justify-center transition-colors ${
-                            likedIds.has(String(listing.id))
-                              ? "bg-white/90 text-brand-600 hover:bg-white"
-                              : "bg-black/20 text-white hover:bg-white/90 hover:text-brand-700"
-                          }`}
-                          aria-label={likedIds.has(String(listing.id)) ? "Remove from wishlist" : "Save to wishlist"}
-                        >
-                          <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-xl`}></i>
-                        </button>
-                      </div>
-
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-3 mb-1">
-                          <div className="min-w-0">
-                            <div className="font-bold text-slate-900 text-sm line-clamp-1 group-hover:text-brand-600 transition-colors">
-                              {listing.title}
-                            </div>
-                            <div className="text-xs text-slate-500 line-clamp-1">
-                              {listing.address.city}, {listing.address.province}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-3 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-bold text-slate-900">₦{listing.price.toLocaleString()}</span>
-                            <span className="text-[10px] text-slate-500">/ {listing.paymentFrequency.toLowerCase()}</span>
-                          </div>
-                          <div className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
-                            {listing.type.replaceAll("_", " ")}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {mapButtonVisible ? (
-          <div className={`fixed left-1/2 -translate-x-1/2 z-[55] ${mobileNavHidden ? "bottom-6" : "bottom-24"}`}>
-            <button
-              type="button"
-              onClick={() => {
-                setSheetH(collapsedH);
-                setMapButtonDismissed(true);
-                drawerScrollRef.current?.scrollTo({ top: 0 });
-                setDrawerScrollTop(0);
-              }}
-              className="px-5 py-3 rounded-full bg-slate-900 text-white font-bold shadow-xl border border-white/10 flex items-center gap-2"
-            >
-              <i className="ph-bold ph-map-trifold text-lg"></i>
-              Map
-            </button>
-          </div>
-        ) : null}
-
-        {user ? (
-          <BottomTabNav
-            zIndexClassName="z-[60]"
-            hidden={mobileNavHidden}
-            items={[
-              { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
-              { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
-              { key: "trips", href: "/user/bookings", label: "Trips", iconClassName: "ph-bold ph-suitcase text-xl" },
-              {
-                key: "messages",
-                href: "/user/messages",
-                label: "Messages",
-                iconClassName: "ph-bold ph-chats-circle text-xl",
-                badgeCount: unreadCount,
-              },
-              { key: "profile", href: "/user/profile", label: "Profile", iconClassName: "ph-bold ph-user text-xl" },
-            ]}
-          />
-        ) : null}
-      </div>
-
-      <section className="hidden md:block pt-20 md:pt-22 pb-16">
-        <div className=" mx-auto px-4 md:px-12">
+        {/* Listings Section */}
+      <section className="mt-0 md:pt-12 pb-0 md:mt-24 md:pt-22 md:pb-16">
+        <div className="mx-auto px-0 md:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:items-start">
-            <div className="lg:h-[calc(100vh-9rem)] flex flex-col gap-4">
+            {/* Card grid area */}
+            <div className="hidden md:flex lg:h-[calc(100vh-9rem)] flex-col gap-4">
               <div className=" items-center justify-between gap-4">
                 <div className="text-xl text-slate-900 font-medium font-display">
                   {filteredListings.length} {itemLabel.toLowerCase()}
                   {filteredListings.length === 1 ? "" : "s"} within map area
                 </div>
               </div>
-
+                {/* Filter buttons */}
               <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
                 {typeOptions.map((t) => {
                   const isActive = selectedType === t;
@@ -573,83 +567,18 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {filteredListings.map((listing) => {
-                      const isActive = String(listing.id) === activeId;
+                      const id = String(listing.id);
+                      const isActive = id === activeId;
                       return (
-                        <Link
+                        <ListingResultCard
                           key={listing.id}
-                          href={`/listings/${encodeURIComponent(String(listing.id))}`}
-                          onMouseEnter={() => setActiveId(String(listing.id))}
-                          className={`group bg-white rounded-[32px] border shadow-sm overflow-hidden transition-all hover:shadow-xl hover:border-brand-200 block ${
-                            isActive ? "border-brand-300 shadow-xl" : "border-slate-200"
-                          }`}
-                        >
-                          <motion.div whileHover={{ y: -4 }}>
-                            <div className="aspect-[4/3] relative overflow-hidden">
-                              <img
-                                src={
-                                  listing.photos[0] ||
-                                  "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop"
-                                }
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                              />
-                              <div className="absolute top-4 left-4">
-                                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-lg border border-slate-100">
-                                  <div className="w-2 h-2 rounded-full bg-brand-500"></div>
-                                  <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                                    Verified
-                                  </span>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  toggleLike(String(listing.id));
-                                }}
-                                className={`absolute top-4 right-4 w-10 h-10 rounded-full border border-white/50 backdrop-blur-md flex items-center justify-center transition-colors ${
-                                  likedIds.has(String(listing.id))
-                                    ? "bg-white/90 text-brand-600 hover:bg-white"
-                                    : "bg-black/20 text-white hover:bg-white/90 hover:text-brand-700"
-                                }`}
-                                aria-label={likedIds.has(String(listing.id)) ? "Remove from wishlist" : "Save to wishlist"}
-                              >
-                                <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-xl`}></i>
-                              </button>
-                            </div>
-
-                            <div className="p-6">
-                              <div className="flex items-center justify-between gap-3 mb-1">
-                                <h3 className="font-bold text-slate-900 text-base line-clamp-1 group-hover:text-brand-600 transition-colors">
-                                  {listing.title}
-                                </h3>
-                                <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
-                                  {listing.type.replaceAll("_", " ")}
-                                </span>
-                              </div>
-                              <p className="text-slate-500 text-sm line-clamp-2 mb-4">
-                                {listing.address.street}, {listing.address.city}, {listing.address.province}
-                              </p>
-
-                              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-sm font-bold text-slate-900">₦{listing.price.toLocaleString()}</span>
-                                  <span className="text-xs text-slate-500">/ {listing.paymentFrequency.toLowerCase()}</span>
-                                </div>
-                                <div className="flex items-center gap-3 text-slate-400">
-                                  <div className="flex items-center gap-1">
-                                    <i className="ph-bold ph-bed"></i>
-                                    <span className="text-xs font-bold">{listing.basics.bedrooms}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <i className="ph-bold ph-bathtub"></i>
-                                    <span className="text-xs font-bold">{listing.basics.beds}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        </Link>
+                          listing={listing}
+                          variant="grid"
+                          isActive={isActive}
+                          liked={likedIds.has(id)}
+                          onToggleLike={() => toggleLike(id)}
+                          onMouseEnter={() => setActiveId(id)}
+                        />
                       );
                     })}
                   </div>
@@ -657,8 +586,10 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
               </div>
             </div>
 
-            <div className="h-[520px] lg:h-[calc(100vh-9rem)]">
-              <div className="relative w-full h-full bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+            {/* Map area */}
+
+            <div className="h-[100dvh] md:h-[calc(100vh-9rem)] lg:h-[calc(100vh-9rem)]">
+              <div className="relative w-full h-full bg-white rounded-none border-0 overflow-hidden shadow-none md:rounded-[32px] md:border md:border-slate-200 md:shadow-sm">
                 <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100" />
                 <div className="absolute inset-0 bg-grid-pattern bg-[length:32px_32px] opacity-40" />
                 <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 via-transparent to-brand-accent/10" />
@@ -681,7 +612,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                         onMouseLeave={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
                         onFocus={() => setHoveredId(String(listing.id))}
                         onBlur={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
-                        className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all ${
+                        className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all z-30 ${
                           isActive
                             ? "bg-slate-900 text-white border-slate-900 scale-105"
                             : "bg-white text-slate-900 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
@@ -693,9 +624,9 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
                       {isHovered ? (
                         <div
-                          className={`absolute top-1/2 ${anchorLeft ? "right-full pr-3" : "left-full pl-3"} -translate-y-1/2 z-30`}
+                          className={`absolute top-10 -left-20 ${anchorLeft ? "right-0 pr-3" : "left-20 pl-3"}  z-50`}
                         >
-                          <div className="w-72 bg-white rounded-[24px] border border-slate-200 shadow-2xl overflow-hidden">
+                          <div className="w-52 bg-white rounded-[24px] border border-slate-200 shadow-2xl overflow-hidden">
                             <div className="aspect-[16/10] relative">
                               <img
                                 src={
@@ -751,7 +682,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 })}
 
                 {activeListing ? (
-                  <div className="absolute left-6 right-6 bottom-6">
+                  <div className="absolute left-6 right-6 bottom-6 hidden">
                     <div className="bg-white rounded-[28px] border border-slate-200 shadow-xl overflow-hidden">
                       <div className="flex gap-4 p-4">
                         <div className="w-24 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
@@ -817,9 +748,248 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
         </div>
       </section>
 
+      {/* Mobile Drawer */}
+
+      <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
+        <div
+          className="w-full bg-white rounded-t-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
+          style={{ height: sheetCurrentH }}
+        >
+          <div
+            className="px-4 pt-3 pb-2 touch-none"
+            onPointerDown={onHandlePointerDown}
+            onPointerMove={onHandlePointerMove}
+            onPointerUp={onHandlePointerUp}
+            onPointerCancel={onHandlePointerUp}
+          >
+            <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-300" />
+          </div>
+
+          <div ref={drawerScrollRef} className="flex-1 overflow-y-auto px-6 pb-8">
+            <div className="flex items-center justify-between gap-4 py-2">
+              <div className="text-sm font-bold text-slate-900 ">
+                {filteredListings.length} {itemLabel.toLowerCase()}
+                {filteredListings.length === 1 ? "" : "s"}
+              </div>
+              <button
+                type="button"
+                onClick={() => snapSheet(isCollapsed ? midH : collapsedH)}
+                className="text-xs font-bold text-slate-700 underline underline-offset-4"
+              >
+                {isCollapsed ? "Expand" : "Collapse"}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto py-6 no-scrollbar">
+              {typeOptions.map((t) => {
+                const isActive = selectedType === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setSelectedType(t)}
+                    className={`shrink-0 px-4 py-2 rounded-full border font-bold text-sm transition-colors ${
+                      isActive
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                    }`}
+                  >
+                    {t === "ALL" ? "All" : t.replaceAll("_", " ")}
+                  </button>
+                );
+              })}
+            </div>
+
+            {isLoading ? (
+              <div className="py-12 text-center text-sm text-slate-500">Loading...</div>
+            ) : filteredListings.length === 0 ? (
+              <div className="py-12 text-center text-sm text-slate-500">No listings found</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-10">
+                {filteredListings.map((listing) => {
+                  const id = String(listing.id);
+                  const isActive = id === activeId;
+                  return (
+                    <ListingResultCard
+                      key={listing.id}
+                      listing={listing}
+                      variant="drawer"
+                      isActive={isActive}
+                      liked={likedIds.has(id)}
+                      onToggleLike={() => toggleLike(id)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {filtersOpen ? (
+        <div className="fixed inset-0 z-[80]">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setFiltersOpen(false)} />
+          <div className="absolute inset-x-0 bottom-0 md:inset-0 md:flex md:items-center md:justify-center">
+            <div className="w-full md:max-w-2xl bg-white rounded-t-[28px] md:rounded-[28px] border border-slate-200 shadow-2xl overflow-hidden max-h-[88dvh] md:max-h-[80vh] flex flex-col">
+              <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-4">
+                <div className="font-display font-bold text-slate-900 text-lg">Filters</div>
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(false)}
+                  className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                  aria-label="Close"
+                >
+                  <i className="ph ph-x text-xl" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+                <div className="space-y-3">
+                  <div className="font-bold text-slate-900">Type of place</div>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                    {typeOptions.map((t) => {
+                      const isActive = selectedType === t;
+                      return (
+                        <button
+                          key={t}
+                          type="button"
+                          onClick={() => setSelectedType(t)}
+                          className={`shrink-0 px-4 py-2 rounded-full border font-bold text-sm transition-colors ${
+                            isActive
+                              ? "bg-slate-900 text-white border-slate-900"
+                              : "bg-white text-slate-700 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
+                          }`}
+                        >
+                          {t === "ALL" ? "Any type" : t.replaceAll("_", " ")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="font-bold text-slate-900">Price range</div>
+                    <div className="text-sm text-slate-500">Trip price, includes all fees</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl border border-slate-200 px-4 py-3 bg-white">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Min</div>
+                      <input
+                        type="number"
+                        value={priceMin}
+                        min={0}
+                        step={5000}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPriceMin(v === "" ? "" : Number(v));
+                        }}
+                        placeholder="0"
+                        className="w-full bg-transparent outline-none font-bold text-slate-900"
+                      />
+                    </div>
+                    <div className="rounded-2xl border border-slate-200 px-4 py-3 bg-white">
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">Max</div>
+                      <input
+                        type="number"
+                        value={priceMax}
+                        min={0}
+                        step={5000}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setPriceMax(v === "" ? "" : Number(v));
+                        }}
+                        placeholder="0"
+                        className="w-full bg-transparent outline-none font-bold text-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="font-bold text-slate-900">Rooms and guests</div>
+                  {[
+                    { label: "Guests", value: guestsMin, setValue: setGuestsMin, min: 1 },
+                    { label: "Bedrooms", value: bedroomsMin, setValue: setBedroomsMin, min: 0 },
+                    { label: "Beds", value: bedsMin, setValue: setBedsMin, min: 0 },
+                  ].map((row) => (
+                    <div key={row.label} className="flex items-center justify-between gap-4">
+                      <div className="font-bold text-slate-700">{row.label}</div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => row.setValue((v: number) => Math.max(row.min, Number(v) - 1))}
+                          className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center font-bold text-slate-900"
+                          aria-label={`Decrease ${row.label}`}
+                        >
+                          -
+                        </button>
+                        <div className="w-10 text-center font-bold text-slate-900">{row.value}</div>
+                        <button
+                          type="button"
+                          onClick={() => row.setValue((v: number) => Number(v) + 1)}
+                          className="w-10 h-10 rounded-full border border-slate-200 bg-white flex items-center justify-center font-bold text-slate-900"
+                          aria-label={`Increase ${row.label}`}
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-6 py-5 border-t border-slate-100 flex items-center justify-between gap-4 bg-white">
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="text-sm font-bold text-slate-700 underline underline-offset-4"
+                >
+                  Clear all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFiltersOpen(false)}
+                  className="px-6 py-3 rounded-2xl bg-slate-900 text-white font-bold shadow-lg"
+                >
+                  Show {filteredListings.length}+
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="hidden md:block">
         <Footer />
       </div>
+
+      {!authLoading ? (
+        <BottomTabNav
+          hidden={isAuthenticated ? mobileNavHidden : false}
+          items={
+            isAuthenticated
+              ? [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "trips", href: "/user/bookings", label: "Trips", iconClassName: "ph-bold ph-suitcase text-xl" },
+                  {
+                    key: "messages",
+                    href: "/user/messages",
+                    label: "Messages",
+                    iconClassName: "ph-bold ph-chats-circle text-xl",
+                    badgeCount: unreadCount,
+                  },
+                  { key: "profile", href: "/user/profile", label: "Profile", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+              : [
+                  { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl", isActive: true },
+                  { key: "wishlists", href: "/user/favorites", label: "Wishlists", iconClassName: "ph-bold ph-heart text-xl" },
+                  { key: "login", href: "/auth/login", label: "Log in", iconClassName: "ph-bold ph-user text-xl" },
+                ]
+          }
+        />
+      ) : null}
     </main>
   );
 }

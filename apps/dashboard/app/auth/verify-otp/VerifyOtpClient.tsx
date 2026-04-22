@@ -152,7 +152,7 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
     >
       <form id="otp-form" onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-4">
-          <label className="block text-sm font-semibold text-white/80">Enter 6-digit code</label>
+          <label className="block text-sm font-semibold text-slate-700 lg:text-white/80">Enter 6-digit code</label>
           <div className="flex gap-2 justify-center">
             {otp.map((digit, index) => (
               <input
@@ -169,7 +169,7 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 disabled={isLoading}
-                className="w-12 h-12 md:w-14 md:h-14 text-center text-xl md:text-2xl font-bold rounded-2xl border border-white/10 bg-white/5 text-white focus:border-brand-400/60 focus:ring-2 focus:ring-brand-accent/20 focus:outline-none transition-all disabled:cursor-not-allowed"
+                className="w-12 h-12 md:w-14 md:h-14 text-center text-xl md:text-2xl font-bold rounded-2xl border border-slate-200 bg-white text-slate-900 focus:border-slate-900 focus:ring-2 focus:ring-slate-200 focus:outline-none transition-all disabled:cursor-not-allowed disabled:bg-slate-50 lg:border-white/10 lg:bg-white/5 lg:text-white lg:focus:border-brand-400/60 lg:focus:ring-brand-accent/20 lg:disabled:bg-white/5"
               />
             ))}
           </div>
@@ -177,31 +177,31 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
 
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
-            <p className="text-sm font-semibold text-red-200">{error}</p>
+            <p className="text-sm font-semibold text-red-700 lg:text-red-200">{error}</p>
           </div>
         )}
 
         <button
           type="submit"
           disabled={isLoading || otp.some((digit) => !digit)}
-          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoading ? "Verifying..." : "Verify & Continue"}
         </button>
 
         <div className="space-y-3 text-center">
-          <p className="text-sm text-white/60">Didn&apos;t receive the code?</p>
+          <p className="text-sm text-slate-500 lg:text-white/60">Didn&apos;t receive the code?</p>
           <button
             type="button"
             onClick={handleResend}
             disabled={resendTimer > 0 || isLoading}
-            className="text-sm font-bold text-white hover:text-white/90 disabled:text-white/40 transition-colors"
+            className="text-sm font-bold text-slate-900 hover:text-slate-900/90 disabled:text-slate-400 transition-colors lg:text-white lg:hover:text-white/90 lg:disabled:text-white/40"
           >
             {resendTimer > 0 ? `Resend in ${resendTimer}s` : "Resend code"}
           </button>
         </div>
 
-        <p className="text-xs text-center text-white/40">Demo: Enter any 6-digit code</p>
+        <p className="text-xs text-center text-slate-400 lg:text-white/40">Demo: Enter any 6-digit code</p>
       </form>
     </AuthLayout>
   );
