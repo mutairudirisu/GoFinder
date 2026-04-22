@@ -612,7 +612,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                         onMouseLeave={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
                         onFocus={() => setHoveredId(String(listing.id))}
                         onBlur={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
-                        className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all ${
+                        className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all z-30 ${
                           isActive
                             ? "bg-slate-900 text-white border-slate-900 scale-105"
                             : "bg-white text-slate-900 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
@@ -624,9 +624,9 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
                       {isHovered ? (
                         <div
-                          className={`absolute top-1/2 ${anchorLeft ? "right-full pr-3" : "left-full pl-3"} -translate-y-1/2 z-30`}
+                          className={`absolute top-10 -left-20 ${anchorLeft ? "right-0 pr-3" : "left-20 pl-3"}  z-50`}
                         >
-                          <div className="w-72 bg-white rounded-[24px] border border-slate-200 shadow-2xl overflow-hidden">
+                          <div className="w-52 bg-white rounded-[24px] border border-slate-200 shadow-2xl overflow-hidden">
                             <div className="aspect-[16/10] relative">
                               <img
                                 src={
@@ -750,7 +750,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
       {/* Mobile Drawer */}
 
-      <div className="fixed inset-x-0 bottom-16 z-40 md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
         <div
           className="w-full bg-white rounded-t-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
           style={{ height: sheetCurrentH }}
@@ -766,7 +766,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
           </div>
 
           <div ref={drawerScrollRef} className="flex-1 overflow-y-auto px-6 pb-8">
-            <div className="flex items-center justify-between gap-6 py-2">
+            <div className="flex items-center justify-between gap-4 py-2">
               <div className="text-sm font-bold text-slate-900 ">
                 {filteredListings.length} {itemLabel.toLowerCase()}
                 {filteredListings.length === 1 ? "" : "s"}
@@ -788,7 +788,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                     key={t}
                     type="button"
                     onClick={() => setSelectedType(t)}
-                    className={`shrink-0 px-4 py-2 rounded-full border font-bold text-xs transition-colors ${
+                    className={`shrink-0 px-4 py-2 rounded-full border font-bold text-sm transition-colors ${
                       isActive
                         ? "bg-slate-900 text-white border-slate-900"
                         : "bg-white text-slate-700 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
@@ -805,7 +805,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
             ) : filteredListings.length === 0 ? (
               <div className="py-12 text-center text-sm text-slate-500">No listings found</div>
             ) : (
-              <div className="grid grid-cols-1 gap-5">
+              <div className="grid grid-cols-1 gap-10">
                 {filteredListings.map((listing) => {
                   const id = String(listing.id);
                   const isActive = id === activeId;
