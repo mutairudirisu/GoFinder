@@ -144,5 +144,104 @@
     "paymentFrequency": "MONTHLY",
     "status": "VERIFIED",
     "createdAt": "2026-04-04T08:31:51.958Z"
+  },
+  {
+    "id": "list_vme74nkjt",
+    "category": "home",
+    "type": "hotel",
+    "spaceType": "room",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "CONR",
+      "unit": "",
+      "street": "123 Bridge street",
+      "district": "",
+      "city": "Enugu",
+      "province": "Enugu",
+      "postalCode": "123456"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac",
+      "wifi",
+      "parking"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "The Cone",
+    "highlights": [
+      "family"
+    ],
+    "description": "Welcome to our family hotel in the heart of Enugu. This space is designed for comfort and style, perfect for those looking for a family experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 120000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-14T08:03:15.450Z"
+  },
+  {
+    "id": "list_33ont2j1y",
+    "category": "home",
+    "type": "apartment",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Mai Gida",
+      "unit": "",
+      "street": "123 faskari street",
+      "district": "",
+      "city": "Faskari",
+      "province": "Jigawa",
+      "postalCode": ""
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "parking",
+      "kitchen",
+      "lounge"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Mai Gida",
+    "highlights": [
+      "unique",
+      "peaceful"
+    ],
+    "description": "Welcome to our unique and peaceful apartment in the heart of Faskari. This space is designed for comfort and style, perfect for those looking for a unique experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-14T08:13:57.713Z"
   }
 ]

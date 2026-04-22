@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import type { Listing } from "@/types/listing";
+import { ListingResultCard } from "@/components/listings/ListingResultCard";
 
 export default function FavoritesPage() {
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
@@ -120,66 +121,18 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {favorites.map((listing) => (
-              <Link
-                key={listing.id}
-                href={`/listings/${encodeURIComponent(String(listing.id))}`}
-                className="group bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-xl hover:border-brand-200 block"
-              >
-                <motion.div whileHover={{ y: -4 }}>
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <img
-                      src={
-                        listing.photos?.[0] ||
-                        "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop"
-                      }
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleLike(String(listing.id));
-                      }}
-                      className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 border border-white/50 backdrop-blur-md flex items-center justify-center text-brand-600 hover:bg-white transition-colors"
-                      aria-label="Remove from wishlist"
-                    >
-                      <i className="ph-fill ph-heart text-xl"></i>
-                    </button>
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center justify-between gap-3 mb-1">
-                      <h3 className="font-bold text-slate-900 text-lg line-clamp-1 group-hover:text-brand-600 transition-colors">
-                        {listing.title}
-                      </h3>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
-                        {listing.type.replaceAll("_", " ")}
-                      </span>
-                    </div>
-                    <p className="text-slate-500 text-sm line-clamp-2 mb-4">
-                      {listing.address.street}, {listing.address.city}, {listing.address.province}
-                    </p>
-                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-bold text-slate-900">₦{listing.price.toLocaleString()}</span>
-                        <span className="text-xs text-slate-500">/ {listing.paymentFrequency.toLowerCase()}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-slate-400">
-                        <div className="flex items-center gap-1">
-                          <i className="ph-bold ph-bed"></i>
-                          <span className="text-xs font-bold">{listing.basics.bedrooms}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <i className="ph-bold ph-bathtub"></i>
-                          <span className="text-xs font-bold">{listing.basics.beds}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              </Link>
-            ))}
+            {favorites.map((listing) => {
+              const id = String(listing.id);
+              return (
+                <ListingResultCard
+                  key={listing.id}
+                  listing={listing}
+                  variant="grid"
+                  liked={likedIds.has(id)}
+                  onToggleLike={() => toggleLike(id)}
+                />
+              );
+            })}
           </div>
         )}
       </motion.div>
