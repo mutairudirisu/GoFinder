@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import confetti from "canvas-confetti";
 import { Listing } from "@/types/listing";
+import { LocationPickerMap } from "@/components/listings/LocationPickerMap";
 
 type Step = 
   | "CATEGORY" 
@@ -14,6 +15,7 @@ type Step =
   | "TELL_US" 
   | "TYPE" 
   | "SPACE_TYPE"
+  | "LOCATION_SEARCH"
   | "ADDRESS"
   | "LOCATION_CONFIRM"
   | "BASICS"
@@ -151,6 +153,106 @@ export default function BecomingAHostPage() {
     }, 1500);
   };
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleUseCurrentLocation = () => {
+    setIsLocating(true);
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setAddress(prev => ({ ...prev, latitude, longitude }));
+          setIsLocating(false);
+          // Automatically move to next step or update map
+          setCurrentStep("ADDRESS");
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setIsLocating(false);
+          alert("Could not get your location. Please enter it manually.");
+        }
+      );
+    } else {
+      setIsLocating(false);
+      alert("Geolocation is not supported by your browser.");
+    }
+  };
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.length < 3) {
+        setSuggestions([]);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+            searchQuery
+          )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=5&proximity=${address.longitude},${address.latitude}`
+        );
+        const data = await response.json();
+        setSuggestions(data.features || []);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const handleSelectSuggestion = (suggestion: any) => {
+    const [lng, lat] = suggestion.center;
+    const placeName = suggestion.place_name;
+    
+    // Parse the place name to fill address fields
+    const context = suggestion.context || [];
+    const street = suggestion.text || "";
+    const city = context.find((c: any) => c.id.startsWith('place'))?.text || "";
+    const province = context.find((c: any) => c.id.startsWith('region'))?.text || "";
+    const country = context.find((c: any) => c.id.startsWith('country'))?.text || "Nigeria";
+    const postalCode = context.find((c: any) => c.id.startsWith('postcode'))?.text || "";
+
+    setAddress(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lng,
+      street: street,
+      city: city,
+      province: province,
+      postalCode: postalCode,
+      country: country === "Nigeria" ? "Nigeria - NG" : country
+    }));
+    
+    setSuggestions([]);
+    setSearchQuery(placeName);
+    setCurrentStep("ADDRESS");
+  };
+
+  const handleSearchAddress = async (query: string) => {
+    if (!query) return;
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          query
+        )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=1`
+      );
+      const data = await response.json();
+      if (data.features && data.features.length > 0) {
+        handleSelectSuggestion(data.features[0]);
+      }
+    } catch (error) {
+      console.error("Error searching address:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
   // Basics state
   const [basics, setBasics] = useState({
     guests: 2,
@@ -168,7 +270,9 @@ export default function BecomingAHostPage() {
     district: "",
     city: "Lagos",
     province: "Lagos State",
-    postalCode: ""
+    postalCode: "",
+    latitude: 6.5244,
+    longitude: 3.3792
   });
   const [showSpecificLocation, setShowSpecificLocation] = useState(true);
 
@@ -244,6 +348,7 @@ export default function BecomingAHostPage() {
     "TELL_US", 
     "TYPE", 
     "SPACE_TYPE",
+    "LOCATION_SEARCH",
     "ADDRESS",
     "LOCATION_CONFIRM",
     "BASICS",
@@ -259,6 +364,44 @@ export default function BecomingAHostPage() {
     "SAFETY",
     "CONGRATS"
   ];
+
+  const isAddressValid = 
+    address.street.length > 0 && 
+    address.city.length > 0 && 
+    address.province.length > 0 && 
+    address.country.length > 0;
+
+  const handleLocationChange = async (lat: number, lng: number) => {
+    setAddress(prev => ({ ...prev, latitude: lat, longitude: lng }));
+    
+    // Reverse geocode if we are in the confirm step to keep address in sync
+    if (currentStep === "LOCATION_CONFIRM") {
+      try {
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=1`
+        );
+        const data = await response.json();
+        if (data.features && data.features.length > 0) {
+          const suggestion = data.features[0];
+          const context = suggestion.context || [];
+          const street = suggestion.text || "";
+          const city = context.find((c: any) => c.id.startsWith('place'))?.text || "";
+          const province = context.find((c: any) => c.id.startsWith('region'))?.text || "";
+          const postalCode = context.find((c: any) => c.id.startsWith('postcode'))?.text || "";
+
+          setAddress(prev => ({
+            ...prev,
+            street: street || prev.street,
+            city: city || prev.city,
+            province: province || prev.province,
+            postalCode: postalCode || prev.postalCode,
+          }));
+        }
+      } catch (error) {
+        console.error("Error reverse geocoding:", error);
+      }
+    }
+  };
 
   const handleNext = () => {
     const currentIndex = stepsOrder.indexOf(currentStep);
@@ -315,15 +458,14 @@ export default function BecomingAHostPage() {
       {/* Header */}
       <header className="h-20 px-6 md:px-12 flex flex-col justify-center sticky top-0 bg-white z-50">
         <div className="flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2 hidden md:inline-flex">
             <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm">
               <i className="ph-bold ph-house-line text-white"></i>
             </div>
             <span className="font-display font-bold text-xl text-brand-dark hidden sm:inline-block">GIGS</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex justify-between md:justify-end gap-4 w-full">
             <button className="px-5 py-2.5 text-base font-bold border border-slate-200 rounded-full hover:bg-slate-50 transition-all flex items-center gap-2">
-              <img src="https://a0.muscache.com/im/pictures/user/9944c693-579c-4861-8278-838634e0225a.jpg" className="w-6 h-6 rounded-full" />
               Questions?
             </button>
             <button 
@@ -355,18 +497,26 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex-1 flex flex-col items-center justify-center p-6"
+              className="flex-1 flex flex-col items-center justify-center"
             >
-              <div className="max-w-4xl w-full bg-white rounded-[32px] border border-slate-200 shadow-2xl p-8 md:p-10">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 text-center mb-10">
+              <div className="w-full md:max-w-4xl rounded-t-[32px] md:rounded-[32px] border border-slate-200 shadow-t-2xl p-8 md:p-12 ">
+                <h1 className="text-2xl md:text-3xl font-display font-medium text-text-slate-900 text-center mb-10">
                   What would you like to host?
                 </h1>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Close Button matching the first image */}
+                {/* <button 
+                  onClick={() => router.push("/hosting")}
+                  className="absolute top-6 right-6 md:top-8 md:right-8 p-2 hover:bg-slate-50 rounded-full transition-colors z-10"
+                >
+                  <i className="ph-bold ph-x text-xl text-slate-900"></i>
+                </button> */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:py-6">
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`flex flex-col items-center p-6 rounded-3xl border-2 transition-all group ${
+                      className={`flex justify-between flex-row-reverse md:flex-col items-center p-6 md:p-12
+                         rounded-3xl border-2 transition-all group ${
                         selectedCategory === cat.id
                           ? "border-brand-500 bg-brand-50/50 ring-4 ring-brand-50"
                           : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
@@ -375,7 +525,7 @@ export default function BecomingAHostPage() {
                       <div className={`w-20 h-20 mb-4 flex items-center justify-center rounded-2xl ${cat.bg} group-hover:scale-110 transition-transform`}>
                         <i className={`ph-bold ${cat.icon} text-4xl ${cat.color}`}></i>
                       </div>
-                      <span className={`text-base font-bold ${selectedCategory === cat.id ? 'text-brand-700' : 'text-slate-700'}`}>
+                      <span className={`text-xl font-display font-medium ${selectedCategory === cat.id ? 'text-brand-700' : 'text-slate-700'}`}>
                         {cat.label}
                       </span>
                     </button>
@@ -385,7 +535,7 @@ export default function BecomingAHostPage() {
                   <button
                     disabled={!selectedCategory}
                     onClick={handleNext}
-                    className={`px-8 py-3.5 rounded-xl font-bold text-base transition-all shadow-brutal ${
+                    className={`w-full md:w-[120px] px-8 py-4 rounded-xl font-bold text-base transition-all shadow-brutal ${
                       selectedCategory
                         ? "bg-brand-500 text-white hover:bg-brand-600"
                         : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
@@ -406,37 +556,37 @@ export default function BecomingAHostPage() {
               exit={{ opacity: 0, x: -50 }}
               className="flex-1 grid grid-cols-1 lg:grid-cols-2"
             >
-              <div className="flex flex-col justify-center px-8 md:px-20 py-10 bg-white">
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 leading-tight mb-6">
+              <div className="flex flex-col justify-center px-8 md:px-20 py-8 bg-white">
+                <h1 className="text-2xl md:text-4xl font-display font-[500] text-slate-900 leading-tight mb-6">
                   It's easy to get started on GIGS
                 </h1>
               </div>
-              <div className="flex flex-col justify-center px-8 md:px-20 py-10 space-y-10">
-                <div className="flex gap-5 items-center">
+              <div className="flex flex-col justify-center px-8 md:px-20 py-4 space-y-10">
+                <div className="flex gap-5">
                   <span className="text-xl font-bold text-slate-900">1</span>
                   <div className="flex-1">
                     <h2 className="text-xl font-bold text-slate-900 mb-1">Tell us about your place</h2>
-                    <p className="text-slate-500 leading-relaxed text-sm">Share some basic info, like where it is and how many guests can stay.</p>
+                    <p className="text-slate-500 leading-relaxed text-[16px]">Share some basic info, like where it is and how many guests can stay.</p>
                   </div>
                   <div className="w-16 h-16 flex-shrink-0 bg-blue-50 rounded-2xl flex items-center justify-center">
                     <i className="ph-bold ph-house-line text-2xl text-blue-500"></i>
                   </div>
                 </div>
-                <div className="flex gap-5 items-center border-y border-slate-100 py-10">
+                <div className="flex gap-5 border-y border-slate-100 py-10">
                   <span className="text-xl font-bold text-slate-900">2</span>
                   <div className="flex-1">
                     <h2 className="text-xl font-bold text-slate-900 mb-1">Make it stand out</h2>
-                    <p className="text-slate-500 leading-relaxed text-sm">Add 5 or more photos plus a title and description—we'll help you out.</p>
+                    <p className="text-slate-500 leading-relaxed text-[16px]">Add 5 or more photos plus a title and description—we'll help you out.</p>
                   </div>
                   <div className="w-16 h-16 flex-shrink-0 bg-rose-50 rounded-2xl flex items-center justify-center">
                     <i className="ph-bold ph-sparkle text-2xl text-rose-500"></i>
                   </div>
                 </div>
-                <div className="flex gap-5 items-center">
+                <div className="flex gap-5">
                   <span className="text-xl font-bold text-slate-900">3</span>
                   <div className="flex-1">
                     <h2 className="text-xl font-bold text-slate-900 mb-1">Finish up and publish</h2>
-                    <p className="text-slate-500 leading-relaxed text-sm">Choose a starting price, verify a few details, then publish your listing.</p>
+                    <p className="text-slate-500 leading-relaxed text-[16px]">Choose a starting price, verify a few details, then publish your listing.</p>
                   </div>
                   <div className="w-16 h-16 flex-shrink-0 bg-amber-50 rounded-2xl flex items-center justify-center">
                     <i className="ph-bold ph-check-circle text-2xl text-amber-500"></i>
@@ -454,17 +604,17 @@ export default function BecomingAHostPage() {
               exit={{ opacity: 0, x: -50 }}
               className="flex-1 grid grid-cols-1 lg:grid-cols-2 h-full"
             >
-              <div className="flex flex-col justify-center px-8 md:px-20 py-10 space-y-5">
+              <div className="flex flex-col justify-center px-5 md:px-20 py-10 space-y-5">
                 <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Step 1</span>
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 leading-tight">
+                <h1 className="text-2xl md:text-4xl font-display font-[500] text-slate-900 leading-tight">
                   Tell us about your place
                 </h1>
-                <p className="text-base text-slate-600 leading-relaxed max-w-lg">
+                <p className="text-[18px] text-slate-600 leading-relaxed max-w-lg">
                   In this step, we'll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
                 </p>
               </div>
               <div className="bg-white flex items-center justify-center p-10">
-                <div className="w-full max-w-xl aspect-square relative bg-blue-50 rounded-[40px] flex items-center justify-center shadow-brutal border-2 border-slate-900">
+                <div className="w-full md:max-w-lg aspect-square relative bg-blue-50 rounded-[40px] flex items-center justify-center shadow-brutal border-2 border-slate-900">
                   <i className="ph-bold ph-house-line text-[100px] text-blue-500"></i>
                 </div>
               </div>
@@ -477,28 +627,28 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center p-8 md:p-10 overflow-y-auto"
+              className="flex-1 flex flex-col items-center px-5 py-8 md:p-10 overflow-y-auto"
             >
               <div className="max-w-3xl w-full">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-10">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-10">
                   Which of these best describes your place?
                 </h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {propertyTypes.map((type) => (
                     <button
                       key={type.id}
                       onClick={() => setSelectedType(type.id)}
-                      className={`flex flex-col p-5 rounded-2xl border-2 transition-all text-left h-full ${
+                      className={`flex flex-col p-4 rounded-2xl border-2 transition-all text-left h-full ${
                         selectedType === type.id
                           ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-50"
                           : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
                       }`}
                     >
-                      <i className={`ph-bold ${type.icon} text-2xl mb-3 ${selectedType === type.id ? 'text-brand-600' : 'text-slate-700'}`}></i>
-                      <span className={`font-bold block mb-1 text-sm ${selectedType === type.id ? 'text-brand-700' : 'text-slate-900'}`}>
+                      <i className={`ph-bold ${type.icon} text-4xl mb-3 ${selectedType === type.id ? 'text-brand-600' : 'text-slate-700'}`}></i>
+                      <span className={`font-bold block mb-1 text-[18px] ${selectedType === type.id ? 'text-brand-700' : 'text-slate-900'}`}>
                         {type.label}
                       </span>
-                      <span className="text-xs text-slate-500 leading-relaxed">
+                      <span className="text-[16px] text-slate-500 leading-relaxed">
                         {type.description}
                       </span>
                     </button>
@@ -514,10 +664,10 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center justify-center p-8 md:p-10"
+              className="flex-1 flex flex-col items-center justify-center px-5 py-8 md:p-10"
             >
               <div className="max-w-2xl w-full">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-10 text-center">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-10 ">
                   What type of place will guests have?
                 </h1>
                 <div className="space-y-3">
@@ -532,14 +682,124 @@ export default function BecomingAHostPage() {
                       }`}
                     >
                       <div className="flex-1 pr-4">
-                        <h3 className={`text-base font-bold mb-1 ${selectedSpaceType === type.id ? 'text-brand-700' : 'text-slate-900'}`}>
+                        <h3 className={`text-[20px] font-bold mb-1 ${selectedSpaceType === type.id ? 'text-brand-700' : 'text-slate-900'}`}>
                           {type.label}
                         </h3>
-                        <p className="text-base text-slate-500 leading-relaxed">{type.description}</p>
+                        <p className="text-lg text-slate-500 leading-relaxed">{type.description}</p>
                       </div>
                       <i className={`ph-bold ${type.icon} text-2xl ${selectedSpaceType === type.id ? 'text-brand-600' : 'text-slate-400'}`}></i>
                     </button>
                   ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "LOCATION_SEARCH" && (
+            <motion.div
+              key="location_search"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col mx-auto overflow-y-auto pb-10"
+            >
+              <div className="px-6 md:px-12 py-10 bg-white flex-shrink-0">
+                <div className="max-w-2xl">
+                  <h1 className="text-2xl md:text-4xl font-display font-[500] text-slate-900 mb-4">
+                    Where's your place located?
+                  </h1>
+                  <p className="text-slate-600 text-lg">
+                    Your address is only shared with guests after they've made a reservation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex-1 relative min-h-[400px] h-full">
+                <LocationPickerMap 
+                  latitude={address.latitude}
+                  longitude={address.longitude}
+                  onLocationChange={handleLocationChange}
+                  showSpecificLocation={false}
+                  interactive={true}
+                />
+                
+                {/* Floating Search Area */}
+                <div className="absolute top-10 left-6 right-6 md:left-12 md:right-auto md:w-[480px] space-y-6">
+                  {/* Search Bar - Airbnb Style (Image 2) */}
+                  <div className="bg-white rounded-full shadow-2xl border-2 border-transparent p-1.5 flex items-center gap-3 transition-all ring-2 ring-slate-200 focus-within:ring-4 focus-within:ring-brand-500/20 focus-within:border-brand-500">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center">
+                      <i className={`ph-bold ${isSearching ? "ph-spinner animate-spin" : "ph-map-pin"} text-slate-900 text-xl`}></i>
+                    </div>
+                    <input 
+                      type="text"
+                      placeholder="Enter your address"
+                      className="flex-1 bg-transparent outline-none font-medium text-slate-900 placeholder:text-slate-500 text-lg"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleSearchAddress(searchQuery);
+                        }
+                      }}
+                    />
+                    {searchQuery && (
+                      <button 
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSuggestions([]);
+                        }}
+                        className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 mr-1"
+                      >
+                        <i className="ph-bold ph-x"></i>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Search Suggestions Dropdown */}
+                  <AnimatePresence>
+                    {suggestions.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="bg-white rounded-[24px] shadow-2xl border border-slate-200 overflow-hidden overflow-y-auto"
+                      >
+                        {suggestions.map((suggestion, index) => (
+                          <button
+                            key={suggestion.id}
+                            onClick={() => handleSelectSuggestion(suggestion)}
+                            className={`w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-all text-left ${
+                              index !== suggestions.length - 1 ? "border-b border-slate-100" : ""
+                            }`}
+                          >
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
+                              <i className="ph-bold ph-map-pin text-slate-900"></i>
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900 text-base leading-tight">
+                                {suggestion.text}
+                              </p>
+                              <p className="text-slate-500 text-sm">
+                                {suggestion.place_name.split(', ').slice(1).join(', ')}
+                              </p>
+                            </div>
+                          </button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Use Current Location Button (Image 2) */}
+                  <button 
+                    onClick={handleUseCurrentLocation}
+                    disabled={isLocating}
+                    className="w-full bg-white rounded-full shadow-lg border border-slate-200 p-4 flex items-center gap-4 hover:bg-slate-50 transition-all group"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center">
+                      <i className={`ph-bold ${isLocating ? "ph-spinner animate-spin" : "ph-navigation-arrow"} text-brand-600 text-xl`}></i>
+                    </div>
+                    <span className="font-bold text-slate-900 text-lg">Use my current location</span>
+                  </button>
                 </div>
               </div>
             </motion.div>
@@ -551,127 +811,140 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center p-8 md:p-12 overflow-y-auto"
+              className="flex-1 flex flex-col items-center px-5 py-8 md:p-12 overflow-y-auto bg-white"
             >
               <div className="max-w-2xl w-full">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-2">
-                  Confirm your address
-                </h1>
-                <p className="text-slate-500 mb-12 text-base">Your address is only shared with guests after they've made a reservation.</p>
+                <div className="items-center gap-4 mb-8">
+                  <button 
+                    onClick={handleBack}
+                    className="w-10 h-10 mb-4 bg-slate-100 rounded-full hover:bg-brand-100 flex items-center justify-center transition-colors"
+                  >
+                    <i className="ph ph-arrow-left text-xl "></i>
+                  </button>
+                  <h1 className="text-2xl font-display font-[600] text-slate-900">
+                    Confirm your address
+                  </h1>
+                </div>
                 
-                <div className="space-y-0 border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="p-4 border-b border-slate-200 bg-white group hover:bg-slate-50 transition-colors">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">Country / region</label>
-                    <div className="flex items-center justify-between cursor-pointer">
-                      <span className="text-slate-700 font-medium text-base">{address.country}</span>
-                      <i className="ph-bold ph-caret-down text-slate-400 text-sm"></i>
-                    </div>
+                <div className="space-y-0 border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                  <div className="p-4 border-b-2 border-slate-200 bg-white group hover:bg-slate-50 transition-colors">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Country / region</label>
+                    <select 
+                      className="w-full text-slate-900 outline-none bg-transparent font-medium cursor-pointer appearance-none text-lg"
+                      value={address.country}
+                      onChange={(e) => setAddress({...address, country: e.target.value})}
+                    >
+                      <option value="Nigeria - NG">Nigeria</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                    </select>
                   </div>
-                  <div className="p-4 border-b border-slate-200 bg-white">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">Building name (if applicable)</label>
+                  
+                  <div className="p-4 border-b-2 border-slate-200 bg-white">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Street address</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Landmark Towers" 
-                      className="w-full text-slate-700 outline-none placeholder:text-slate-300 font-medium text-base"
-                      value={address.building}
-                      onChange={(e) => setAddress({...address, building: e.target.value})}
-                    />
-                  </div>
-                  <div className="p-4 border-b border-slate-200 bg-white">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">Street address</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 123 Adetokunbo Ademola St" 
-                      className="w-full text-slate-700 outline-none placeholder:text-slate-300 font-medium text-base"
+                      placeholder="e.g. 1226 University Drive" 
+                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
                       value={address.street}
                       onChange={(e) => setAddress({...address, street: e.target.value})}
                     />
                   </div>
-                  <div className="p-4 border-b border-slate-200 bg-white">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">District / neighbourhood</label>
+                  
+                  <div className="p-4 border-b-2 border-slate-200 bg-white">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Apt, suite, unit (if applicable)</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Victoria Island" 
-                      className="w-full text-slate-700 outline-none placeholder:text-slate-300 font-medium text-base"
-                      value={address.district}
-                      onChange={(e) => setAddress({...address, district: e.target.value})}
+                      placeholder="e.g. Apt 4B" 
+                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
+                      value={address.unit}
+                      onChange={(e) => setAddress({...address, unit: e.target.value})}
                     />
                   </div>
-                  <div className="grid grid-cols-2">
-                    <div className="p-4 border-r border-slate-200 bg-white">
-                      <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">City</label>
-                      <input 
-                        type="text" 
-                        className="w-full text-slate-700 outline-none font-medium text-base"
-                        value={address.city}
-                        onChange={(e) => setAddress({...address, city: e.target.value})}
-                      />
-                    </div>
-                    <div className="p-4 bg-white group hover:bg-slate-50 transition-colors">
-                      <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">State / Province</label>
-                      <select 
-                        className="w-full text-slate-700 outline-none bg-transparent font-medium cursor-pointer appearance-none text-base"
-                        value={address.province}
-                        onChange={(e) => setAddress({...address, province: e.target.value})}
-                      >
-                        {nigerianStates.map(state => (
-                          <option key={state} value={state}>{state}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-white border-t border-slate-200">
-                    <label className="text-sm font-bold text-slate-400 uppercase tracking-wider block mb-1">Postal code</label>
+                  
+                  <div className="p-4 border-b-2 border-slate-200 bg-white">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">City / town</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. 101241" 
-                      className="w-full text-slate-700 outline-none placeholder:text-slate-300 font-medium text-base"
+                      placeholder="e.g. Lagos" 
+                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
+                      value={address.city}
+                      onChange={(e) => setAddress({...address, city: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="p-4 border-b-2 border-slate-200 bg-white">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">State / territory</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Lagos State" 
+                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
+                      value={address.province}
+                      onChange={(e) => setAddress({...address, province: e.target.value})}
+                    />
+                  </div>
+                  
+                  <div className="p-4 bg-white">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">ZIP code</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. 100001" 
+                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
                       value={address.postalCode}
                       onChange={(e) => setAddress({...address, postalCode: e.target.value})}
                     />
                   </div>
                 </div>
 
-                <div className="mt-12 p-8 bg-white rounded-3xl border border-slate-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <h3 className="font-bold text-slate-900 text-base">Show your specific location</h3>
-                      <p className="text-sm text-slate-500 leading-relaxed max-w-md">
-                        Make it clear to guests where your place is located. We'll only share your address after they book.
-                      </p>
-                    </div>
-                    <button 
-                      onClick={() => setShowSpecificLocation(!showSpecificLocation)}
-                      className={`w-12 h-7 rounded-full relative transition-all duration-300 ${showSpecificLocation ? "bg-slate-900" : "bg-slate-200"}`}
-                    >
-                      <motion.div 
-                        animate={{ x: showSpecificLocation ? 20 : 4 }}
-                        className="absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm"
-                      />
-                    </button>
-                  </div>
+                <div className="mt-8">
+                  <button 
+                    onClick={handleNext}
+                    disabled={!isAddressValid}
+                    className="w-full bg-brand-500 text-white font-bold py-4 rounded-xl hover:bg-brand-600 transition-all disabled:bg-slate-200 disabled:text-slate-400 shadow-brutal active:scale-[0.98]"
+                  >
+                    Looks good
+                  </button>
+                </div>
 
-                  <div className="relative w-full aspect-[2/1] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group">
-                    <img 
-                      src={`https://api.mapbox.com/styles/v1/mapbox/${showSpecificLocation ? 'streets-v11' : 'light-v10'}/static/3.4219,6.4411,13,0/800x400?access_token=pk.eyJ1IjoibW9iYmluIiwiYSI6ImNsM2p5bmN5YTAzN3AzZG8xbm96bm96bm8ifQ.z1z1z1z1z1z1z1z1z1z1z1`} 
-                      className={`w-full h-full object-cover transition-opacity duration-500 ${showSpecificLocation ? 'opacity-100' : 'opacity-40 grayscale'}`}
+                <hr className="my-10 border-slate-100" />
+
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <div className="flex justify-between mb-4">
+                    <h3 className="text-xl font-bold text-slate-900 mb-2">Show your specific location</h3>
+
+                      <button 
+                    onClick={() => setShowSpecificLocation(!showSpecificLocation)}
+                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${showSpecificLocation ? "bg-slate-900" : "bg-slate-200"}`}
+                  >
+                    <motion.div 
+                      animate={{ x: showSpecificLocation ? 26 : 4 }}
+                      className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
                     />
-                    {showSpecificLocation ? (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-10 h-10 bg-brand-500 rounded-full border-4 border-white shadow-2xl flex items-center justify-center">
-                          <i className="ph-bold ph-house-line text-white text-base"></i>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-24 h-24 bg-slate-900/5 rounded-full border-4 border-slate-900/20 flex items-center justify-center animate-pulse">
-                        </div>
-                        <div className="absolute bg-white px-4 py-2 rounded-lg shadow-xl border border-slate-100 font-bold text-slate-600 text-xs">
-                          General area shown
-                        </div>
-                      </div>
-                    )}
+                  </button>
+                    </div>
+                    <p className="text-slate-500 text-base max-w-md leading-relaxed">
+                      Make it clear to guests where your place is located. We'll only share your address after they've made a reservation. <button className="text-slate-900 font-bold underline">Learn more</button>
+                    </p>
                   </div>
+                  
+                </div>
+
+                <div className="relative w-full aspect-[2/1] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group">
+                  <LocationPickerMap 
+                    latitude={address.latitude}
+                    longitude={address.longitude}
+                    onLocationChange={handleLocationChange}
+                    showSpecificLocation={showSpecificLocation}
+                    interactive={false}
+                  />
+                  {!showSpecificLocation && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="bg-white px-6 py-3 rounded-full shadow-xl border border-slate-100 font-bold text-slate-900 text-sm">
+                        We'll share your approximate location.
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -683,46 +956,60 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center p-8 md:p-12"
+              className="flex-1 flex flex-col mx-auto"
             >
-              <div className="max-w-2xl w-full text-center">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-2">
-                  Is the pin in the right spot?
-                </h1>
-                <p className="text-slate-500 mb-12 text-base">Your address is only shared with guests after they've made a reservation.</p>
+              <div className="px-6 md:px-12 py-10 bg-white flex-shrink-0">
+                <div className="max-w-2xl">
+                  <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-4">
+                    Is the pin in the right spot?
+                  </h1>
+                  <p className="text-slate-600 text-lg">
+                    Your address is only shared with guests after they've made a reservation.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex-1 relative min-h-[400px] h-full">
+                <LocationPickerMap 
+                  latitude={address.latitude}
+                  longitude={address.longitude}
+                  onLocationChange={handleLocationChange}
+                  showSpecificLocation={true}
+                  interactive={true}
+                />
                 
-                <div className="relative w-full aspect-video bg-slate-100 rounded-[32px] overflow-hidden border-4 border-white shadow-2xl group">
-                  {/* Mock Google Map */}
-                  <img 
-                    src="https://maps.googleapis.com/maps/api/staticmap?center=6.4411,3.4219&zoom=15&size=800x450&scale=2&maptype=roadmap&markers=color:red%7C6.4411,3.4219&key=YOUR_API_KEY_HERE" 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => {
-                      // Fallback to mapbox if Google API key is missing
-                      (e.target as HTMLImageElement).src = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/3.4219,6.4411,15,0/800x450?access_token=pk.eyJ1IjoibW9iYmluIiwiYSI6ImNsM2p5bmN5YTAzN3AzZG8xbm96bm96bm8ifQ.z1z1z1z1z1z1z1z1z1z1z1";
-                    }}
-                  />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center animate-ping absolute"></div>
-                    <div className="w-10 h-10 bg-brand-500 rounded-full border-4 border-white shadow-2xl flex items-center justify-center z-10 scale-110">
-                      <i className="ph-bold ph-map-pin text-white text-base"></i>
+                {/* Floating Address Box (Image 5) */}
+                <div className="absolute top-10 left-6 right-6 md:left-12 md:right-auto md:w-[480px]">
+                  <div className="bg-white rounded-[24px] shadow-2xl border border-slate-200 p-6 flex items-start gap-4 transition-all hover:border-brand-300">
+                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
+                      <i className="ph-bold ph-map-pin text-slate-900 text-xl"></i>
                     </div>
-                  </div>
-                  
-                  {/* Map Controls UI */}
-                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                    <button className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-50">
-                      <i className="ph-bold ph-plus text-sm"></i>
-                    </button>
-                    <button className="w-8 h-8 bg-white rounded-lg shadow-md flex items-center justify-center text-slate-600 hover:bg-slate-50">
-                      <i className="ph-bold ph-minus text-sm"></i>
+                    <div className="flex-1">
+                      <p className="font-bold text-slate-900 text-lg leading-tight">
+                        {address.street}{address.unit ? `, ${address.unit}` : ""}, {address.city}, {address.province} {address.postalCode}, {address.country.split(' - ')[0]}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => setCurrentStep("ADDRESS")}
+                      className="p-2 hover:bg-slate-50 rounded-full transition-colors"
+                    >
+                      <i className="ph-bold ph-pencil-simple text-slate-600"></i>
                     </button>
                   </div>
-                  <div className="absolute bottom-4 left-4 right-4 flex justify-center">
-                    <div className="bg-slate-900 text-white px-5 py-2 rounded-full text-xs font-bold shadow-xl flex items-center gap-2">
-                      <i className="ph-bold ph-hand-grabbing"></i>
-                      Drag the map to reposition the pin
+                </div>
+
+                {/* Animated Tooltip (Image 5) */}
+                <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
+                  <motion.div 
+                    initial={{ y: 20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    className="bg-slate-900 text-white px-6 py-4 rounded-3xl text-base font-bold shadow-2xl flex items-center gap-3 pointer-events-auto"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                      <i className="ph-bold ph-hand-grabbing animate-pulse"></i>
                     </div>
-                  </div>
+                    Drag the map to reposition the pin
+                  </motion.div>
                 </div>
               </div>
             </motion.div>
@@ -737,7 +1024,7 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center p-8 md:p-12 overflow-y-auto"
             >
               <div className="max-w-xl w-full">
-                <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900 mb-12 text-center">
+                <h1 className="text-2xl md:text-3xl font-display font-[600] text-slate-900 mb-12">
                   Let's start with the basics
                 </h1>
                 
@@ -841,7 +1128,7 @@ export default function BecomingAHostPage() {
             >
               <div className="flex flex-col justify-center px-8 md:px-20 py-10 space-y-5">
                 <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Step 2</span>
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 leading-tight">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 leading-tight">
                   Make your place stand out
                 </h1>
                 <p className="text-base text-slate-600 leading-relaxed max-w-lg">
@@ -862,13 +1149,13 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center p-8 md:p-10 overflow-y-auto"
+              className="flex-1 flex flex-col items-center px-5 py-10 md:p-10 overflow-y-auto"
             >
               <div className="max-w-3xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-2">
                   Tell guests what your place has to offer
                 </h1>
-                <p className="text-slate-500 mb-10 text-xs">You can add more amenities after you publish your listing.</p>
+                <p className="text-slate-500 mb-10">You can add more amenities after you publish your listing.</p>
                 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {amenities.map((amenity) => (
@@ -881,8 +1168,8 @@ export default function BecomingAHostPage() {
                           : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
                       }`}
                     >
-                      <i className={`ph-bold ${amenity.icon} text-xl mb-3 ${selectedAmenities.includes(amenity.id) ? 'text-brand-600' : 'text-slate-700'}`}></i>
-                      <span className={`font-bold block text-xs ${selectedAmenities.includes(amenity.id) ? 'text-brand-700' : 'text-slate-900'}`}>
+                      <i className={`ph-bold ${amenity.icon} text-3xl mb-3 ${selectedAmenities.includes(amenity.id) ? 'text-brand-600' : 'text-slate-700'}`}></i>
+                      <span className={`font-bold block text-[18px] ${selectedAmenities.includes(amenity.id) ? 'text-brand-700' : 'text-slate-900'}`}>
                         {amenity.label}
                       </span>
                     </button>
@@ -902,7 +1189,7 @@ export default function BecomingAHostPage() {
             >
               <div className="max-w-4xl w-full">
                 <div className="flex items-center justify-between mb-2">
-                  <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900">
+                  <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900">
                     Choose at least 5 photos
                   </h1>
                   <button 
@@ -912,7 +1199,7 @@ export default function BecomingAHostPage() {
                     <i className="ph-bold ph-plus text-xs"></i>
                   </button>
                 </div>
-                <p className="text-slate-500 mb-10 text-xs">Drag to reorder</p>
+                <p className="text-slate-500 mb-10">Drag to reorder</p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {photos.length > 0 ? (
@@ -977,10 +1264,10 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center justify-center p-8 md:p-10"
             >
               <div className="max-w-xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-2">
                   Now, let's give your {selectedType?.replace('_', ' ') || 'place'} a title
                 </h1>
-                <p className="text-slate-500 mb-10 text-xs">Short titles work best. You can always change it later.</p>
+                <p className="text-slate-500 mb-10">Short titles work best. You can always change it later.</p>
                 
                 <div className="relative">
                   <textarea 
@@ -1006,20 +1293,20 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center justify-center p-8 md:p-10"
             >
               <div className="max-w-2xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2 text-center">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-2 text-center">
                   Next, let's describe your {selectedType?.replace('_', ' ') || 'place'}
                 </h1>
-                <p className="text-slate-500 mb-10 text-center text-xs">Choose up to 2 highlights. We'll use these to get your description started.</p>
+                <p className="text-slate-500 mb-10 text-center">Choose up to 2 highlights. We'll use these to get your description started.</p>
                 
                 <div className="flex flex-wrap justify-center gap-2.5">
                   {highlights.map((h) => (
                     <button
                       key={h.id}
                       onClick={() => toggleHighlight(h.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-xs ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all font-bold text-base ${
                         selectedHighlights.includes(h.id)
-                          ? "border-slate-900 bg-slate-900 text-white shadow-brutal-sm"
-                          : "border-slate-200 text-slate-600 hover:border-slate-900"
+                          ? " bg-brand-600 text-white hover:shadow-brutal-sm"
+                          : "border-slate-200  text-slate-600 hover:border-brand-600"
                       }`}
                     >
                       <i className={`ph-bold ${h.icon} text-base`}></i>
@@ -1041,21 +1328,22 @@ export default function BecomingAHostPage() {
             >
               <div className="max-w-xl w-full">
                 <div className="flex items-center justify-between mb-2">
-                  <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900">
+                  <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900">
                     Create your description
                   </h1>
+                  
+                </div>
+                <p className="text-slate-500 mb-10">Share what makes your place special.</p>
+                
+                <div className="relative">
                   <button 
                     onClick={generateAIDescription}
                     disabled={isGeneratingAI}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full border-2 border-brand-500 text-brand-600 font-bold text-[10px] transition-all hover:bg-brand-50 ${isGeneratingAI ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`flex absolute bottom-4 right-4 items-center gap-2 px-3 py-1.5 rounded-full border-2 border-brand-500 text-brand-600 font-bold text-[10px] transition-all hover:bg-brand-50 ${isGeneratingAI ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <i className={`ph-bold ${isGeneratingAI ? 'ph-spinner animate-spin' : 'ph-sparkle'}`}></i>
                     {isGeneratingAI ? 'Generating...' : 'Generate with AI'}
                   </button>
-                </div>
-                <p className="text-slate-500 mb-10 text-xs">Share what makes your place special.</p>
-                
-                <div className="relative">
                   <textarea 
                     value={description}
                     onChange={(e) => setDescription(e.target.value.slice(0, 500))}
@@ -1068,9 +1356,9 @@ export default function BecomingAHostPage() {
                 </div>
                 {selectedHighlights.length > 0 && (
                   <div className="mt-5 flex flex-wrap gap-2">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider w-full mb-1">Using highlights:</span>
+                    <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider w-full mb-1">Using highlights:</span>
                     {selectedHighlights.map(h => (
-                      <div key={h} className="px-2.5 py-1 bg-slate-100 rounded-full text-[9px] font-bold text-slate-600 flex items-center gap-1">
+                      <div key={h} className="px-2.5 py-1 bg-slate-100 rounded-full text-[16px] font-bold text-slate-600 flex items-center gap-1">
                         <i className="ph-fill ph-check-circle text-brand-500"></i>
                         {h}
                       </div>
@@ -1091,7 +1379,7 @@ export default function BecomingAHostPage() {
             >
               <div className="flex flex-col justify-center px-8 md:px-20 py-10 space-y-5">
                 <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Step 3</span>
-                <h1 className="text-3xl md:text-4xl font-display font-bold text-slate-900 leading-tight">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 leading-tight">
                   Finish up and publish
                 </h1>
                 <p className="text-base text-slate-600 leading-relaxed max-w-lg">
@@ -1115,10 +1403,10 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center p-8 md:p-10 overflow-y-auto"
             >
               <div className="max-w-xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2">
+                <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-2">
                   Set your base price and charges
                 </h1>
-                <p className="text-slate-500 mb-10 text-xs">Configure how much guests will pay and how often.</p>
+                <p className="text-slate-500 mb-10">Configure how much guests will pay and how often.</p>
                 
                 <div className="space-y-6">
                   {/* Base Price */}
@@ -1137,13 +1425,13 @@ export default function BecomingAHostPage() {
 
                   {/* Payment Frequency */}
                   <div>
-                    <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Payment Frequency</label>
+                    <label className="text-[12px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Payment Frequency</label>
                     <div className="grid grid-cols-3 gap-2">
                       {(["MONTHLY", "QUARTERLY", "YEARLY"] as const).map((freq) => (
                         <button
                           key={freq}
                           onClick={() => setPaymentFrequency(freq)}
-                          className={`py-2.5 rounded-xl font-bold text-xs transition-all border-2 ${
+                          className={`py-2.5 rounded-xl font-bold text-base transition-all border-2 ${
                             paymentFrequency === freq
                               ? "border-brand-500 bg-brand-50 text-brand-700 shadow-brutal-sm"
                               : "border-slate-100 text-slate-500 hover:border-slate-200"
@@ -1158,7 +1446,7 @@ export default function BecomingAHostPage() {
                   {/* Additional Charges */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-5 bg-slate-50 rounded-[20px] border border-slate-100">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Security Deposit</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Security Deposit</label>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-slate-900">₦</span>
                         <input 
@@ -1170,7 +1458,7 @@ export default function BecomingAHostPage() {
                       </div>
                     </div>
                     <div className="p-5 bg-slate-50 rounded-[20px] border border-slate-100">
-                      <label className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Other Charges</label>
+                      <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Other Charges</label>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-slate-900">₦</span>
                         <input 
@@ -1185,15 +1473,15 @@ export default function BecomingAHostPage() {
 
                   <div className="pt-5 border-t border-slate-100">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-slate-500 text-xs">Total per {paymentFrequency.toLowerCase()}</span>
+                      <span className="text-slate-500 text-base">Total per {paymentFrequency.toLowerCase()}</span>
                       <span className="text-xl font-bold text-slate-900">₦{(price + securityCharge + otherCharges).toLocaleString()}</span>
                     </div>
-                    <p className="text-[10px] text-slate-400">Includes security deposit and other additional fees.</p>
+                    <p className="text-sm text-slate-400">Includes security deposit and other additional fees.</p>
                   </div>
                 </div>
 
                 <div className="mt-10 flex flex-col items-center gap-3">
-                  <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-full font-bold text-[11px] text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+                  <button className="px-5 py-2.5 bg-white border border-slate-200 rounded-full font-bold text-base text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
                     <i className="ph-bold ph-chart-line-up text-brand-500"></i>
                     View pricing trends in Nigeria
                   </button>
@@ -1211,10 +1499,10 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center p-8 md:p-10 overflow-y-auto"
             >
               <div className="max-w-2xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2">
+                <h1 className="text-2xl md:text-2xl font-display font-[600] text-slate-900 mb-2">
                   Add discounts
                 </h1>
-                <p className="text-slate-500 mb-10 text-xs">Help your place stand out to get booked faster and earn your first reviews.</p>
+                <p className="text-slate-500 mb-10 text-base">Help your place stand out to get booked faster and earn your first reviews.</p>
                 
                 <div className="space-y-3">
                   {discountOptions.map((opt) => (
@@ -1246,8 +1534,8 @@ export default function BecomingAHostPage() {
                     </button>
                   ))}
                 </div>
-                <p className="mt-6 text-center text-[10px] text-slate-400">
-                  Only one discount will be applied per stay. <Link href="#" className="underline">Learn more</Link>
+                <p className="mt-6 text-center text-sm text-slate-400">
+                  Only one discount will be applied per stay. <Link href="#" className="underline hover:text-brand-500">Learn more</Link>
                 </p>
               </div>
             </motion.div>
@@ -1262,10 +1550,10 @@ export default function BecomingAHostPage() {
               className="flex-1 flex flex-col items-center p-8 md:p-10 overflow-y-auto"
             >
               <div className="max-w-2xl w-full">
-                <h1 className="text-xl md:text-2xl font-display font-bold text-slate-900 mb-2">
+                <h1 className="text-2xl md:text-2xl font-display font-[600] text-slate-900 mb-2">
                   Share safety details
                 </h1>
-                <p className="text-slate-500 mb-10 text-xs">Does your place have any of these? <i className="ph ph-info text-slate-400"></i></p>
+                <p className="text-slate-500 mb-10 text-base">Does your place have any of these? <i className="ph ph-info text-slate-400"></i></p>
                 
                 <div className="space-y-6">
                   <div className="space-y-3">
@@ -1320,13 +1608,13 @@ export default function BecomingAHostPage() {
 
                 <div className="mt-10 pt-10 border-t border-slate-100 space-y-5">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-sm mb-1">Important things to know</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
+                    <h3 className="font-bold text-slate-900 text-lg mb-1">Important things to know</h3>
+                    <p className="text-base text-slate-500 leading-relaxed">
                       Security cameras that monitor indoor spaces are not allowed even if they're turned off. All exterior security cameras must be disclosed.
                     </p>
                   </div>
-                  <p className="text-[10px] text-slate-400">
-                    Be sure to comply with your <Link href="#" className="underline">local laws</Link> and review Airbnb's <Link href="#" className="underline">anti-discrimination policy</Link> and <Link href="#" className="underline">guest and Host fees</Link>.
+                  <p className="text-sm text-slate-400">
+                    Be sure to comply with your <Link href="#" className="underline hover:text-brand-500 font-bold">local laws</Link> and review GIG's <Link href="#" className="underline hover:text-brand-500 font-bold">anti-discrimination policy</Link> and <Link href="#" className="underline hover:text-brand-500 font-bold">guest and Host fees</Link>.  
                   </p>
                 </div>
               </div>
@@ -1431,10 +1719,10 @@ export default function BecomingAHostPage() {
 
       {/* Footer */}
       {currentStep !== "CATEGORY" && currentStep !== "CONGRATS" && (
-        <footer className="h-20 bg-white border-t border-slate-100 flex items-center justify-between px-6 md:px-12 sticky bottom-0 z-50">
+        <footer className="h-24 bg-white border-t border-slate-100 flex items-center justify-between px-6 md:px-12 sticky bottom-0 z-50">
           <button
             onClick={handleBack}
-            className="text-xs font-bold text-slate-900 underline decoration-2 underline-offset-4 hover:text-brand-600 transition-colors"
+            className="text-[16px] font-bold text-slate-900 underline decoration-2 underline-offset-8 hover:text-brand-600 transition-colors"
           >
             Back
           </button>
@@ -1448,15 +1736,28 @@ export default function BecomingAHostPage() {
               (currentStep === "AMENITIES" && selectedAmenities.length === 0) ||
               (currentStep === "TITLE" && title.length < 5) ||
               (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) ||
-              (currentStep === "DESCRIPTION" && description.length < 10)
+              (currentStep === "DESCRIPTION" && description.length < 10) ||
+              (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery)
             }
-            className={`px-8 py-2.5 rounded-xl font-bold text-sm transition-all shadow-brutal ${
-              ((currentStep === "TYPE" && !selectedType) || (currentStep === "SPACE_TYPE" && !selectedSpaceType) || (currentStep === "BASICS" && basics.hasLock === null) || (currentStep === "AMENITIES" && selectedAmenities.length === 0) || (currentStep === "TITLE" && title.length < 5) || (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) || (currentStep === "DESCRIPTION" && description.length < 10))
+            className={`px-8 py-2 rounded-xl font-bold text-lg transition-all shadow-brutal ${
+              // Special case: ADDRESS step has its own "Looks good" button in the form
+              currentStep === "ADDRESS" ? "hidden" : ""
+            } ${
+              ((currentStep === "TYPE" && !selectedType) || 
+               (currentStep === "SPACE_TYPE" && !selectedSpaceType) || 
+               (currentStep === "BASICS" && basics.hasLock === null) || 
+               (currentStep === "AMENITIES" && selectedAmenities.length === 0) || 
+               (currentStep === "TITLE" && title.length < 5) || 
+               (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) || 
+               (currentStep === "DESCRIPTION" && description.length < 10) ||
+               (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery))
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                : "bg-brand-500 text-white hover:bg-brand-600"
+                : "bg-brand-500 text-white hover:bg-brand-600 hover:shadow-none"
             }`}
           >
-            {currentStep === "SAFETY" ? "Create listing" : currentStep === "PRICING" ? "Publish Listing" : "Next"}
+            {currentStep === "SAFETY" ? "Create listing" : 
+             currentStep === "PRICING" ? "Publish Listing" : 
+             currentStep === "LOCATION_SEARCH" ? "Next" : "Next"}
           </button>
         </footer>
       )}

@@ -12,12 +12,15 @@
   },
   "dependencies": {
     "@repo/ui": "file:../../packages/ui",
+    "@types/mapbox-gl": "^3.4.1",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
+    "mapbox-gl": "^3.22.0",
     "next": "^16.2.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-map-gl": "^8.1.1",
     "recharts": "^3.8.1"
   },
   "devDependencies": {

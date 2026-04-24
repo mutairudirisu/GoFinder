@@ -7,26 +7,11 @@ import { Header } from "@/components/layout";
 import { Footer } from "@repo/ui";
 import type { Listing } from "@/types/listing";
 import { ListingResultCard } from "@/components/listings/ListingResultCard";
+import { MapComponent } from "@/components/listings/MapComponent";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessageContext";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
 import { BottomTabNav } from "@/components/mobile/BottomTabNav";
-
-function hashUnit(input: string) {
-  let h = 0;
-  for (let i = 0; i < input.length; i += 1) {
-    h = (h * 31 + input.charCodeAt(i)) | 0;
-  }
-  const n = Math.abs(h) % 1000;
-  return n / 1000;
-}
-
-function toMarkerPosition(listing: Listing) {
-  const base = String(listing.id ?? "");
-  const x = 10 + hashUnit(`${base}:x`) * 80;
-  const y = 12 + hashUnit(`${base}:y`) * 70;
-  return { x, y };
-}
 
 export default function LocationListingsPage({ params }: { params: Promise<{ location: string }> }) {
   const { location } = use(params);
@@ -62,7 +47,6 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const [bedsMin, setBedsMin] = useState(0);
   const [guestsMin, setGuestsMin] = useState(1);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [viewportH, setViewportH] = useState(0);
   const [sheetH, setSheetH] = useState(0);
@@ -590,96 +574,13 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
             <div className="h-[100dvh] md:h-[calc(100vh-9rem)] lg:h-[calc(100vh-9rem)]">
               <div className="relative w-full h-full bg-white rounded-none border-0 overflow-hidden shadow-none md:rounded-[32px] md:border md:border-slate-200 md:shadow-sm">
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-slate-100" />
-                <div className="absolute inset-0 bg-grid-pattern bg-[length:32px_32px] opacity-40" />
-                <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 via-transparent to-brand-accent/10" />
-
-                {filteredListings.map((listing) => {
-                  const pos = toMarkerPosition(listing);
-                  const isActive = String(listing.id) === activeId;
-                  const isHovered = String(listing.id) === hoveredId;
-                  const anchorLeft = pos.x > 60;
-                  return (
-                    <div
-                      key={listing.id}
-                      className="absolute -translate-x-1/2 -translate-y-1/2"
-                      style={{ left: `${pos.x}%`, top: `${pos.y}%` }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => setActiveId(String(listing.id))}
-                        onMouseEnter={() => setHoveredId(String(listing.id))}
-                        onMouseLeave={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
-                        onFocus={() => setHoveredId(String(listing.id))}
-                        onBlur={() => setHoveredId((prev) => (prev === String(listing.id) ? null : prev))}
-                        className={`px-3 py-2 rounded-full border font-bold text-xs shadow-lg transition-all z-30 ${
-                          isActive
-                            ? "bg-slate-900 text-white border-slate-900 scale-105"
-                            : "bg-white text-slate-900 border-slate-200 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700"
-                        }`}
-                        aria-label={`Select ${listing.title}`}
-                      >
-                        ₦{listing.price.toLocaleString()}
-                      </button>
-
-                      {isHovered ? (
-                        <div
-                          className={`absolute top-10 -left-20 ${anchorLeft ? "right-0 pr-3" : "left-20 pl-3"}  z-50`}
-                        >
-                          <div className="w-52 bg-white rounded-[24px] border border-slate-200 shadow-2xl overflow-hidden">
-                            <div className="aspect-[16/10] relative">
-                              <img
-                                src={
-                                  listing.photos[0] ||
-                                  "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=960&auto=format&fit=crop"
-                                }
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                                <div className="text-white font-bold text-sm line-clamp-1">{listing.title}</div>
-                                <div className="text-white font-bold text-sm">₦{listing.price.toLocaleString()}</div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  toggleLike(String(listing.id));
-                                }}
-                                className={`absolute top-3 right-3 w-9 h-9 rounded-full border border-white/50 backdrop-blur-md flex items-center justify-center transition-colors ${
-                                  likedIds.has(String(listing.id))
-                                    ? "bg-white/90 text-brand-600 hover:bg-white"
-                                    : "bg-black/20 text-white hover:bg-white/90 hover:text-brand-700"
-                                }`}
-                                aria-label={likedIds.has(String(listing.id)) ? "Remove from wishlist" : "Save to wishlist"}
-                              >
-                                <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-lg`}></i>
-                              </button>
-                            </div>
-                            <div className="p-4">
-                              <div className="text-xs text-slate-500 line-clamp-1">
-                                {listing.address.city}, {listing.address.province}
-                              </div>
-                              <div className="mt-3 flex items-center justify-between">
-                                <div className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
-                                  {listing.type.replaceAll("_", " ")}
-                                </div>
-                                <Link
-                                  href={`/listings/${encodeURIComponent(String(listing.id))}`}
-                                  className="text-sm font-bold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1"
-                                >
-                                  View
-                                  <i className="ph ph-arrow-right"></i>
-                                </Link>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
+                <MapComponent
+                  listings={filteredListings}
+                  activeId={activeId}
+                  onMarkerClick={(id) => setActiveId(id)}
+                  likedIds={likedIds}
+                  onToggleLike={toggleLike}
+                />
 
                 {activeListing ? (
                   <div className="absolute left-6 right-6 bottom-6 hidden">

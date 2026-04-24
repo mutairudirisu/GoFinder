@@ -18,6 +18,8 @@ export interface Listing {
     city: string;
     province: string;
     postalCode: string;
+    latitude?: number;
+    longitude?: number;
   };
   basics: {
     guests: number;
