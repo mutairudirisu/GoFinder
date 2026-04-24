@@ -243,5 +243,60 @@
     "paymentFrequency": "MONTHLY",
     "status": "VERIFIED",
     "createdAt": "2026-04-14T08:13:57.713Z"
+  },
+  {
+    "id": "list_mo97inkbg",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Mississippi Street",
+      "district": "",
+      "city": "Abuja Municipal",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "latitude": 9.092201,
+      "longitude": 7.484363
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi",
+      "kitchen"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "Maggi",
+    "highlights": [
+      "peaceful",
+      "spacious"
+    ],
+    "description": "Welcome to our peaceful and spacious student accommodation in the heart of Abuja Municipal. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a spacious environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-24T11:17:10.429Z"
   }
 ]
