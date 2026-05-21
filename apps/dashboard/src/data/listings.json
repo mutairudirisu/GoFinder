@@ -298,5 +298,154 @@
     "paymentFrequency": "MONTHLY",
     "status": "VERIFIED",
     "createdAt": "2026-04-24T11:17:10.429Z"
+  },
+  {
+    "id": "list_5awf0s5lg",
+    "category": "home",
+    "type": "hostel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Lagos",
+      "district": "",
+      "city": "Apapa",
+      "province": "Lagos",
+      "postalCode": "",
+      "latitude": 6.453928,
+      "longitude": 3.38975
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi",
+      "parking"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "Dabiri",
+    "highlights": [
+      "peaceful",
+      "stylish"
+    ],
+    "description": "Welcome to our peaceful and stylish hostel in the heart of Apapa. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a stylish environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:14:59.180Z"
+  },
+  {
+    "id": "list_rzod210v6",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Lagos",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos",
+      "postalCode": "",
+      "latitude": 6.453928,
+      "longitude": 3.38975
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Dome1",
+    "highlights": [
+      "family"
+    ],
+    "description": "Welcome to our family student accommodation in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a family experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:17:10.304Z"
+  },
+  {
+    "id": "list_pahlit211",
+    "category": "home",
+    "type": "hostel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "900001",
+      "latitude": 9.0567,
+      "longitude": 7.4969
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "washer"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "dimitry",
+    "highlights": [
+      "unique"
+    ],
+    "description": "Welcome to our unique hostel in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a unique experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:19:16.792Z"
   }
 ]

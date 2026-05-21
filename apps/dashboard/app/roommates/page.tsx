@@ -42,6 +42,78 @@ function readPosts(): RoommatePost[] {
   }
 }
 
+function StudentLifestyleBanner() {
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="w-full"
+    >
+      <div className="relative overflow-hidden rounded-[40px] bg-gradient-to-br from-[#E2F1A7] via-[#D8E996] to-[#C8DA7F] flex flex-col md:flex-row items-stretch min-h-[340px] shadow-2xl shadow-brand-500/10 border border-white/50">
+        {/* Glassmorphism Overlays */}
+        <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
+          <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[60%] bg-white/20 blur-3xl rounded-full" />
+          <div className="absolute bottom-[-10%] left-[-5%] w-[30%] h-[50%] bg-brand-500/10 blur-3xl rounded-full" />
+        </div>
+
+        {/* Image Section */}
+        <div className="w-full md:w-1/2 relative min-h-[280px] md:min-h-auto overflow-hidden">
+          <motion.img 
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop" 
+            alt="Students lifestyle"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-transparent md:bg-gradient-to-l md:from-transparent md:to-black/5" />
+          
+          {/* Floating Badge for Mobile */}
+          <div className="absolute top-6 left-6 md:hidden">
+             <div className="bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg border border-white/50">
+               <span className="text-slate-900 font-display font-bold text-sm tracking-tight">Lifestyle</span>
+             </div>
+          </div>
+        </div>
+
+        {/* Content Section */}
+        <div className="w-full md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center relative z-10">
+          <div className="hidden md:block mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/40 backdrop-blur-md rounded-full border border-white/60 shadow-sm">
+              <i className="ph-fill ph-sparkle text-brand-600"></i>
+              <span className="text-slate-900 font-display font-bold text-sm tracking-wide uppercase">Lifestyle</span>
+            </div>
+          </div>
+          
+          <div className="inline-flex items-center px-4 py-1.5 bg-brand-500 rounded-full text-[12px] font-black uppercase tracking-widest text-white w-fit mb-6 shadow-lg shadow-brand-500/20">
+            Student Exclusive
+          </div>
+
+          <h3 className="text-3xl md:text-4xl lg:text-5xl font-display font-black text-slate-900 mb-6 leading-[1.1] tracking-tight">
+            The best offers for <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-brand-800">modern students</span>
+          </h3>
+          
+          <p className="text-slate-700/80 text-lg mb-10 max-w-md font-medium leading-relaxed">
+            Connect with like-minded peers who share your vibe, budget, and academic focus.
+          </p>
+
+          <Link 
+            href="/roommates"
+            className="group relative flex items-center gap-4 bg-slate-900 hover:bg-slate-800 text-white px-10 py-5 rounded-[24px] font-bold transition-all w-fit shadow-xl hover:shadow-2xl hover:-translate-y-1 active:scale-95 overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-brand-400/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <span className="relative z-10">Explore Matches</span>
+            <div className="relative z-10 w-8 h-8 bg-white/10 rounded-full flex items-center justify-center group-hover:bg-brand-500 transition-colors">
+              <i className="ph-bold ph-arrow-right"></i>
+            </div>
+          </Link>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function RoommatesMarketplacePage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [posts, setPosts] = useState<RoommatePost[]>([]);
@@ -138,62 +210,156 @@ export default function RoommatesMarketplacePage() {
   }, [city, groups, listingsById, query, type]);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      <Header />
-      <div className="max-w-7xl mx-auto px-4 md:px-6 pt-24 pb-10 space-y-8">
+    <main className="min-h-screen bg-[#F8F9FB]">
+      <div className="hidden md:block">
+        <Header hideCenterTabs />
+      </div>
+      <div className="w-full space-y-4 md:space-y-8 pb-20">
+        <div className="bg-white md:rounded-b-[48px] border-b border-slate-200 px-4 md:px-8 pt-4 md:pt-10 pb-8 md:pb-12 shadow-sm relative overflow-hidden">
+          {/* Decorative Background */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+          
+          <div className="max-w-7xl mx-auto relative z-10 space-y-6 md:space-y-10">
+            <div className="space-y-3 text-center md:text-left">
+              <h1 className="text-3xl md:text-6xl font-display font-semibold text-slate-900 tracking-tight">Find a roommate</h1>
+              <p className="text-slate-500 text-base md:text-xl max-w-2xl font-medium leading-relaxed">
+                Browse shared rooms, student accommodation, and people looking to split bills.
+              </p>
+            </div>
 
-        <div className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-4">
-          <div className="flex items-start justify-between gap-6 flex-col md:flex-row">
-            <div className="space-y-2">
-              <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-900">Find a roommate</h1>
-              <p className="text-slate-500">Browse shared rooms, student accommodation, hostels, and people looking to split bills.</p>
-            </div>
-            <div className="w-full md:w-auto flex items-center gap-3">
-              <div className="flex-1 md:w-[360px] bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 flex items-center gap-2">
-                <i className="ph ph-magnifying-glass text-slate-400"></i>
-                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search city, listing, or preferences" className="w-full bg-transparent outline-none text-sm font-bold text-slate-900 placeholder:text-slate-400" />
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 md:gap-4">
+              <div className="md:col-span-2 relative group">
+                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                  <i className="ph-bold ph-magnifying-glass text-slate-400 group-focus-within:text-brand-500 transition-colors text-lg"></i>
+                </div>
+                <input 
+                  value={query} 
+                  onChange={(e) => setQuery(e.target.value)} 
+                  placeholder="Search city, preferences, or listing..." 
+                  className="w-full bg-slate-50 border border-slate-100 rounded-2xl md:rounded-3xl pl-14 pr-5 py-4 md:py-5 outline-none focus:ring-4 focus:ring-brand-500/10 focus:border-brand-500 transition-all text-[15px] font-semibold text-slate-900 placeholder:text-slate-400 shadow-sm" 
+                />
               </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-slate-200 px-4 py-3 flex items-center justify-between gap-3 bg-white">
-              <div className="flex items-center gap-2 text-slate-600">
-                <i className="ph ph-map-pin"></i>
-                <span className="text-xs font-bold uppercase tracking-widest">City</span>
+              <div className="rounded-2xl md:rounded-3xl border border-slate-100 px-5 py-3 flex flex-col justify-center bg-slate-50 group focus-within:border-brand-500 transition-colors shadow-sm">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-2">
+                  <i className="ph-bold ph-map-pin"></i>
+                  City
+                </label>
+                <select 
+                  value={city} 
+                  onChange={(e) => setCity(e.target.value)} 
+                  className="bg-transparent outline-none text-[15px] font-semibold text-slate-900 cursor-pointer w-full"
+                >
+                  <option value="ALL">Everywhere</option>
+                  {cityOptions.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
-              <select value={city} onChange={(e) => setCity(e.target.value)} className="bg-transparent outline-none text-sm font-bold text-slate-900 cursor-pointer">
-                <option value="ALL">All</option>
-                {cityOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="rounded-2xl border border-slate-200 px-4 py-3 flex items-center justify-between gap-3 bg-white">
-              <div className="flex items-center gap-2 text-slate-600">
-                <i className="ph ph-house-line"></i>
-                <span className="text-xs font-bold uppercase tracking-widest">Type</span>
+
+              <div className="rounded-2xl md:rounded-3xl border border-slate-100 px-5 py-3 flex flex-col justify-center bg-slate-50 group focus-within:border-brand-500 transition-colors shadow-sm">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1 flex items-center gap-2">
+                  <i className="ph-bold ph-receipt"></i>
+                  Mode
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-brand-700 bg-brand-500/10 px-3 py-1 rounded-full">Roommates</span>
+                </div>
               </div>
-              <select value={type} onChange={(e) => setType(e.target.value)} className="bg-transparent outline-none text-sm font-bold text-slate-900 cursor-pointer">
-                <option value="ALL">All</option>
-                {typeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {t.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="rounded-2xl border border-slate-200 px-4 py-3 flex items-center justify-between gap-3 bg-white">
-              <div className="flex items-center gap-2 text-slate-600">
-                <i className="ph ph-receipt"></i>
-                <span className="text-xs font-bold uppercase tracking-widest">Mode</span>
-              </div>
-              <span className="text-sm font-bold text-brand-700 bg-brand-50 px-3 py-1 rounded-full">Roommates</span>
             </div>
           </div>
         </div>
+
+        <div className="max-w-7xl mx-auto px-4 md:px-6 space-y-12">
+          <StudentLifestyleBanner />
+
+          <section className="space-y-8">
+            <div className="flex items-end justify-between border-b border-slate-100 pb-6">
+              <div className="space-y-2">
+                <h2 className="font-display font-semibold text-2xl md:text-3xl text-slate-900 tracking-tight">People looking for roommates</h2>
+                <p className="text-slate-500 text-sm md:text-base font-medium">Verified profiles of individuals ready to move and share costs.</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</span>
+                <span className="w-12 h-12 rounded-2xl bg-white border border-slate-100 flex items-center justify-center font-bold text-slate-900 shadow-sm text-lg">
+                  {filteredPosts.length}
+                </span>
+              </div>
+            </div>
+
+          {filteredPosts.length === 0 ? (
+            <div className="bg-white rounded-[40px] border border-slate-200 p-20 text-center space-y-4 shadow-sm">
+              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                <i className="ph ph-users-three text-4xl text-slate-300"></i>
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-bold text-slate-900 text-lg">No roommate profiles yet</h3>
+                <p className="text-slate-500 text-sm max-w-xs mx-auto">Create one from any shared listing’s roommate page to appear here.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredPosts.slice(0, 12).map((p) => (
+                <motion.div 
+                  key={p.id} 
+                  whileHover={{ y: -6, scale: 1.01 }} 
+                  className="bg-white rounded-[32px] border border-slate-200 p-6 shadow-sm hover:shadow-2xl hover:border-brand-500/20 transition-all duration-500 group relative overflow-hidden"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full -mr-16 -mt-16 blur-2xl group-hover:bg-brand-500/10 transition-colors" />
+                  
+                  <div className="relative z-10 space-y-5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 shrink-0">
+                          <i className="ph-fill ph-user text-xl"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-slate-900 text-base truncate">{p.name}</div>
+                          <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Move-in: {p.moveIn || "Flexible"}</div>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-base font-bold text-brand-600">₦{Number(p.budget || 0).toLocaleString()}</div>
+                        <div className="text-[9px] text-slate-400 font-bold uppercase tracking-tight">Budget</div>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-slate-600 leading-relaxed line-clamp-2 min-h-[3rem] bg-slate-50 p-3.5 rounded-xl italic">
+                      "{p.bio || "Looking for a clean and friendly space to share."}"
+                    </div>
+
+                    {p.preferences.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {p.preferences.slice(0, 3).map((x) => (
+                          <span key={x} className="text-[9px] font-bold uppercase tracking-widest text-slate-500 bg-white border border-slate-100 px-2.5 py-1 rounded-full group-hover:border-brand-200 group-hover:text-brand-600 transition-colors">
+                            {x}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3 pt-1">
+                      <Link
+                        href={`/user/messages?userId=${p.id}`}
+                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-white border-2 border-slate-900 text-slate-900 font-bold hover:bg-slate-50 transition-all active:scale-95 text-xs"
+                      >
+                        <i className="ph-bold ph-chat-circle-dots text-base"></i>
+                        Message
+                      </Link>
+                      <Link
+                        href={`/listings/${encodeURIComponent(String(p.listingId))}/roommates`}
+                        className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1A1A1A] text-white font-bold hover:bg-black transition-all shadow-lg active:scale-95 text-xs"
+                      >
+                        <i className="ph ph-house-line text-base"></i>
+                        View Listing
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <section className="space-y-4">
           <div className="flex items-center justify-between">
@@ -224,9 +390,9 @@ export default function RoommatesMarketplacePage() {
                   <Link
                     key={g.id}
                     href={`/roommates/join/${encodeURIComponent(g.id)}`}
-                    className="group bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all block"
+                    className="group bg-white rounded-[28px] border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all block"
                   >
-                    <div className="aspect-[4/3] overflow-hidden">
+                    <div className="aspect-[1.5/1] overflow-hidden">
                       <img
                         src={
                           listing?.photos?.[0] ||
@@ -235,22 +401,22 @@ export default function RoommatesMarketplacePage() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                     </div>
-                    <div className="p-6 space-y-2">
+                    <div className="p-5 space-y-2">
                       <div className="flex items-center justify-between gap-3">
-                        <div className="font-bold text-slate-900 line-clamp-1">{listing?.title || "Roommate plan"}</div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-brand-700 bg-brand-50 px-3 py-1 rounded-full">
+                        <div className="font-bold text-slate-900 line-clamp-1 text-sm">{listing?.title || "Roommate plan"}</div>
+                        <span className="text-[9px] font-bold uppercase tracking-widest text-brand-700 bg-brand-50 px-2.5 py-1 rounded-full shrink-0">
                           OPEN
                         </span>
                       </div>
-                      <div className="text-sm text-slate-500 line-clamp-1">
+                      <div className="text-xs text-slate-500 line-clamp-1">
                         {listing ? `${listing.address.city}, ${listing.address.province}` : g.locationKey}
                       </div>
-                      {g.note ? <div className="text-sm text-slate-700 line-clamp-2">{g.note}</div> : null}
-                      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                        <div className="text-xs font-bold text-slate-600">
+                      {g.note ? <div className="text-xs text-slate-700 line-clamp-2">{g.note}</div> : null}
+                      <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
+                        <div className="text-[10px] font-bold text-slate-600">
                           {g.members?.length ?? 0}/{max} joined
                         </div>
-                        <div className="text-xs font-bold text-brand-600 flex items-center gap-2">
+                        <div className="text-[10px] font-bold text-brand-600 flex items-center gap-1.5">
                           <i className="ph ph-link"></i>
                           Join
                         </div>
@@ -273,24 +439,24 @@ export default function RoommatesMarketplacePage() {
               <Link
                 key={l.id}
                 href={`/listings/${encodeURIComponent(String(l.id))}/roommates`}
-                className="group bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all block"
+                className="group bg-white rounded-[28px] border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all block"
               >
-                <div className="aspect-[4/3] overflow-hidden">
+                <div className="aspect-[1.5/1] overflow-hidden">
                   <img src={l.photos?.[0] || "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop"} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                 </div>
-                <div className="p-6 space-y-2">
+                <div className="p-5 space-y-2">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="font-bold text-slate-900 line-clamp-1">{l.title}</div>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-3 py-1 rounded-full">
+                    <div className="font-bold text-slate-900 line-clamp-1 text-sm">{l.title}</div>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full shrink-0">
                       {String(l.type).replaceAll("_", " ")}
                     </span>
                   </div>
-                  <div className="text-sm text-slate-500 line-clamp-1">
+                  <div className="text-xs text-slate-500 line-clamp-1">
                     {l.address.city}, {l.address.province}
                   </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
                     <div className="text-sm font-bold text-slate-900">₦{l.price.toLocaleString()}</div>
-                    <div className="text-xs font-bold text-brand-600 flex items-center gap-2">
+                    <div className="text-[10px] font-bold text-brand-600 flex items-center gap-1.5">
                       <i className="ph ph-users-three"></i>
                       Match roommates
                     </div>
@@ -300,49 +466,8 @@ export default function RoommatesMarketplacePage() {
             ))}
           </div>
         </section>
-
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display font-bold text-xl text-slate-900">People looking for roommates</h2>
-            <span className="text-xs font-bold text-slate-500">{filteredPosts.length}</span>
-          </div>
-
-          {filteredPosts.length === 0 ? (
-            <div className="bg-white rounded-[32px] border border-slate-200 p-10 text-center text-slate-500">
-              No roommate profiles yet. Create one from any shared listing’s roommate page.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {filteredPosts.slice(0, 12).map((p) => (
-                <motion.div key={p.id} whileHover={{ y: -2 }} className="bg-white rounded-[32px] border border-slate-200 p-8 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-bold text-slate-900">{p.name}</div>
-                    <div className="text-xs font-bold text-brand-700 bg-brand-50 px-3 py-1 rounded-full">₦{Number(p.budget || 0).toLocaleString()}</div>
-                  </div>
-                  <div className="text-xs text-slate-500">Move-in: {p.moveIn || "Flexible"}</div>
-                  <div className="text-sm text-slate-700 line-clamp-3">{p.bio || "No bio provided."}</div>
-                  {p.preferences.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {p.preferences.slice(0, 6).map((x) => (
-                        <span key={x} className="text-[10px] font-bold uppercase tracking-widest text-slate-600 bg-slate-50 border border-slate-100 px-3 py-1 rounded-full">
-                          {x}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  <Link
-                    href={`/listings/${encodeURIComponent(String(p.listingId))}/roommates`}
-                    className="w-full mt-2 inline-flex items-center justify-center gap-2 py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
-                  >
-                    <i className="ph ph-house-line"></i>
-                    View listing
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </section>
       </div>
-    </main>
-  );
+    </div>
+  </main>
+);
 }

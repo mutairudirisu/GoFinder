@@ -38,11 +38,11 @@ export const AuthInput = forwardRef<HTMLInputElement, AuthInputProps>(
           <input
             ref={ref}
             id={props.id || props.name}
-            className={`w-full px-4 py-3 rounded-xl border font-semibold transition-all duration-200 focus:outline-none focus:ring-2 disabled:cursor-not-allowed ${
+            className={`w-full px-5 py-4 rounded-2xl border font-semibold transition-all duration-200 focus:outline-none focus:ring-4 disabled:cursor-not-allowed ${
               isDark
-                ? "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-slate-900 focus:ring-slate-200 hover:border-slate-300 disabled:bg-slate-50 lg:bg-white/5 lg:border-white/10 lg:text-white lg:placeholder-white/40 lg:focus:border-brand-400/60 lg:focus:ring-brand-accent/20 lg:hover:border-white/20 lg:disabled:bg-white/5"
+                ? "bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:ring-brand-500/10 hover:border-slate-300 disabled:bg-slate-50"
                 : "bg-white border-slate-200 text-slate-900 placeholder-slate-400 focus:border-brand-500 focus:ring-brand-200 hover:border-slate-300 disabled:bg-slate-50"
-            } ${icon ? "pl-12" : ""} ${error ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""} ${className}`}
+            } ${icon ? "pl-14" : ""} ${error ? "border-red-500 focus:border-red-500 focus:ring-red-200" : ""} ${className}`}
             {...props}
           />
         </div>

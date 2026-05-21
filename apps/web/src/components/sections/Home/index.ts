@@ -5,6 +5,6 @@ export { Testimonials } from "./Testimonials";
 export { Pricing } from "./Pricing";
 export { FAQ } from "./FAQ";
 export { Newsletter } from "./Newsletter";
-export { PlatformShowcase } from "./PlatformShowcase";
 export { JourneyScroller } from "./JourneyScroller";
 export { AgentsEnterprise } from "./AgentsEnterprise";
+export { StudentLifestyleBanner } from "./StudentLifestyleBanner";

@@ -7,5 +7,5 @@ export interface User {
   phone?: string;
   role: Role;
   avatar?: string;
-  isProfileComplete: boolean;
+  isProfileComplete?: boolean;
 }

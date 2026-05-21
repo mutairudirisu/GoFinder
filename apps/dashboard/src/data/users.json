@@ -1,41 +1,5 @@
 [
   {
-    "id": "user_s5cgorq0",
-    "email": "mutairudirisu@gmail.com",
-    "name": "DIRISU MUTAIRU",
-    "role": "lister",
-    "avatar": "",
-    "isProfileComplete": true,
-    "verifications": {
-      "email": {
-        "status": "VERIFIED",
-        "verifiedAt": "2026-04-03T10:43:55.879Z"
-      },
-      "phone": {
-        "status": "VERIFIED",
-        "verifiedAt": "2026-04-03T11:05:47.466Z",
-        "phone": "+2348107613948"
-      },
-      "id": {
-        "status": "VERIFIED",
-        "verifiedAt": "2026-04-03T11:06:13.394Z",
-        "idType": "nin",
-        "files": {
-          "front": "3.jpeg"
-        }
-      }
-    },
-    "createdAt": "2026-04-03T10:41:55.108Z",
-    "updatedAt": "2026-04-03T11:06:13.967Z",
-    "firstName": "DIRISU",
-    "lastName": "MUTAIRU",
-    "security": {
-      "hasPassword": true,
-      "passwordSetAt": "2026-04-03T10:44:32.361Z"
-    },
-    "phone": "+2348107613948"
-  },
-  {
     "id": "user_cvww1co6",
     "email": "umorusherifat196@gmail.com",
     "name": "Sherifat Umoru",
@@ -93,5 +57,28 @@
     },
     "createdAt": "2026-04-08T10:37:20.466Z",
     "updatedAt": "2026-04-08T10:37:20.466Z"
+  },
+  {
+    "id": "user_s5cgorq0",
+    "email": "mutairudirisu@gmail.com",
+    "name": "Mutairu DIrisu",
+    "phone": "+2348107613948",
+    "role": "renter",
+    "avatar": "",
+    "isProfileComplete": true,
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-05-21T13:19:26.414Z"
+      }
+    },
+    "createdAt": "2026-04-03T10:41:55.108Z",
+    "updatedAt": "2026-05-21T13:27:20.368Z",
+    "firstName": "Mutairu",
+    "lastName": "DIrisu",
+    "security": {
+      "hasPassword": true,
+      "passwordSetAt": "2026-05-21T13:27:19.818Z"
+    }
   }
 ]

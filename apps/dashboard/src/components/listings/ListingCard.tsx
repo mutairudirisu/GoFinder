@@ -134,7 +134,7 @@ export const ListingCard = ({ property, index }: ListingCardProps) => {
           `} />
 
           {/* Image Section - Compact on mobile */}
-          <div className="relative h-32 md:h-12 overflow-hidden">
+          <div className="relative h-32 md:h-64 overflow-hidden">
             {/* Main Image */}
             <AnimatePresence mode="wait">
               <motion.img

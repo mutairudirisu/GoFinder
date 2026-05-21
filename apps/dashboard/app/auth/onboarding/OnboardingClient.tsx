@@ -143,9 +143,9 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
     return (
       <AuthLayout title="Setting things up" subtitle="One moment..." showImage>
         <div className="space-y-4">
-          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
-          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
-          <div className="h-10 rounded-2xl bg-slate-100 border border-slate-200 animate-pulse lg:bg-white/5 lg:border-white/10" />
+          <div className="h-10 rounded-2xl bg-slate-50 border border-slate-100 animate-pulse" />
+          <div className="h-10 rounded-2xl bg-slate-50 border border-slate-100 animate-pulse" />
+          <div className="h-10 rounded-2xl bg-slate-50 border border-slate-100 animate-pulse" />
         </div>
       </AuthLayout>
     );
@@ -157,37 +157,42 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
       subtitle={currentStep === 1 ? "You won’t be able to change this later." : "You can always change this later."}
       showImage
     >
-      <div className="space-y-6">
-        <div className="flex items-center justify-center gap-2">
+      <div className="space-y-8">
+        <div className="flex items-center justify-center gap-0 max-w-[240px] mx-auto">
           {onboardingSteps.map((step, index) => (
-            <div key={step.id} className="flex items-center">
+            <React.Fragment key={step.id}>
               <div
-                className={`flex items-center justify-center w-9 h-9 rounded-full font-bold text-xs transition-all ${
-                  currentStep >= step.id ? "bg-brand-500 text-white" : "bg-slate-100 text-slate-600 lg:bg-white/10 lg:text-white/60"
+                className={`w-3 h-3 rounded-full transition-all duration-500 shrink-0 ${
+                  currentStep >= step.id ? "bg-brand-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" : "bg-slate-100"
                 }`}
-              >
-                {step.id}
-              </div>
+              />
               {index < onboardingSteps.length - 1 ? (
-                <div className={`w-10 h-1 mx-1 rounded-full transition-all ${currentStep > step.id ? "bg-brand-500" : "bg-slate-200 lg:bg-white/10"}`} />
+                <div className="flex-1 h-[2px] min-w-[60px] mx-0 bg-slate-100 relative overflow-hidden">
+                  <div 
+                    className="absolute inset-y-0 left-0 bg-brand-500 transition-all duration-500"
+                    style={{ width: currentStep > step.id ? "100%" : "0%" }}
+                  />
+                </div>
               ) : null}
-            </div>
+            </React.Fragment>
           ))}
         </div>
 
-        <div className="space-y-1 text-center">
+        <div className="space-y-4 text-center">
           {currentStepData ? (
             <>
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full text-slate-900 lg:bg-white/10 lg:text-white">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-slate-50 rounded-[24px] text-slate-900 border border-slate-100 shadow-sm">
                 {currentStepData.icon}
               </div>
-              <h2 className="text-xl font-bold">{currentStepData.title}</h2>
-              <p className="text-sm text-slate-600 lg:text-white/60">{currentStepData.description}</p>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-display font-semibold text-slate-900 tracking-tight">{currentStepData.title}</h2>
+                <p className="text-sm text-slate-500 font-medium leading-relaxed">{currentStepData.description}</p>
+              </div>
             </>
           ) : null}
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {currentStep === 1 ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
@@ -214,8 +219,8 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
               </div>
             </div>
           ) : currentStep === 2 ? (
-            <div className="space-y-4">
-              <div className="space-y-3">
+            <div className="space-y-5">
+              <div className="space-y-4">
                 <div className="relative">
                   <AuthInput
                     id="password"
@@ -233,7 +238,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   <button
                     type="button"
                     onClick={() => setPasswordData((p) => ({ ...p, showPassword: !p.showPassword }))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 lg:text-white/60 lg:hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                     aria-label={passwordData.showPassword ? "Hide password" : "Show password"}
                   >
                     <i className={`ph ${passwordData.showPassword ? "ph-eye-slash" : "ph-eye"} text-xl`} />
@@ -257,7 +262,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                   <button
                     type="button"
                     onClick={() => setPasswordData((p) => ({ ...p, showConfirm: !p.showConfirm }))}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900 lg:text-white/60 lg:hover:text-white"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900 transition-colors"
                     aria-label={passwordData.showConfirm ? "Hide password" : "Show password"}
                   >
                     <i className={`ph ${passwordData.showConfirm ? "ph-eye-slash" : "ph-eye"} text-xl`} />
@@ -275,20 +280,20 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                 ].map((r) => (
                   <span
                     key={r.label}
-                    className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                    className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-colors ${
                       r.ok
-                        ? "bg-brand-50 text-brand-700 border-brand-200 lg:bg-brand-500/20 lg:text-white lg:border-brand-400/40"
-                        : "bg-slate-50 text-slate-600 border-slate-200 lg:bg-white/5 lg:text-white/60 lg:border-white/10"
+                        ? "bg-brand-50 text-brand-700 border-brand-200"
+                        : "bg-slate-50 text-slate-400 border-slate-100"
                     }`}
                   >
                     {r.label}
                   </span>
                 ))}
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold border ${
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-colors ${
                     passwordData.password && passwordData.password === passwordData.confirm
-                      ? "bg-brand-50 text-brand-700 border-brand-200 lg:bg-brand-500/20 lg:text-white lg:border-brand-400/40"
-                      : "bg-slate-50 text-slate-600 border-slate-200 lg:bg-white/5 lg:text-white/60 lg:border-white/10"
+                      ? "bg-brand-50 text-brand-700 border-brand-200"
+                      : "bg-slate-50 text-slate-400 border-slate-100"
                   }`}
                 >
                   Password match
@@ -296,7 +301,7 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
               </div>
 
               <div className="space-y-2 pt-2">
-                <label className="flex items-start gap-3 text-sm text-slate-600 lg:text-white/70">
+                <label className="flex items-start gap-3 text-sm text-slate-500 font-medium">
                   <input
                     type="checkbox"
                     checked={passwordData.agree}
@@ -304,55 +309,48 @@ export default function OnboardingClient({ email }: OnboardingClientProps) {
                       setPasswordData((p) => ({ ...p, agree: e.target.checked }));
                       if (errors.agree) setErrors((prev) => ({ ...prev, agree: "" }));
                     }}
-                    className="mt-1 w-5 h-5 rounded border-slate-300 bg-white text-brand-600 focus:ring-brand-200 lg:border-white/20 lg:bg-white/10 lg:focus:ring-brand-accent/30"
+                    className="mt-1 w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500"
                   />
                   <span>
                     I agree to the{" "}
-                    <a href="/terms" className="font-bold text-slate-900 lg:text-white underline underline-offset-4">
-                      Terms and Conditions
-                    </a>
-                    .
+                    <button type="button" className="text-brand-600 font-bold hover:underline">
+                      Terms of Service
+                    </button>{" "}
+                    and{" "}
+                    <button type="button" className="text-brand-600 font-bold hover:underline">
+                      Privacy Policy
+                    </button>
                   </span>
                 </label>
-                {errors.agree ? <div className="text-sm font-semibold text-red-700 lg:text-red-200">{errors.agree}</div> : null}
+                {errors.agree && <p className="text-xs text-red-600 font-semibold">{errors.agree}</p>}
               </div>
             </div>
           ) : null}
 
-          {errors.submit ? (
-            <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-2xl">
-              <p className="text-sm font-semibold text-red-700 lg:text-red-200">{errors.submit}</p>
+          {errors.submit && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-2xl">
+              <p className="text-sm font-semibold text-red-600">{errors.submit}</p>
             </div>
-          ) : null}
-        </div>
+          )}
 
-        <div className="flex gap-3 pt-2">
-          <button
-            onClick={handleBack}
-            disabled={currentStep === 1 || isLoading}
-            className="px-6 py-3 rounded-2xl bg-slate-100 border border-slate-200 text-slate-900 font-bold hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors lg:bg-white/5 lg:border-white/10 lg:text-white lg:hover:bg-white/10"
-          >
-            Back
-          </button>
-          <button
-            onClick={handleNext}
-            disabled={
-              isLoading ||
-              (currentStep === 1 ? !profileData.firstName.trim() || !profileData.lastName.trim() : false) ||
-              (currentStep === 2
-                ? !passwordData.agree ||
-                  passwordData.password !== passwordData.confirm ||
-                  !/[A-Z]/.test(passwordData.password) ||
-                  !/[a-z]/.test(passwordData.password) ||
-                  !/\d/.test(passwordData.password) ||
-                  !/[^A-Za-z0-9]/.test(passwordData.password) ||
-                  passwordData.password.length < 8
-                : false)
-            }
-            className="flex-1 px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            {isLoading ? "Saving..." : currentStep === 2 ? "Create account" : "Continue"}
-          </button>
+          <div className="flex flex-col gap-3 pt-4">
+            <button
+              onClick={handleNext}
+              disabled={isLoading}
+              className="w-full px-6 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 disabled:shadow-none"
+            >
+              {isLoading ? "Saving..." : currentStep === onboardingSteps.length ? "Complete setup" : "Continue"}
+            </button>
+            {currentStep > 1 && (
+              <button
+                onClick={handleBack}
+                disabled={isLoading}
+                className="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-600 font-bold hover:bg-slate-100 transition-all active:scale-95"
+              >
+                Go back
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </AuthLayout>

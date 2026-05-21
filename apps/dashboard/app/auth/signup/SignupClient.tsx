@@ -78,15 +78,22 @@ export default function SignupClient() {
   return (
     <AuthLayout title="Create your account" subtitle="Fast setup. Verified access. No stress.">
       <form onSubmit={handleContinue} className="space-y-5">
-        <div className="flex items-center justify-center gap-3">
-          <div className={`h-1.5 rounded-full transition-all ${step === "ROLE" ? "w-10 bg-brand-500" : "w-10 bg-brand-500/50"}`} />
-          <div className={`h-1.5 rounded-full transition-all ${step === "EMAIL" ? "w-10 bg-brand-500" : "w-10 bg-slate-200 lg:bg-white/10"}`} />
-          <div className="h-1.5 w-10 rounded-full bg-slate-200 lg:bg-white/10" />
+        <div className="flex items-center justify-center gap-0 max-w-[200px] mx-auto">
+          <div className="w-3 h-3 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(34,197,94,0.4)] shrink-0" />
+          <div className="flex-1 h-[2px] min-w-[50px] bg-slate-100 relative overflow-hidden">
+            <div 
+              className="absolute inset-y-0 left-0 bg-brand-500 transition-all duration-500"
+              style={{ width: step === "EMAIL" ? "100%" : "0%" }}
+            />
+          </div>
+          <div className={`w-3 h-3 rounded-full transition-all duration-500 shrink-0 ${step === "EMAIL" ? "bg-brand-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" : "bg-slate-100"}`} />
+          <div className="flex-1 h-[2px] min-w-[50px] bg-slate-100" />
+          <div className="w-3 h-3 rounded-full bg-slate-100 shrink-0" />
         </div>
 
         {step === "ROLE" ? (
           <div className="space-y-4">
-            <div className="text-sm text-slate-600 lg:text-white/70">How would you like to use GIGS Rentals?</div>
+            <div className="text-sm text-slate-600">How would you like to use GIGS Rentals?</div>
             <div className="space-y-3">
               <button
                 type="button"
@@ -96,24 +103,24 @@ export default function SignupClient() {
                 }}
                 className={`w-full text-left p-5 rounded-3xl border transition-all ${
                   intent === "renter"
-                    ? "border-slate-900 bg-slate-50 lg:border-brand-400/60 lg:bg-white/10"
-                    : "border-slate-200 bg-white hover:bg-slate-50 lg:border-white/10 lg:bg-white/5 lg:hover:bg-white/10"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                     intent === "renter"
-                      ? "bg-slate-900 text-white lg:bg-brand-500"
-                      : "bg-slate-100 text-slate-700 lg:bg-white/10 lg:text-white/70"
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-700"
                   }`}>
                     <i className="ph-bold ph-magnifying-glass text-xl"></i>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-slate-900 lg:text-white">Individual / Student</div>
-                    <div className="text-sm text-slate-600 lg:text-white/60 mt-1">Find accommodation, message hosts, save wishlists, and join roommates.</div>
+                    <div className="font-bold text-slate-900">Individual / Student</div>
+                    <div className="text-sm text-slate-600 mt-1">Find accommodation, message hosts, save wishlists, and join roommates.</div>
                   </div>
                   <i className={`ph ph-check-circle text-xl ${
-                    intent === "renter" ? "text-brand-600 lg:text-brand-300" : "text-slate-300 lg:text-white/20"
+                    intent === "renter" ? "text-brand-600" : "text-slate-300"
                   }`}></i>
                 </div>
               </button>
@@ -126,24 +133,24 @@ export default function SignupClient() {
                 }}
                 className={`w-full text-left p-5 rounded-3xl border transition-all ${
                   intent === "lister"
-                    ? "border-slate-900 bg-slate-50 lg:border-brand-400/60 lg:bg-white/10"
-                    : "border-slate-200 bg-white hover:bg-slate-50 lg:border-white/10 lg:bg-white/5 lg:hover:bg-white/10"
+                    ? "border-slate-900 bg-slate-50"
+                    : "border-slate-200 bg-white hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-start gap-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
                     intent === "lister"
-                      ? "bg-slate-900 text-white lg:bg-brand-500"
-                      : "bg-slate-100 text-slate-700 lg:bg-white/10 lg:text-white/70"
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-100 text-slate-700"
                   }`}>
                     <i className="ph-bold ph-storefront text-xl"></i>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <div className="font-bold text-slate-900 lg:text-white">Agent / Landlord</div>
-                    <div className="text-sm text-slate-600 lg:text-white/60 mt-1">Host verified listings, manage inquiries, and publish properties.</div>
+                    <div className="font-bold text-slate-900">Agent / Landlord</div>
+                    <div className="text-sm text-slate-600 mt-1">Host verified listings, manage inquiries, and publish properties.</div>
                   </div>
                   <i className={`ph ph-check-circle text-xl ${
-                    intent === "lister" ? "text-brand-600 lg:text-brand-300" : "text-slate-300 lg:text-white/20"
+                    intent === "lister" ? "text-brand-600" : "text-slate-300"
                   }`}></i>
                 </div>
               </button>
@@ -178,7 +185,7 @@ export default function SignupClient() {
             />
             <button
               type="button"
-              className="text-left text-sm font-semibold text-slate-600 hover:text-slate-900 lg:text-white/70 lg:hover:text-white underline underline-offset-4"
+              className="text-left text-sm font-semibold text-slate-600 hover:text-slate-900 underline underline-offset-4"
               onClick={() => {
                 setStep("ROLE");
                 setError("");
@@ -193,7 +200,7 @@ export default function SignupClient() {
         <button
           type="submit"
           disabled={isLoading || (step === "ROLE" ? !intent : !email.trim())}
-          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 disabled:shadow-none"
         >
           {isLoading ? (
             <>

@@ -81,7 +81,7 @@ export default function HostBookingsPage() {
     <div className="max-w-5xl mx-auto">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="text-2xl font-display font-bold text-slate-900">Bookings</div>
+          <div className="text-2xl md:text-3xl font-display font-semibold text-slate-900 tracking-tight">Bookings</div>
           <div className="text-sm text-slate-500 mt-1">Incoming reservations and join requests.</div>
         </div>
         <button
@@ -111,38 +111,58 @@ export default function HostBookingsPage() {
             return (
               <div
                 key={b.id}
-                className={`bg-white rounded-[22px] border p-5 flex items-start justify-between gap-4 ${
-                  b.seenByHost ? "border-slate-200" : "border-brand-200 bg-brand-50/30"
+                className={`bg-white rounded-[24px] border p-5 flex flex-col sm:flex-row items-start justify-between gap-5 ${
+                  b.seenByHost ? "border-slate-200" : "border-brand-200 bg-brand-50/30 shadow-lg shadow-brand-500/5"
                 }`}
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700 bg-slate-100 px-3 py-1 rounded-full">
+                <div className="min-w-0 w-full sm:w-auto">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/50">
                       {kind === "JOIN_REQUEST" ? "Join request" : "Reservation"}
                     </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-700 bg-white px-3 py-1 rounded-full border border-slate-200">
+                    <span className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border ${
+                      status === 'PENDING' ? 'text-amber-700 bg-amber-50 border-amber-100/50' :
+                      status === 'CONFIRMED' ? 'text-emerald-700 bg-emerald-50 border-emerald-100/50' :
+                      'text-slate-700 bg-slate-100 border-slate-200/50'
+                    }`}>
                       {status}
                     </span>
-                    {!b.seenByHost ? <span className="w-2 h-2 rounded-full bg-brand-500" /> : null}
-                  </div>
-                  <div className="mt-2 font-bold text-slate-900 line-clamp-1">{b.listingTitle || "Listing"}</div>
-                  <div className="text-sm text-slate-600 mt-1">
-                    From <span className="font-bold">{b.guestName || "Guest"}</span>
-                    {b.checkIn || b.checkOut ? (
-                      <>
-                        {" "}
-                        • {b.checkIn || "—"} → {b.checkOut || "—"}
-                      </>
+                    {!b.seenByHost ? (
+                      <span className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-500 text-white text-[9px] font-black uppercase tracking-tighter rounded-full">
+                        <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                        New
+                      </span>
                     ) : null}
-                    {typeof b.guests === "number" ? <> • {b.guests} guest(s)</> : null}
                   </div>
-                  <div className="text-xs text-slate-500 mt-2">Requested {new Date(b.createdAt).toLocaleString()}</div>
+                  <div className="mt-4 font-bold text-slate-900 text-lg sm:text-base line-clamp-1">{b.listingTitle || "Listing"}</div>
+                  <div className="text-sm text-slate-600 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="flex items-center gap-1.5">
+                      <i className="ph ph-user text-slate-400"></i>
+                      <span className="font-bold text-slate-700">{b.guestName || "Guest"}</span>
+                    </span>
+                    {b.checkIn || b.checkOut ? (
+                      <span className="flex items-center gap-1.5 before:content-['•'] before:mr-2 before:text-slate-300">
+                        <i className="ph ph-calendar text-slate-400"></i>
+                        {b.checkIn || "—"} → {b.checkOut || "—"}
+                      </span>
+                    ) : null}
+                    {typeof b.guests === "number" ? (
+                      <span className="flex items-center gap-1.5 before:content-['•'] before:mr-2 before:text-slate-300">
+                        <i className="ph ph-users text-slate-400"></i>
+                        {b.guests} guest(s)
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="text-xs text-slate-400 mt-3 flex items-center gap-1.5 font-medium">
+                    <i className="ph ph-clock"></i>
+                    Requested {new Date(b.createdAt).toLocaleString()}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                   <Link
                     href={`/listings/${encodeURIComponent(String(b.listingId))}`}
-                    className="px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+                    className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-brand-100 bg-brand-50/30 text-brand-700 font-bold hover:bg-brand-100/80 hover:border-brand-200 transition-all text-center text-sm active:scale-95"
                   >
                     View
                   </Link>
@@ -151,14 +171,14 @@ export default function HostBookingsPage() {
                       <button
                         type="button"
                         onClick={() => updateBooking(b.id, { status: "DECLINED", seenByHost: true })}
-                        className="px-4 py-2 rounded-xl border border-red-200 bg-red-50 text-red-700 font-bold hover:bg-red-100 transition-colors"
+                        className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl border border-red-200 bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-all text-center text-sm active:scale-95"
                       >
                         Decline
                       </button>
                       <button
                         type="button"
                         onClick={() => updateBooking(b.id, { status: "CONFIRMED", seenByHost: true })}
-                        className="px-4 py-2 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
+                        className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-all text-center text-sm shadow-lg shadow-brand-500/20 active:scale-95"
                       >
                         Confirm
                       </button>
@@ -167,7 +187,7 @@ export default function HostBookingsPage() {
                     <button
                       type="button"
                       onClick={() => updateBooking(b.id, { seenByHost: true })}
-                      className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
+                      className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-all text-center text-sm active:scale-95"
                     >
                       Seen
                     </button>

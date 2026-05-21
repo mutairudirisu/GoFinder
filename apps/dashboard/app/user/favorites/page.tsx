@@ -77,12 +77,12 @@ export default function FavoritesPage() {
       >
         <div className="flex items-start justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-display font-bold text-slate-900">Favorites</h2>
-            <p className="text-slate-500 mt-2">Saved places you can come back to anytime.</p>
+            <h2 className="text-2xl md:text-3xl font-display font-semibold text-slate-900 tracking-tight">Favorites</h2>
+            <p className="text-slate-500 mt-1">Saved places you can come back to anytime.</p>
           </div>
           <Link
             href="/"
-            className="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors"
+            className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-700 hover:bg-brand-50 hover:text-brand-700 transition-colors shadow-sm"
           >
             <i className="ph-bold ph-magnifying-glass"></i>
             Browse

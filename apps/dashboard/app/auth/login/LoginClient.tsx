@@ -74,7 +74,7 @@ export default function LoginClient() {
         <button
           type="submit"
           disabled={isLoading || authLoading || !email.trim()}
-          className="w-full px-6 py-3 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-200 lg:disabled:bg-white/10 text-white font-bold transition-colors disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full px-6 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 disabled:shadow-none"
         >
           {isLoading ? (
             <>
@@ -90,16 +90,16 @@ export default function LoginClient() {
         </button>
 
         <div className="relative flex items-center gap-4">
-          <div className="flex-1 h-px bg-slate-200 lg:bg-white/10"></div>
-          <span className="text-sm font-medium text-slate-500 lg:text-white/60">or</span>
-          <div className="flex-1 h-px bg-slate-200 lg:bg-white/10"></div>
+          <div className="flex-1 h-px bg-slate-100"></div>
+          <span className="text-sm font-medium text-slate-400 uppercase tracking-widest">or</span>
+          <div className="flex-1 h-px bg-slate-100"></div>
         </div>
 
         <OAuthButtons showEmailDivider={false} />
 
-        <p className="text-center text-sm text-slate-600 lg:text-white/70">
+        <p className="text-center text-sm text-slate-500 font-medium">
           Don&apos;t have an account?{" "}
-          <Link href="/auth/signup" className="font-bold text-slate-900 hover:text-slate-900/90 lg:text-white lg:hover:text-white/90 underline underline-offset-4">
+          <Link href="/auth/signup" className="font-bold text-brand-600 hover:text-brand-700 underline underline-offset-4">
             Create one
           </Link>
         </p>

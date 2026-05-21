@@ -2,12 +2,17 @@
 
 import { use, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Header } from "@/components/layout";
+import { motion, AnimatePresence } from "framer-motion";
 import { Footer } from "@repo/ui";
 import type { Listing } from "@/types/listing";
 import { ListingResultCard } from "@/components/listings/ListingResultCard";
 import { MapComponent } from "@/components/listings/MapComponent";
+import {
+  ListingsSearchHeader,
+  type ListingsSearchOption,
+} from "@/components/listings/ListingsSearchHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useMessages } from "@/context/MessageContext";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
@@ -18,7 +23,8 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const locationKey = decodeURIComponent(String(location ?? "")).trim();
   const locationCity = locationKey.split(",")[0]?.trim() || locationKey;
   const searchParams = useSearchParams();
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { unreadCount } = useMessages();
 
   const browseTab = useMemo(() => {
@@ -35,11 +41,6 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const [isLoading, setIsLoading] = useState(true);
   const [selectedType, setSelectedType] = useState<string>("ALL");
   const [query, setQuery] = useState("");
-  const [queryDropdownOpen, setQueryDropdownOpen] = useState(false);
-  const queryCloseTimerRef = useRef<number | null>(null);
-  const [mobileQueryOpen, setMobileQueryOpen] = useState(false);
-  const [mobileQueryDraft, setMobileQueryDraft] = useState("");
-  const mobileQueryInputRef = useRef<HTMLInputElement | null>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceMin, setPriceMin] = useState<number | "">("");
   const [priceMax, setPriceMax] = useState<number | "">("");
@@ -57,12 +58,11 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const [topBarBottom, setTopBarBottom] = useState(0);
   const drawerScrollRef = useRef<HTMLDivElement | null>(null);
   const lastDrawerScrollTopRef = useRef(0);
-  const [drawerScrollTop, setDrawerScrollTop] = useState(0);
   const headerMaxHRef = useRef(0);
   const fullBleedHRef = useRef(0);
   const peekHRef = useRef(0);
   const isDraggingRef = useRef(false);
-  const [mapButtonDismissed, setMapButtonDismissed] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { hidden: mobileNavHidden } = useAutoHideOnScroll({
     mode: "element",
     enabled: !authLoading && isAuthenticated,
@@ -108,18 +108,6 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       document.body.style.overflow = prevOverflow;
     };
   }, [filtersOpen]);
-
-  useEffect(() => {
-    if (!mobileQueryOpen) return;
-    setMobileQueryDraft(query);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const t = window.setTimeout(() => mobileQueryInputRef.current?.focus(), 50);
-    return () => {
-      window.clearTimeout(t);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [mobileQueryOpen, query]);
 
   const toggleLike = (id: string) => {
     if (typeof window === "undefined") return;
@@ -182,6 +170,40 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     const base = q ? querySuggestions.filter((s) => s.value.toLowerCase().includes(q)) : querySuggestions;
     return base.slice(0, 10);
   }, [query, querySuggestions]);
+
+  const searchSuggestionOptions = useMemo<ListingsSearchOption[]>(() => {
+    return visibleQuerySuggestions.map((suggestion) => {
+      const iconClassName =
+        suggestion.kind === "location"
+          ? "ph-bold ph-map-pin"
+          : suggestion.kind === "district"
+            ? "ph-bold ph-compass"
+            : suggestion.kind === "street"
+              ? "ph-bold ph-road-horizon"
+              : suggestion.kind === "building"
+                ? "ph-bold ph-buildings"
+                : "ph-bold ph-house-line";
+
+      return {
+        value: suggestion.value,
+        label: suggestion.value,
+        subtitle: suggestion.subtitle,
+        iconClassName,
+      };
+    });
+  }, [visibleQuerySuggestions]);
+
+  const searchTypeOptions = useMemo<ListingsSearchOption[]>(() => {
+    return typeOptions.map((type) => ({
+      value: type,
+      label: type === "ALL" ? "Any type" : type.replaceAll("_", " "),
+    }));
+  }, [typeOptions]);
+
+  const selectedTypeLabel =
+    selectedType === "ALL"
+      ? "Any type"
+      : searchTypeOptions.find((option) => option.value === selectedType)?.label ?? selectedType.replaceAll("_", " ");
 
   useEffect(() => {
     if (selectedType !== "ALL" && !typeOptions.includes(selectedType)) setSelectedType("ALL");
@@ -270,18 +292,16 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     };
   }, [locationKey]);
 
-  const topLimit = topBarBottom ? topBarBottom + 12 : 0;
+  const topLimit = topBarBottom ? topBarBottom - 40 : 0;
   const bottomNavH = 64;
   const availableH = viewportH ? Math.max(280, viewportH - bottomNavH) : 680;
-  const headerMaxH = viewportH ? Math.max(280, viewportH - topLimit - bottomNavH) : 680;
-  const fullBleedH = viewportH ? availableH : 740;
-  const peekH = viewportH ? Math.min(Math.round(availableH * 0.42), headerMaxH) : 320;
-  const midH = viewportH ? Math.min(Math.round(availableH * 0.6), headerMaxH) : 520;
-  const topBarElevated = (sheetH || peekH) > midH - 24;
-  const collapsedH = Math.min(124, peekH);
+  const headerMaxH = viewportH ? Math.max(280, viewportH - (topBarBottom ? topBarBottom - 12 : 0) - bottomNavH) : 680;
+  const fullBleedH = viewportH ? Math.max(280, viewportH - (topBarBottom ? topBarBottom - 60 : 0) - bottomNavH) : 680;
+  const peekH = viewportH ? Math.min(Math.round(availableH * 0.82), headerMaxH) : 620;
+  const midH = viewportH ? Math.min(Math.round(availableH * 0.92), headerMaxH) : 750;
+  const collapsedH = 24;
   const sheetCurrentH = sheetH || peekH;
-  const isCollapsed = sheetCurrentH <= collapsedH + 8;
-  const mapButtonVisible = !isCollapsed && !mapButtonDismissed && drawerScrollTop > 80;
+  const isCollapsed = sheetCurrentH <= collapsedH + 10;
 
   useEffect(() => {
     headerMaxHRef.current = headerMaxH;
@@ -294,10 +314,6 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     if (!viewportH) return;
     setSheetH((prev) => (prev > 0 ? Math.min(Math.max(prev, peekH), headerMaxH) : peekH));
   }, [headerMaxH, peekH, viewportH]);
-
-  useEffect(() => {
-    if (!isCollapsed) setMapButtonDismissed(false);
-  }, [isCollapsed]);
 
   const snapSheet = (next: number) => {
     let target = peekH;
@@ -336,19 +352,23 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       raf = window.requestAnimationFrame(() => {
         raf = 0;
         const top = el.scrollTop;
+        
+        // Update scrolled state for desktop header
+        setIsScrolled(top > 80);
+
         const prevTop = lastDrawerScrollTopRef.current;
         const delta = top - prevTop;
         lastDrawerScrollTopRef.current = top;
-        setDrawerScrollTop(top);
 
         if (isDraggingRef.current) return;
 
         if (delta > 0) {
           setSheetH((prev) => {
             const base = prev > 0 ? prev : peekHRef.current;
+            // Increase height more responsively while scrolling
             const next = Math.min(
               fullBleedHRef.current,
-              Math.max(base, headerMaxHRef.current) + Math.min(24, delta)
+              base + Math.min(40, delta * 1.5)
             );
             return next;
           });
@@ -369,132 +389,97 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      <div ref={topBarRef} className="fixed top-0 z-50 w-full flex flex-col bg-red-200">
-        <Header
-          hideCenterTabs
-          centerContent={
-            <div className="">
-              <div className="flex gap-4 items-center mb-6 md:mb-0">
-                <Link
-                  href="/"
-                  className=" shrink-0 w-12 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-colors"
-                  aria-label="Back to dashboard"
-                >
-                  <i className="ph-bold ph-arrow-left text-lg" />
-                </Link>
-                <div className="relative flex-1 w-[230px] md:max-w-[760px]">
-                  <div className="bg-white border border-slate-200 rounded-full shadow-sm overflow-hidden flex items-center">
-                    <div className="flex items-center gap-2 px-4 py-3 font-bold text-slate-800 shrink-0 hidden md:flex">
+      <div ref={topBarRef} className="fixed top-0 z-50 w-full flex flex-col bg-white shadow-sm transition-all duration-300">
+        <div className="hidden md:block">
+          <Header
+            hideCenterTabs
+            centerContent={
+              <AnimatePresence>
+                {isScrolled && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="flex items-center justify-center gap-3"
+                  >
+                    <Link
+                      href="/"
+                      className="shrink-0 w-11 h-11 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-800 hover:bg-slate-50 transition-colors"
+                      aria-label="Back to dashboard"
+                    >
+                      <i className="ph-bold ph-arrow-left text-lg" />
+                    </Link>
+                    <div className="flex min-w-0 items-center gap-2 text-sm font-bold text-slate-800">
                       <i className={`ph ${headerIcon} text-slate-600`}></i>
-                      <span className="truncate max-w-[220px]">
+                      <span className="truncate max-w-[280px]">
                         {browseTab === "homes" ? "Homes" : browseTab === "experiences" ? "Experiences" : "Services"} in {locationCity}
                       </span>
                     </div>
-                    <div className="h-8 w-px bg-slate-200" />
-                    <div className="flex-1 flex items-center gap-3 px-4 py-3">
-                      <i className="ph ph-magnifying-glass text-slate-400"></i>
-                      <input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onFocus={() => {
-                          if (queryCloseTimerRef.current) window.clearTimeout(queryCloseTimerRef.current);
-                          setQueryDropdownOpen(true);
-                        }}
-                        onBlur={() => {
-                          queryCloseTimerRef.current = window.setTimeout(() => setQueryDropdownOpen(false), 120);
-                        }}
-                        placeholder={`Search in ${locationCity}...`}
-                        className="w-full bg-transparent outline-none py-2 text-sm text-slate-900 placeholder:text-slate-400"
-                      />
-                      {query.trim() !== "" ? (
-                        <button
-                          type="button"
-                          onClick={() => setQuery("")}
-                          className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-brand-50 hover:text-brand-700 transition-colors"
-                          aria-label="Clear search"
-                        >
-                          <i className="ph ph-x text-sm"></i>
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            }
+          />
+        </div>
+        
+        <motion.div
+          animate={{ 
+            height: isScrolled ? 0 : "auto",
+            opacity: isScrolled ? 0 : 1
+          }}
+          style={{
+            pointerEvents: isScrolled ? "none" : "auto"
+          }}
+          transition={{ duration: 0.2 }}
+          className="hidden md:block overflow-hidden"
+        >
+          <ListingsSearchHeader
+            className="shadow-sm"
+            locationValue={query}
+            locationPlaceholder={`Search in ${locationCity}...`}
+            locationOptions={searchSuggestionOptions}
+            locationEmptyLabel="No suggestions found"
+            onLocationInputChange={setQuery}
+            onLocationSelect={setQuery}
+            onLocationSubmit={setQuery}
+            selectedType={selectedType}
+            typeOptions={searchTypeOptions}
+            typePlaceholder="Property type"
+            onTypeChange={setSelectedType}
+            onFilterClick={() => setFiltersOpen(true)}
+            onAvailabilityClick={() => setFiltersOpen(true)}
+            activeFiltersCount={activeFiltersCount}
+            mobileTitle={`Search ${itemLabel.toLowerCase()}s`}
+            mobileSubtitle={`${locationCity} / Anytime / ${selectedType === "ALL" ? "Any type" : selectedTypeLabel}`}
+          />
+        </motion.div>
 
-                  {/* search suggestions */}
-
-                  {queryDropdownOpen ? (
-                    <div className="absolute w-[360px] items-center -left-[52px] right-0 top-full mt-3 bg-white rounded-[18px] border border-slate-200 shadow-2xl overflow-hidden">
-                      <div className="px-5 pt-5 pb-3 flex items-center justify-between gap-3">
-                        <div className="text-xs font-bold text-slate-600">Suggested</div>
-                        <button
-                          type="button"
-                          onMouseDown={(e) => e.preventDefault()}
-                          onClick={() => setQueryDropdownOpen(false)}
-                          className="text-xs underline font-bold text-red-500 hover:text-slate-900 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                      <div className="max-h-[45vh] overflow-y-auto px-2 pb-4">
-                        {visibleQuerySuggestions.map((s) => {
-                          const icon =
-                            s.kind === "location"
-                              ? "ph-map-pin"
-                              : s.kind === "district"
-                                ? "ph-compass"
-                                : s.kind === "street"
-                                  ? "ph-road-horizon"
-                                  : s.kind === "building"
-                                    ? "ph-buildings"
-                                    : "ph-house-line";
-                          return (
-                            <button
-                              key={`${s.kind}:${s.value}`}
-                              type="button"
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => {
-                                setQuery(s.value);
-                                setQueryDropdownOpen(false);
-                              }}
-                              className="w-full flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-slate-50 transition-colors"
-                            >
-                              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                                <i className={`ph-bold ${icon} text-2xl text-slate-700`} />
-                              </div>
-                              <div className="text-left min-w-0">
-                                <div className="font-bold text-slate-900 truncate">{s.value}</div>
-                                <div className="text-sm text-slate-500 truncate">{s.subtitle}</div>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : null}
-                </div>
-
-                {/* Filter button */}
-
-                <button
-                  type="button"
-                  onClick={() => setFiltersOpen(true)}
-                  className="shrink-0 px-4 h-12 rounded-full bg-white border border-slate-200 shadow-sm flex items-center gap-2 font-bold text-slate-800 hover:bg-slate-50 transition-colors"
-                >
-                  <i className="ph-bold ph-sliders-horizontal text-lg" />
-                  <span className="text-sm hidden md:block">Filters</span>
-                  {activeFiltersCount > 0 ? (
-                    <span className="ml-1 min-w-6 h-6 px-2 rounded-full bg-slate-900 text-white text-xs font-bold inline-flex items-center justify-center">
-                      {activeFiltersCount}
-                    </span>
-                  ) : null}
-                </button>
-              </div>
-            </div>
-          }
-        />
+        <div className="md:hidden">
+          <ListingsSearchHeader
+            className="shadow-sm"
+            locationValue={query}
+            locationPlaceholder={`Search in ${locationCity}...`}
+            locationOptions={searchSuggestionOptions}
+            locationEmptyLabel="No suggestions found"
+            onLocationInputChange={setQuery}
+            onLocationSelect={setQuery}
+            onLocationSubmit={setQuery}
+            selectedType={selectedType}
+            typeOptions={searchTypeOptions}
+            typePlaceholder="Property type"
+            onTypeChange={setSelectedType}
+            onFilterClick={() => setFiltersOpen(true)}
+            onAvailabilityClick={() => setFiltersOpen(true)}
+            onBackClick={() => router.back()}
+            activeFiltersCount={activeFiltersCount}
+            mobileTitle={`Search ${itemLabel.toLowerCase()}s`}
+            mobileSubtitle={`${locationCity} / Anytime / ${selectedType === "ALL" ? "Any type" : selectedTypeLabel}`}
+          />
+        </div>
       </div>
 
         {/* Listings Section */}
-      <section className="mt-0 md:pt-12 pb-0 md:mt-24 md:pt-22 md:pb-16">
+      <section className="mt-0 md:pt-12 pb-0 md:mt-56 md:pb-16">
         <div className="mx-auto px-0 md:px-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:items-start">
             {/* Card grid area */}
@@ -653,9 +638,33 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
       <div className="fixed inset-x-0 bottom-0 z-40 md:hidden">
         <div
-          className="w-full bg-white rounded-t-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
+          className="w-full bg-white rounded-t-[28px] border border-slate-200 shadow-2xl overflow-hidden flex flex-col relative"
           style={{ height: sheetCurrentH }}
         >
+          {/* Floating Toggle Button (Map/List) */}
+          <motion.div
+            initial={false}
+            className="fixed bottom-24 left-1/2 z-50 pointer-events-auto"
+            style={{ x: "-50%" }}
+          >
+            <button
+              onClick={() => {
+                if (isCollapsed) {
+                  setSheetH(peekH);
+                } else {
+                  setSheetH(collapsedH);
+                  if (drawerScrollRef.current) {
+                    drawerScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#222222] text-white font-bold text-sm shadow-xl active:scale-95 transition-all duration-300"
+            >
+              <span>{isCollapsed ? "Results" : "Map"}</span>
+              <i className={`ph-bold ${isCollapsed ? "ph-list-bullets" : "ph-map"} text-base`} />
+            </button>
+          </motion.div>
+
           <div
             className="px-4 pt-3 pb-2 touch-none"
             onPointerDown={onHandlePointerDown}
@@ -666,7 +675,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
             <div className="mx-auto h-1.5 w-12 rounded-full bg-slate-300" />
           </div>
 
-          <div ref={drawerScrollRef} className="flex-1 overflow-y-auto px-6 pb-8">
+          <div ref={drawerScrollRef} className="flex-1 overflow-y-auto px-6 pb-40">
             <div className="flex items-center justify-between gap-4 py-2">
               <div className="text-sm font-bold text-slate-900 ">
                 {filteredListings.length} {itemLabel.toLowerCase()}

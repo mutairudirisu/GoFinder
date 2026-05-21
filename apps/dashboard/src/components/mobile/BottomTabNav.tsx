@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export type BottomTabNavItem = {
@@ -20,10 +21,27 @@ export function BottomTabNav({
   hidden: boolean;
   zIndexClassName?: string;
 }) {
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const initialHeight = window.innerHeight;
+    
+    const handleResize = () => {
+      // If the window height decreases significantly (more than 150px), 
+      // the keyboard is likely up
+      const currentHeight = window.innerHeight;
+      const isVisible = initialHeight - currentHeight > 150;
+      setKeyboardVisible(isVisible);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <nav
       className={`fixed md:hidden bottom-0 left-0 right-0 ${zIndexClassName} bg-white border-t border-slate-200 transition-transform duration-200 ${
-        hidden ? "translate-y-full" : "translate-y-0"
+        hidden || isKeyboardVisible ? "translate-y-full" : "translate-y-0"
       }`}
     >
       <div className="h-16 flex items-center justify-around px-2">

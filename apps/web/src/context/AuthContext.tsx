@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -17,7 +17,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
   signup: (email: string, name: string, method: "google" | "email") => Promise<void>;
   verifyOTP: (otp: string) => Promise<boolean>;
   completeProfile: (data: Partial<User>) => Promise<void>;
@@ -31,7 +31,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   // Check for stored auth on mount - only once
   useEffect(() => {
@@ -43,14 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedUser && isMounted) {
         try {
           setUser(JSON.parse(storedUser));
-        } catch (e) {
+        } catch {
           localStorage.removeItem("gigs_user");
         }
       }
       if (isMounted) {
         setIsLoading(false);
       }
-    } catch (e) {
+    } catch {
       if (isMounted) {
         setIsLoading(false);
       }
@@ -60,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string) => {
     setIsLoading(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));

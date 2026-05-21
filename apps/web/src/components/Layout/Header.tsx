@@ -1,21 +1,104 @@
 "use client";
 import Link from "next/link";
+import { useRef, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "./Logo";
 import { NavLinks } from "./NavLinks";
 import { DASHBOARD_URL } from "./header.constants";
+import { useHeaderAuth } from "./useHeaderAuth";
  
 export const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated, logout } = useHeaderAuth();
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b-2 border-black">
-      <div className="max-w-7xl mx-auto px-2 md:px-4 h-16 sm:h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 sm:h-20 flex items-center justify-between">
         <Logo />
         <NavLinks />
-        <Link
-          href={`${DASHBOARD_URL}/auth/signup`}
-          className="px-5 py-2.5 bg-black text-white font-bold rounded-lg border-2 border-brand-dark hover:bg-brand-accent hover:border-brand-accent hover:-translate-y-1 hover:shadow-brutal transition-all duration-300 text-sm"
-        >
-          Get Started
-        </Link>
+        
+        <div className="flex items-center gap-4">
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              {/* Messages/Chat Icon */}
+              <Link
+                href={`${DASHBOARD_URL}/user/messages`}
+                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors"
+              >
+                <i className="ph-bold ph-chat-circle-dots text-xl text-slate-700"></i>
+              </Link>
+
+              {/* User Menu */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="w-10 h-10 rounded-full bg-brand-500 border-2 border-black flex items-center justify-center text-white font-bold text-sm shadow-brutal-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+                >
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </button>
+
+                <AnimatePresence>
+                  {isMenuOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-2xl border-2 border-black overflow-hidden"
+                    >
+                      <div className="px-4 py-3 border-b border-slate-100">
+                        <p className="font-bold text-slate-900 truncate">{user?.name}</p>
+                        <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+                      </div>
+                      <div className="py-2">
+                        <Link
+                          href={DASHBOARD_URL}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-brand-50 text-slate-700 font-medium transition-colors"
+                        >
+                          <i className="ph-bold ph-squares-four"></i>
+                          Dashboard
+                        </Link>
+                        <Link
+                          href={`${DASHBOARD_URL}/user/profile`}
+                          className="flex items-center gap-3 px-4 py-2 hover:bg-brand-50 text-slate-700 font-medium transition-colors"
+                        >
+                          <i className="ph-bold ph-user"></i>
+                          Profile
+                        </Link>
+                        <button
+                          onClick={logout}
+                          className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-red-600 font-medium transition-colors text-left"
+                        >
+                          <i className="ph-bold ph-sign-out"></i>
+                          Log out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          ) : (
+            <Link
+              href={`${DASHBOARD_URL}/auth/signup`}
+              className="px-5 py-2.5 bg-black text-white font-bold rounded-lg border-2 border-brand-dark hover:bg-brand-accent hover:border-brand-accent hover:-translate-y-1 hover:shadow-brutal transition-all duration-300 text-sm"
+            >
+              Get Started
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );

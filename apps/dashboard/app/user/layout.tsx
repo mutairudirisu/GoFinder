@@ -86,17 +86,20 @@ function UserDashboardLayoutContent({
     pathname === "/user" ||
     pathname.startsWith("/user/profile") ||
     pathname.startsWith("/user/settings") ||
-    pathname.startsWith("/user/notifications");
+    pathname.startsWith("/user/notifications") ||
+    pathname.startsWith("/user/messages");
+
+  const isMessagesPage = pathname.startsWith("/user/messages");
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="hidden md:block">
         <UserSideNav />
       </div>
 
       {/* Main Content Area */}
       <main
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ml-0 ${
+        className={`flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-300 ml-0 ${
           isCollapsed ? "md:ml-20" : "md:ml-64"
         }`}
       >
@@ -157,13 +160,16 @@ function UserDashboardLayoutContent({
         </header>
 
         {/* Page Content - Rendered as children */}
-        <div ref={scrollContainerRef} className="flex-1 p-4 md:p-6 overflow-y-auto pb-24 md:pb-6">
+        <div 
+          ref={scrollContainerRef} 
+          className={`flex-1 overflow-y-auto min-h-0 ${isMessagesPage ? "pb-0" : "pb-24"} md:pb-6 ${isProfileRoute ? "p-0 md:p-6 lg:p-8" : "p-4 md:p-6"}`}
+        >
           {children}
         </div>
       </main>
 
       <BottomTabNav
-        hidden={mobileNavHidden}
+        hidden={mobileNavHidden || isMessagesPage}
         items={[
           { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl" },
           {

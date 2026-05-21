@@ -147,124 +147,138 @@ export function AccountProfile({ mode }: { mode: Mode }) {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="max-w-6xl">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="w-full">
       <div className="md:hidden pb-24">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-display font-bold text-slate-900">Profile</h1>
+        <div className="flex items-center justify-between py-4 px-4 bg-white border-b border-slate-50">
+          <h1 className="text-xl font-display font-bold text-slate-900 tracking-tight">Profile</h1>
           <Link
             href="/user/notifications"
-            className="w-11 h-11 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700"
+            className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-700 shadow-sm"
             aria-label="Notifications"
           >
-            <i className="ph-bold ph-bell text-xl"></i>
+            <i className="ph-bold ph-bell text-lg"></i>
           </Link>
         </div>
 
-        <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-20 h-20 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-3xl">
-              {user?.name?.charAt(0).toUpperCase() || "U"}
-            </div>
-            <div className="mt-4 font-display font-bold text-2xl text-slate-900">{user?.name || "User"}</div>
-            <div className="mt-1 text-sm text-slate-500">{mode === "host" ? "Host" : "Guest"}</div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <Link
-            href="/user/bookings"
-            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                <i className="ph-bold ph-suitcase text-xl text-slate-700"></i>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded-full">
-                New
-              </span>
-            </div>
-            <div className="mt-4 font-bold text-slate-900">Past trips</div>
-          </Link>
-
-          <Link
-            href="/user/connections"
-            className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-                <i className="ph-bold ph-users-three text-xl text-slate-700"></i>
-              </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest bg-slate-900 text-white px-2 py-1 rounded-full">
-                New
-              </span>
-            </div>
-            <div className="mt-4 font-bold text-slate-900">Connections</div>
-          </Link>
-        </div>
-
-        <div className="mt-6 bg-white rounded-3xl border border-slate-200 p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center">
-              <i className="ph-bold ph-storefront text-2xl text-slate-700"></i>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-bold text-slate-900">Become a host</div>
-              <div className="text-sm text-slate-500 mt-1">It’s easy to start hosting and earn extra income.</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 bg-white rounded-3xl border border-slate-200 overflow-hidden">
-          {[
-            { icon: "ph-gear", label: "Account settings", href: "/user/settings" },
-            { icon: "ph-question", label: "Get help", href: null },
-            { icon: "ph-user", label: "View profile", href: "/user/profile/edit" },
-            { icon: "ph-lock", label: "Privacy", href: "/user/settings" },
-          ].map((item) => (
-            <div key={item.label} className="border-b border-slate-100 last:border-b-0">
-              {item.href ? (
-                <Link
-                  href={item.href}
-                  className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <i className={`ph-bold ${item.icon} text-xl text-slate-700`} />
-                    <span className="font-bold text-slate-900">{item.label}</span>
-                  </div>
-                  <i className="ph ph-caret-right text-slate-400 text-xl" />
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="w-full flex items-center justify-between gap-4 px-6 py-5 opacity-60 cursor-not-allowed"
-                >
-                  <div className="flex items-center gap-4">
-                    <i className={`ph-bold ${item.icon} text-xl text-slate-700`} />
-                    <span className="font-bold text-slate-900">{item.label}</span>
-                  </div>
-                  <i className="ph ph-caret-right text-slate-400 text-xl" />
+        <div className="space-y-4">
+          <div className="bg-white border border-slate-200  p-8 shadow-sm rounded-3xl">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-3xl shadow-lg border-4 border-white">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </div>
+                <button className="absolute bottom-0 right-0 w-7 h-7 rounded-full bg-white border border-slate-100 shadow-md flex items-center justify-center text-slate-600 hover:text-brand-600 transition-colors">
+                  <i className="ph-bold ph-pencil-simple text-xs"></i>
                 </button>
-              )}
-            </div>
-          ))}
-
-          {canLogout ? (
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                router.push("/auth/login");
-              }}
-              className="w-full flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors"
-            >
-              <div className="flex items-center gap-4">
-                <i className="ph-bold ph-sign-out text-xl text-slate-700" />
-                <span className="font-bold text-slate-900">Log out</span>
               </div>
-              <i className="ph ph-caret-right text-slate-400 text-xl" />
-            </button>
-          ) : null}
+              <div className="space-y-0.5">
+                <div className="font-display font-bold text-lg text-slate-900 tracking-tight">
+                  {user?.name || "User"}
+                </div>
+                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em]">
+                  {mode === "host" ? "Host" : "Guest"}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 border-y border-slate-100 overflow-hidden rounded-3xl ">
+            <Link
+              href="/user/bookings"
+              className="bg-white p-6 hover:bg-slate-50 border border-slate-200 rounded-3xl transition-all active:scale-95 flex flex-col items-center text-center"
+            >
+              <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-50 flex items-center justify-center mb-3">
+                <i className="ph ph-suitcase text-xl text-slate-600"></i>
+              </div>
+              <div className="font-display font-bold text-slate-900 text-[15px]">Past trips</div>
+              <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-brand-600">New activity</span>
+            </Link>
+
+            <Link
+              href="/user/connections"
+              className="bg-white p-6 border border-slate-200 rounded-3xl hover:bg-slate-50 transition-all active:scale-95 flex flex-col items-center text-center"
+            >
+              <div className="w-10 h-10 rounded-2xl bg-slate-50 border border-slate-50 flex items-center justify-center mb-3">
+                <i className="ph ph-users-three text-xl text-slate-600"></i>
+              </div>
+              <div className="font-display font-bold text-slate-900 text-[15px]">Connections</div>
+              <span className="mt-1 text-[9px] font-bold uppercase tracking-wider text-brand-600">New activity</span>
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 hover:bg-slate-50 transition-colors cursor-pointer group">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-50 flex items-center justify-center group-hover:bg-white transition-colors">
+                  <i className="ph ph-storefront text-2xl text-slate-600"></i>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="font-display font-bold text-slate-900 text-base">Become a host</div>
+                  <div className="text-xs font-medium text-slate-500 mt-0.5 leading-relaxed">Easy to start hosting and earn.</div>
+                </div>
+              </div>
+              <i className="ph ph-caret-right text-slate-300 group-hover:translate-x-1 transition-transform"></i>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 overflow-hidden shadow-sm rounded-3xl">
+            {[
+              { icon: "ph-gear", label: "Account settings", href: "/user/settings" },
+              { icon: "ph-question", label: "Get help", href: null },
+              { icon: "ph-user", label: "View profile", href: "/user/profile/edit" },
+              { icon: "ph-lock", label: "Privacy", href: "/user/settings" },
+            ].map((item) => (
+              <div key={item.label} className="border-b border-slate-50 last:border-b-0">
+                {item.href ? (
+                  <Link
+                    href={item.href}
+                    className="flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-white transition-colors">
+                        <i className={`ph ${item.icon} text-lg`} />
+                      </div>
+                      <span className="font-display font-bold text-slate-900 text-[15px]">{item.label}</span>
+                    </div>
+                    <i className="ph ph-caret-right text-slate-300 text-lg group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full flex items-center justify-between gap-4 px-6 py-5 opacity-60 cursor-not-allowed"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500">
+                        <i className={`ph ${item.icon} text-lg`} />
+                      </div>
+                      <span className="font-display font-bold text-slate-900 text-[15px]">{item.label}</span>
+                    </div>
+                    <i className="ph ph-caret-right text-slate-300 text-lg" />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {canLogout ? (
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  router.push("/auth/login");
+                }}
+                className="w-full flex items-center justify-between gap-4 px-6 py-5 hover:bg-slate-50 transition-colors group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-500 group-hover:bg-white transition-colors">
+                    <i className="ph ph-sign-out text-lg" />
+                  </div>
+                  <span className="font-display font-bold text-slate-900 text-[15px]">Log out</span>
+                </div>
+                <i className="ph ph-caret-right text-slate-300 text-lg group-hover:translate-x-1 transition-transform" />
+              </button>
+            ) : null}
+          </div>
         </div>
 
         <button
@@ -273,10 +287,10 @@ export function AccountProfile({ mode }: { mode: Mode }) {
             localStorage.setItem("gigs_current_mode", "host");
             router.push("/hosting");
           }}
-          className="fixed left-1/2 -translate-x-1/2 bottom-[84px] z-40 px-6 py-3 rounded-full bg-slate-900 text-white font-bold shadow-2xl border border-slate-900/10 flex items-center gap-2"
+          className="fixed left-1/2 -translate-x-1/2 bottom-24 z-40 px-6 py-3 rounded-full bg-slate-900 text-white font-bold shadow-xl border border-slate-800 flex items-center gap-2.5 active:scale-95 transition-all whitespace-nowrap"
         >
-          <i className="ph-bold ph-storefront" />
-          Switch to hosting
+          <i className="ph ph-storefront text-lg" />
+          <span className="text-sm tracking-tight">Switch to hosting</span>
         </button>
       </div>
 

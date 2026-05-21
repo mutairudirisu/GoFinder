@@ -12,7 +12,7 @@ export default function CalendarPage() {
     >
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-800 mb-2">
+        <h1 className="text-2xl md:text-3xl font-display font-semibold text-slate-800 mb-1 tracking-tight">
           Calendar
         </h1>
         <p className="text-slate-500">Manage your availability and bookings</p>

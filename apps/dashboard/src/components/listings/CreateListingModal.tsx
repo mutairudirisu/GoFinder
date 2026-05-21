@@ -35,10 +35,9 @@ const LISTING_CATEGORIES = [
 interface CreateListingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCategorySelect?: (category: string) => void;
 }
 
-export default function CreateListingModal({ isOpen, onClose, onCategorySelect }: CreateListingModalProps) {
+export default function CreateListingModal({ isOpen, onClose }: CreateListingModalProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const handleClose = () => {

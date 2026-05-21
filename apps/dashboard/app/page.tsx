@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout";
 import { Footer } from "@repo/ui";
 import type { Listing } from "@/types/listing";
@@ -64,17 +64,17 @@ function LocationRow({
   };
   //The 3 circle buttons (view-all + scroll left/right):
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 ">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="">
-            <Link href={href} className="flex items-center md:justify-start md:gap-6 justify-between">
-              <h2 className="font-display font-bold text-base sm:text-lg text-slate-900 truncate">
+            <Link href={href} className="flex items-center gap-3 w-fit group">
+              <h2 className="font-display font-semibold text-base sm:text-lg text-slate-900 truncate tracking-tight">
                 {/* <span className="md:hidden">{sectionTitleMobile}</span> */}
-                <span className="font-display tracking-wide text-lg">{sectionTitle}</span>
+                <span className="font-display tracking-tight text-lg">{sectionTitle}</span>
               </h2>
-              <span className="flex justify-center items-center w-8 h-8 rounded-full bg-white border border-slate-200 items-center justify-center shadow-sm hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700 transition-colors">
-                <i className="ph ph-arrow-right"></i>
+              <span className="flex justify-center items-center w-8 h-8 rounded-full bg-brand-50/30 border border-brand-100/60 shadow-sm group-hover:border-brand-300 group-hover:bg-brand-100/80 group-hover:text-brand-800 transition-all duration-300">
+                <i className="ph ph-arrow-right text-brand-600 group-hover:translate-x-0.5 transition-transform"></i>
               </span>
             </Link>  
           </div>
@@ -108,28 +108,28 @@ function LocationRow({
       <div
         ref={scrollRef}
         onScroll={syncScrollState}
-        className="flex gap-6 overflow-x-auto pb-2 snap-x snap-mandatory scroll-smooth no-scrollbar"
+        className="flex gap-4 md:gap-6 overflow-x-auto pb-6 snap-x snap-mandatory scroll-smooth no-scrollbar"
       >
         {visibleListings.map((listing) => (
           <Link
             key={listing.id}
             href={`/listings/${encodeURIComponent(listing.id)}`}
-            className="snap-start shrink-0 w-[280px] sm:w-[300px] group rounded-[32px] transition-all hover:shadow-sm hover:border-brand-200 block"
+            className="snap-start shrink-0 w-[280px] sm:w-[320px] md:w-[260px] lg:w-[280px] group block"
           >
-            <motion.div whileHover={{ y: -4 }}>
-              <div className="aspect-[4/3] relative overflow-hidden rounded-[32px]">
+            <motion.div whileHover={{ y: -4 }} className="space-y-3">
+              <div className="aspect-[4/3] sm:aspect-square relative overflow-hidden rounded-[24px] sm:rounded-[32px] shadow-sm">
                 <img
                   src={
                     listing.photos[0] ||
                     "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop"
                   }
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-4 left-4">
-                  <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-lg border border-slate-100">
-                    <div className="w-2 h-2 rounded-full bg-brand-500"></div>
-                    <span className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">
-                      Verified
+                  <div className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm border border-slate-200/50 flex items-center gap-1.5">
+                    <i className="ph-fill ph-sparkle text-brand-600 text-[10px]"></i>
+                    <span className="text-[11px] font-bold text-slate-900 tracking-tight uppercase">
+                      Guest favorite
                     </span>
                   </div>
                 </div>
@@ -140,43 +140,29 @@ function LocationRow({
                     e.stopPropagation();
                     onToggleLike(String(listing.id));
                   }}
-                  className={`absolute top-4 right-4 w-10 h-10 rounded-full border border-white/50 backdrop-blur-md flex items-center justify-center transition-colors ${
-                    likedIds.has(String(listing.id))
-                      ? "bg-white/90 text-brand-600 hover:bg-white"
-                      : "bg-black/20 text-white hover:bg-white/90 hover:text-brand-700"
-                  }`}
+                  className="absolute top-4 right-4 text-white drop-shadow-md hover:scale-110 transition-transform"
                   aria-label={likedIds.has(String(listing.id)) ? "Remove from wishlist" : "Save to wishlist"}
                 >
-                  <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-xl`}></i>
+                  <i className={`${likedIds.has(String(listing.id)) ? "ph-fill ph-heart text-brand-500" : "ph ph-heart"} text-2xl`}></i>
                 </button>
               </div>
-              <div className="px-4 pt-2 bg-none">
-                <div className="flex items-center justify-between gap-3 mb-1">
-                  {/* <h3 className="font-bold text-slate-900 text-lg line-clamp-1 group-hover:text-brand-600 transition-colors">
-                    {listing.title}
-                  </h3> */}
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-100 px-4 py-2 rounded-full">
-                    {listing.type.replaceAll("_", " ")}
-                  </span>
+
+              <div className="space-y-1.5 px-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-bold text-slate-900 text-[15px] sm:text-[16px] truncate">
+                    {listing.type.charAt(0).toUpperCase() + listing.type.slice(1).replaceAll("_", " ")} in {listing.address.city}
+                  </h3>
+                  <div className="flex items-center gap-1 shrink-0 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-100">
+                    <i className="ph-fill ph-star text-[10px] text-slate-900"></i>
+                    <span className="text-[13px] text-slate-900 font-bold">4.91</span>
+                  </div>
                 </div>
-                <p className="text-slate-500 text-sm line-clamp-2 pb-1">
+                <p className="text-slate-500 text-[13px] sm:text-[14px] leading-tight font-medium">
                   {listing.address.city}, {listing.address.province}
                 </p>
-                <div className="flex items-center justify-between border-t pb-4 border-slate-100">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-bold text-slate-900">₦{listing.price.toLocaleString()}</span>
-                    <span className="text-xs text-slate-500">/ {listing.paymentFrequency.toLowerCase()}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-slate-400">
-                    <div className="flex items-center gap-1">
-                      <i className="ph-bold ph-bed"></i>
-                      <span className="text-xs font-bold">{listing.basics.bedrooms}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <i className="ph-bold ph-bathtub"></i>
-                      <span className="text-xs font-bold">{listing.basics.beds}</span>
-                    </div>
-                  </div>
+                <div className="pt-1 flex items-baseline gap-1">
+                  <span className="text-slate-900 font-bold text-[16px] sm:text-[17px]">₦{listing.price.toLocaleString()}</span>
+                  <span className="text-slate-500 text-[14px] font-medium"> / {listing.paymentFrequency.toLowerCase()}</span>
                 </div>
               </div>
             </motion.div>
@@ -186,32 +172,30 @@ function LocationRow({
         {hasMore ? (
           <Link
             href={href}
-            className="snap-start shrink-0 w-[220px] sm:w-[240px] md:w-[330px] bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-brand-200 transition-all flex items-center justify-center"
+            className="snap-start shrink-0 w-[240px] group block"
           >
-            <div className="p-6 w-full h-full flex flex-col items-center justify-center gap-4 text-center">
-              <div className="relative w-24 h-20">
-                <div className="absolute left-0 top-2 w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden">
-                  <img
-                    src={visibleListings[0]?.photos?.[0] || "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=960&auto=format&fit=crop"}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute right-0 top-0 w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-sm">
-                  <img
-                    src={visibleListings[1]?.photos?.[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=960&auto=format&fit=crop"}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="absolute right-0 top-0 w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-sm">
-                  <img
-                    src={visibleListings[1]?.photos?.[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=960&auto=format&fit=crop"}
-                    className="w-full h-full object-cover"
-                  />
+            <div className="space-y-3 h-full">
+              <div className="aspect-[4/3] sm:aspect-square relative overflow-hidden rounded-[24px] sm:rounded-[32px] bg-slate-50 border border-slate-100 flex items-center justify-center group-hover:border-brand-200 transition-colors">
+                <div className="relative w-24 h-20">
+                  <div className="absolute left-0 top-2 w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-sm">
+                    <img
+                      src={visibleListings[0]?.photos?.[0] || "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=960&auto=format&fit=crop"}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="absolute right-0 top-0 w-16 h-16 rounded-2xl bg-slate-100 border border-slate-200 overflow-hidden shadow-md z-10">
+                    <img
+                      src={visibleListings[1]?.photos?.[0] || "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=960&auto=format&fit=crop"}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
                 </div>
               </div>
-              <div className="font-display font-bold text-slate-900">See all</div>
-              <div className="text-xs text-slate-500">
-                Browse {listings.length} listings in {locationKey}
+              <div className="space-y-1 px-1">
+                <div className="font-bold text-slate-900 text-[15px]">See all</div>
+                <div className="text-slate-500 text-[14px]">
+                  Browse {listings.length} listings in {locationKey}
+                </div>
               </div>
             </div>
           </Link>
@@ -226,16 +210,12 @@ function LocationRow({
 function ListingsPageContent() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { unreadCount } = useMessages();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [listings, setListings] = useState<Listing[]>([]);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [browseTab, setBrowseTab] = useState<"homes" | "experiences" | "services">("homes");
+  const [selectedType, setSelectedType] = useState("ALL");
   const { hidden: mobileNavHidden } = useAutoHideOnScroll({ mode: "window", enabled: !authLoading && isAuthenticated });
-  const [mobileTabsCompact, setMobileTabsCompact] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
-  const [mobileWhereOpen, setMobileWhereOpen] = useState(false);
-  const [mobileWhereQuery, setMobileWhereQuery] = useState("");
 
   useEffect(() => {
     const t = searchParams.get("tab");
@@ -245,13 +225,6 @@ function ListingsPageContent() {
       setBrowseTab("homes");
     }
   }, [searchParams]);
-
-  const updateTab = (next: "homes" | "experiences" | "services") => {
-    setBrowseTab(next);
-    const sp = new URLSearchParams(searchParams.toString());
-    sp.set("tab", next);
-    router.replace(`/?${sp.toString()}`);
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -279,30 +252,6 @@ function ListingsPageContent() {
     return () => window.removeEventListener("likesUpdated", sync);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => {
-      setMobileTabsCompact(window.scrollY > 48);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!mobileSearchOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [mobileSearchOpen]);
-
-  useEffect(() => {
-    if (mobileSearchOpen) return;
-    setMobileWhereOpen(false);
-    setMobileWhereQuery("");
-  }, [mobileSearchOpen]);
-
   const toggleLike = (id: string) => {
     if (typeof window === "undefined") return;
     try {
@@ -329,13 +278,34 @@ function ListingsPageContent() {
     });
   }, [browseTab, listings]);
 
+  const propertyTypeOptions = useMemo(() => {
+    const unique = new Set(listingsForTab.map((listing) => listing.type).filter(Boolean));
+    return [
+      { value: "ALL", label: "Any type" },
+      ...Array.from(unique)
+        .sort((a, b) => a.localeCompare(b))
+        .map((type) => ({ value: type, label: type.replaceAll("_", " ") })),
+    ];
+  }, [listingsForTab]);
+
+  useEffect(() => {
+    if (selectedType !== "ALL" && !propertyTypeOptions.some((option) => option.value === selectedType)) {
+      setSelectedType("ALL");
+    }
+  }, [propertyTypeOptions, selectedType]);
+
+  const listingsForSelectedType = useMemo(() => {
+    if (selectedType === "ALL") return listingsForTab;
+    return listingsForTab.filter((listing) => listing.type === selectedType);
+  }, [listingsForTab, selectedType]);
+
   const groupedByLocation = useMemo(() => {
-    return listingsForTab.reduce<Record<string, Listing[]>>((acc, listing) => {
+    return listingsForSelectedType.reduce<Record<string, Listing[]>>((acc, listing) => {
       const key = `${listing.address.city}, ${listing.address.province}`;
       acc[key] = acc[key] ? [...acc[key], listing] : [listing];
       return acc;
     }, {});
-  }, [listingsForTab]);
+  }, [listingsForSelectedType]);
 
   const searchLocationOptions = useMemo(() => {
     const unique = new Set<string>();
@@ -359,9 +329,16 @@ function ListingsPageContent() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
       {/* sm:screen header */}
-      <div className="fixed right-0 top-0 z-50 gap-16 w-full">
-        <div className="md:hidden bg-white py-3 px-3">
-            <ExploreLocationSearch browseTab={browseTab} locationOptions={searchLocationOptions} />
+      <div className="fixed right-0 top-0 z-[100] gap-16 w-full">
+        <div className="md:hidden bg-white px-2">
+          <ExploreLocationSearch
+            browseTab={browseTab}
+            locationOptions={searchLocationOptions}
+            selectedType={selectedType}
+            typeOptions={propertyTypeOptions}
+            onTypeChange={setSelectedType}
+            className="shadow-sm"
+          />
         </div>
         <div className="md:block shadow-md md:shadow-sm">
           <Header />
@@ -389,15 +366,21 @@ function ListingsPageContent() {
             </p>
           </motion.div>
 
-          <div className="hidden md:block w-full max-w-4xl mx-auto sm:px-16">
-            <ExploreLocationSearch browseTab={browseTab} locationOptions={searchLocationOptions} />
+          <div className="hidden md:block w-full bg-black">
+            <ExploreLocationSearch
+              browseTab={browseTab}
+              locationOptions={searchLocationOptions}
+              selectedType={selectedType}
+              typeOptions={propertyTypeOptions}
+              onTypeChange={setSelectedType}
+            />
           </div>
         </div>
       </section>
       
       {/* Results Section */}
-      <section className="pb-24 pt-[60px] mt-[160px] md:mt-4 md:p-16 md:pt-12">
-        <div className="max-w-7xl mx-auto px-4 md:px-6">
+      <section className="pb-12 pt-[60px] mt-[160px] md:mt-4 md:px-16 md:pt-12">
+        <div className="max-w-7xl mx-auto pl-6 md:px-6">
           {Object.keys(groupedByLocation).length > 0 ? (
             <div className="space-y-6 md:space-y-8">
               {Object.entries(groupedByLocation).map(([locationKey, locationListings]) => (

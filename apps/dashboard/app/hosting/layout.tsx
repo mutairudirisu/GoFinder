@@ -100,16 +100,17 @@ function HostingLayoutContent({
 
   const isTodayRoute = pathname === "/hosting" || pathname.startsWith("/hosting/bookings");
   const isActiveSection = (baseHref: string) => pathname === baseHref || pathname.startsWith(`${baseHref}/`);
+  const isMessagesPage = pathname.startsWith("/hosting/messages");
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="hidden md:block">
         <HostingSideNav />
       </div>
 
       {/* Main Content Area */}
       <main
-        className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ml-0 ${
+        className={`flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-300 ml-0 ${
           isCollapsed ? "md:ml-20" : "md:ml-64"
         }`}
       >
@@ -169,13 +170,16 @@ function HostingLayoutContent({
         </header>
 
         {/* Page Content - Rendered as children */}
-        <div ref={scrollContainerRef} className="flex-1 p-4 md:p-6 overflow-y-auto pb-24 md:pb-6">
+        <div 
+          ref={scrollContainerRef} 
+          className={`flex-1 overflow-y-auto min-h-0 ${isMessagesPage ? "p-0 pb-0" : "p-4 md:p-6 pb-24"} md:pb-6`}
+        >
           {children}
         </div>
       </main>
 
       <BottomTabNav
-        hidden={mobileNavHidden}
+        hidden={mobileNavHidden || isMessagesPage}
         items={[
           { key: "today", href: "/hosting", label: "Today", iconClassName: "ph-bold ph-bookmark-simple text-xl", isActive: isTodayRoute },
           {

@@ -23,15 +23,6 @@ export default function ListingsPage() {
     void loadListings();
   }, []);
 
-  const updateListingStatus = async (id: string, updates: Partial<Listing>) => {
-    await fetch(`/api/listings/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-    await loadListings();
-  };
-
   const isUserFullyVerified = useMemo(() => {
     const email = user?.verifications?.email?.status ?? "UNVERIFIED";
     const phone = user?.verifications?.phone?.status ?? "UNVERIFIED";
@@ -62,7 +53,7 @@ export default function ListingsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between flex-col sm:flex-row gap-4">
         <div>
-          <h1 className="text-xl md:text-3xl font-display font-bold text-slate-800 mb-2">
+          <h1 className="text-xl md:text-3xl font-display font-semibold text-slate-800 mb-1 tracking-tight">
             Your listings
           </h1>
         </div>

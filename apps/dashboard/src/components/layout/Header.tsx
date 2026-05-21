@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { ReferHostModal } from "./ReferHostModal";
 
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL || "http://localhost:8888";
+
 export const Header = ({
   hideCenterTabs = false,
   centerContent,
@@ -140,14 +142,16 @@ export const Header = ({
     }
   };
 
+  const logoHref = pathname === "/" ? WEB_URL : "/";
+
   if (isAuthenticated) {
     // Return authenticated header component
     return (
       <>
-      <header className=" z-50 bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
+      <header className="sticky top-0 z-[100] bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
         <div className="max-w-7xl mx-auto md:px-6 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="hidden md:flex items-center gap-2 group flex-shrink-0">
+          <Link href={logoHref} className="hidden md:flex items-center gap-2 group flex-shrink-0">
             <div className=" w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
               <i className="ph-bold ph-house-line text-lg text-white"></i>
             </div>
@@ -166,42 +170,42 @@ export const Header = ({
             <nav className={`flex gap-12 md:gap-12 items-center justify-center mx-auto ${tabsCompact ? "pb-0" : "pb-0"}`}>
               <button
                 onClick={() => selectTab('homes')}
-                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors text-sm ${
                   activeTab === 'homes'
                     ? 'border-brand-500 text-brand-700 font-medium'
                     : 'border-transparent text-slate-600 hover:text-brand-700'
                 }`}
               >
-                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-house-line text-xl"></i></div>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-house-line text-lg"></i></div>
                 <span>Homes</span>
               </button>
 
               <button
                 onClick={() => selectTab('experiences')}
-                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative text-sm ${
                   activeTab === "experiences"
                     ? "border-brand-500 text-brand-700 font-medium"
                     : "border-transparent text-slate-600 hover:text-brand-700"
                 }`}
               >
-                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-balloon text-xl"></i></div>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-balloon text-lg"></i></div>
                 <span>Experiences</span>
-                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-5 md:-top-5 md:right-12 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                <span className={`ml-1 px-1.5 py-0.5 bg-slate-900 text-white text-[9px] font-bold rounded-full absolute top-0 -right-5 md:-top-4 md:right-14 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
                   SOON
                 </span>
               </button>
 
               <button
                 onClick={() => selectTab('services')}
-                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative ${
+                className={`md:flex md:gap-2 ${tabsCompact ? "pb-2 border-b-2" : "pb-2 border-b-4"} md:pb-2 md:border-b-4 rounded-sm transition-colors relative text-sm ${
                   activeTab === "services"
                     ? "border-brand-500 text-brand-700 font-medium"
                     : "border-transparent text-slate-600 hover:text-brand-700"
                 }`}
               >
-                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-wrench text-xl"></i></div>
+                <div className={tabsCompact ? "hidden md:block" : "block"}><i className="ph-bold ph-wrench text-lg"></i></div>
                 <span>Services</span>
-                <span className={`ml-1 px-2 py-0.5 bg-slate-900 text-white text-xs font-bold rounded-full absolute top-0 -right-8 md:-top-5 md:right-5 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
+                <span className={`ml-1 px-1.5 py-0.5 bg-slate-900 text-white text-[9px] font-bold rounded-full absolute top-0 -right-5 md:-top-4 md:right-8 ${tabsCompact ? "hidden md:inline-flex" : ""}`}>
                   SOON
                 </span>
               </button>
@@ -265,11 +269,25 @@ export const Header = ({
                       </button>
                     </div>
 
-                    {/* Trips */}
+                    {/* Bookings */}
                     <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
                       <button
                         onClick={() => {
                           router.push('/user/bookings');
+                          setIsMenuOpen(false);
+                        }}
+                        className="flex items-center gap-3 text-left w-full"
+                      >
+                        <i className="ph-bold ph-calendar-check text-lg text-slate-600"></i>
+                        <span className="font-medium text-slate-700">Bookings</span>
+                      </button>
+                    </div>
+
+                    {/* Trips */}
+                    <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
+                      <button
+                        onClick={() => {
+                          router.push('/user/trips');
                           setIsMenuOpen(false);
                         }}
                         className="flex items-center gap-3 text-left w-full"
@@ -516,10 +534,10 @@ export const Header = ({
 
   // Unauthenticated Header - Airbnb Style
   return (
-    <header className=" z-50 bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
+    <header className="sticky top-0 z-[100] bg-white border-b border-slate-200 pt-6 md:py-4 md:px-16">
       <div className=" mx-auto px-2 md:px-6 h-16 flex items-center justify-between mr-2">
         {/* Logo */}
-          <Link href="/" className="hidden md:flex items-center gap-2 group flex-shrink-0">
+          <Link href={logoHref} className="hidden md:flex items-center gap-2 group flex-shrink-0">
             <div className=" w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
               <i className="ph-bold ph-house-line text-lg text-white"></i>
             </div>

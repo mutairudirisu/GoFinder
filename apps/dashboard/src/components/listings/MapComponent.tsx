@@ -44,11 +44,6 @@ export function MapComponent({ listings, activeId, onMarkerClick, likedIds, onTo
     });
   }, [listings]);
 
-  const activeListing = useMemo(() => {
-    if (!activeId) return null;
-    return listingsWithCoords.find(l => l.id === activeId) || null;
-  }, [activeId, listingsWithCoords]);
-
   return (
     <div className="w-full h-full relative">
       <Map

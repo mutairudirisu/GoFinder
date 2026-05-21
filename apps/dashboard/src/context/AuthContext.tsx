@@ -65,7 +65,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string) => Promise<void>;
   signup: (email: string, name: string, method: "google" | "email") => Promise<void>;
   verifyOTP: (otp: string) => Promise<boolean>;
   completeProfile: (data: Partial<User>) => Promise<void>;
@@ -74,6 +74,25 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+const setAuthCookie = (user: User | null) => {
+  if (typeof window === "undefined") return;
+  if (user) {
+    // We store a minimal version of the user for the cookie to avoid size limits
+    const minimalUser = {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      avatar: user.avatar,
+      isProfileComplete: user.isProfileComplete
+    };
+    const data = encodeURIComponent(JSON.stringify(minimalUser));
+    document.cookie = `gigs_session=${data}; path=/; max-age=31536000; SameSite=Lax`;
+  } else {
+    document.cookie = "gigs_session=; path=/; max-age=0; SameSite=Lax";
+  }
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -102,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (data.user?.id) {
             setUser(data.user);
             localStorage.setItem("gigs_user", JSON.stringify(data.user));
+            setAuthCookie(data.user);
           }
         } catch {
         }
@@ -114,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string) => {
     setIsLoading(true);
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -127,6 +147,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setUser(data.user);
       localStorage.setItem("gigs_user", JSON.stringify(data.user));
+      setAuthCookie(data.user);
     } finally {
       setIsLoading(false);
     }
@@ -176,6 +197,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           localStorage.removeItem("pending_signup");
           setUser(data.user);
           localStorage.setItem("gigs_user", JSON.stringify(data.user));
+          setAuthCookie(data.user);
           setIsLoading(false);
           return true;
         } catch {
@@ -203,15 +225,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const updated = (await res.json()) as { user: User };
           setUser(updated.user);
           localStorage.setItem("gigs_user", JSON.stringify(updated.user));
+          setAuthCookie(updated.user);
         } else {
           const updatedUser = { ...user, ...data, isProfileComplete: true };
           setUser(updatedUser);
           localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
+          setAuthCookie(updatedUser);
         }
       } catch {
         const updatedUser = { ...user, ...data, isProfileComplete: true };
         setUser(updatedUser);
         localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
+        setAuthCookie(updatedUser);
       }
     }
 
@@ -221,6 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem("gigs_user");
+    setAuthCookie(null);
   };
 
   const switchRole = (role: "lister" | "renter") => {
@@ -229,6 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updatedUser = { ...user, role };
       setUser(updatedUser);
       localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
+      setAuthCookie(updatedUser);
     }
   };
 

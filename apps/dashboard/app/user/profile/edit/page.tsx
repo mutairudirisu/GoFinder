@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProfileEditModal } from "@/components/user/ProfileEditModal";
@@ -13,7 +12,6 @@ export default function ProfileEditPage() {
   const router = useRouter();
 
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
-  const [showAllInterests, setShowAllInterests] = useState(false);
   const [intro, setIntro] = useState("");
   
   // State for profile fields

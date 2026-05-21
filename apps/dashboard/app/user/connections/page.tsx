@@ -1,12 +1,9 @@
 "use client";
 
-import { useAuth } from "@/context/AuthContext";
 import { motion } from "framer-motion";
 import UserProfileSidebar from "@/components/user/UserProfileSidebar";
 
 export default function ConnectionsPage() {
-  const { user } = useAuth();
-
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row gap-8">
