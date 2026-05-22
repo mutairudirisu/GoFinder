@@ -417,18 +417,26 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
-              <i className="ph ph-users"></i> {listing.basics.guests} RM
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
-              <i className="ph ph-bed"></i> {listing.basics.bedrooms} room
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
-              <i className="ph ph-bounding-box"></i> 25 m
-            </div>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
-              <i className="ph ph-door"></i> {listing.basics.beds} BR
-            </div>
+            {listing.basics && (
+              <>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
+                  <i className="ph ph-users"></i> {listing.basics.guests} RM
+                </div>
+                {listing.basics.bedrooms !== undefined && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
+                    <i className="ph ph-bed"></i> {listing.basics.bedrooms} room
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
+                  <i className="ph ph-bounding-box"></i> 25 m
+                </div>
+                {listing.basics.beds !== undefined && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
+                    <i className="ph ph-door"></i> {listing.basics.beds} BR
+                  </div>
+                )}
+              </>
+            )}
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
               <i className="ph ph-paw-print"></i>
             </div>
