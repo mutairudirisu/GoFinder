@@ -39,7 +39,7 @@ export function BottomTabNav({
   }, []);
 
   return (
-    <div className={`fixed md:hidden bottom-4 left-0 right-0 px-2 pointer-events-none transition-transform duration-300 ease-in-out ${
+    <div className={`fixed md:hidden bottom-4 left-0 right-0 px-2 pointer-events-none transition-transform duration-300 ease-in-out ${zIndexClassName} ${
       hidden || isKeyboardVisible ? "translate-y-32" : "translate-y-0"
     }`}>
       <nav

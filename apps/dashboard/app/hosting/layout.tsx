@@ -181,6 +181,7 @@ function HostingLayoutContent({
       </main>
 
       <BottomTabNav
+        zIndexClassName="z-[70]"
         hidden={mobileNavHidden || isMessagesPage}
         items={[
           { key: "today", href: "/hosting", label: "Today", iconClassName: "ph-bold ph-bookmark-simple text-xl", isActive: isTodayRoute },

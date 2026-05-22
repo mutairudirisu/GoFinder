@@ -170,6 +170,7 @@ function UserDashboardLayoutContent({
       </main>
 
       <BottomTabNav
+        zIndexClassName="z-[70]"
         hidden={mobileNavHidden || isMessagesPage}
         items={[
           { key: "explore", href: "/", label: "Explore", iconClassName: "ph-bold ph-magnifying-glass text-xl" },

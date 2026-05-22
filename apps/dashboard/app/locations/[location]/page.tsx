@@ -299,7 +299,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const fullBleedH = viewportH ? Math.max(280, viewportH - (topBarBottom ? topBarBottom - 60 : 0) - bottomNavH) : 680;
   const peekH = viewportH ? Math.min(Math.round(availableH * 0.82), headerMaxH) : 620;
   const midH = viewportH ? Math.min(Math.round(availableH * 0.92), headerMaxH) : 750;
-  const collapsedH = 24;
+  const collapsedH = 140;
   const sheetCurrentH = sheetH || peekH;
   const isCollapsed = sheetCurrentH <= collapsedH + 10;
 

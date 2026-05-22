@@ -424,6 +424,7 @@ function ListingsPageContent() {
 
       {!authLoading ? (
         <BottomTabNav
+          zIndexClassName="z-[70]"
           hidden={isAuthenticated ? mobileNavHidden : false}
           items={
             isAuthenticated
