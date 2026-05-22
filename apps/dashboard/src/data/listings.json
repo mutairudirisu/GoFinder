@@ -447,5 +447,87 @@
     "paymentFrequency": "MONTHLY",
     "status": "VERIFIED",
     "createdAt": "2026-04-25T13:19:16.792Z"
+  },
+  {
+    "id": "list_xrk16rxkj",
+    "category": "service",
+    "type": "transport",
+    "spaceType": "shared",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Ebonyi",
+      "province": "FCT",
+      "postalCode": "900001",
+      "latitude": 9.092466758497643,
+      "longitude": 7.483665432273265
+    },
+    "amenities": [],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2074&auto=format&fit=crop"
+    ],
+    "title": "Professional Cleaning",
+    "highlights": [],
+    "description": "Cleaning",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-05-22T10:05:51.379Z"
+  },
+  {
+    "id": "list_9xhlhs8km",
+    "category": "experience",
+    "type": "other",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "900001",
+      "latitude": 9.092493371745853,
+      "longitude": 7.483670496226995
+    },
+    "basics": {
+      "guests": 10
+    },
+    "amenities": [],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Lagos Food",
+    "highlights": [],
+    "description": "FOod",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-05-22T10:13:11.825Z"
   }
 ]

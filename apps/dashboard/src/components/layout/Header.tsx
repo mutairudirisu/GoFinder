@@ -107,18 +107,20 @@ export const Header = ({
     }
   };
 
-  const switchToHost = () => {
+  const switchToHost = async () => {
     try {
       localStorage.setItem("gigs_current_mode", "host");
+      await switchRole("lister");
     } catch {
     }
     setCurrentMode("host");
     router.push("/hosting");
   };
 
-  const switchToFinder = () => {
+  const switchToFinder = async () => {
     try {
       localStorage.setItem("gigs_current_mode", "guest");
+      await switchRole("renter");
     } catch {
     }
     setCurrentMode("guest");
@@ -126,7 +128,6 @@ export const Header = ({
   };
 
   const handleSwitchMode = () => {
-    if (user?.role !== "both") return;
     if (isHostingRoute) {
       switchToFinder();
     } else {
@@ -224,11 +225,12 @@ export const Header = ({
               </Link>
             ) : null}
 
-            {(user?.role === "both") && (
+            {isAuthenticated && (
               <button
                 onClick={handleSwitchMode}
                 className="hidden md:flex items-center gap-2 px-4 py-2 text-slate-700 font-medium hover:bg-brand-50 hover:text-brand-700 rounded-full transition-colors"
               >
+                <i className={`ph-bold ${isHostingRoute ? "ph-magnifying-glass" : "ph-storefront"}`}></i>
                 {isHostingRoute ? "Switch to Finder" : "Switch to host"}
               </button>
             )}
@@ -376,8 +378,8 @@ export const Header = ({
                     {/* Divider */}
                     <div className="h-px bg-slate-200"></div>
 
-                    {/* Switch Mode - Only for users with both roles */}
-                    {user?.role === 'both' && (
+                    {/* Switch Mode - Always available for authenticated users */}
+                    {isAuthenticated && (
                       <>
                         <div className="px-4 py-3 hover:bg-brand-50 transition-colors">
                           <button

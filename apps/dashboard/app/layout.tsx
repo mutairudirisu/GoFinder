@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import { MessageProvider } from "@/context/MessageContext";
@@ -31,9 +32,9 @@ export default function RootLayout({
           href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700&display=swap"
           rel="stylesheet"
         />
-        <script src="https://unpkg.com/@phosphor-icons/web"></script>
       </head>
       <body className="antialiased font-sans">
+        <Script src="https://unpkg.com/@phosphor-icons/web" strategy="afterInteractive" />
         <AuthProvider>
           <MessageProvider>
             <ToastProvider>

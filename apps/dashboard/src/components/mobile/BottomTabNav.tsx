@@ -39,31 +39,41 @@ export function BottomTabNav({
   }, []);
 
   return (
-    <nav
-      className={`fixed md:hidden bottom-0 left-0 right-0 ${zIndexClassName} bg-white border-t border-slate-200 transition-transform duration-200 ${
-        hidden || isKeyboardVisible ? "translate-y-full" : "translate-y-0"
-      }`}
-    >
-      <div className="h-16 flex items-center justify-around px-2">
-        {items.map((item) => (
-          <Link
-            key={item.key}
-            href={item.href}
-            className={`flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-colors relative ${
-              item.isActive ? "text-brand-600" : "text-slate-500 hover:text-brand-600"
-            }`}
-          >
-            <i className={item.iconClassName}></i>
-            <span className="text-[11px] font-medium">{item.label}</span>
-            {typeof item.badgeCount === "number" && item.badgeCount > 0 ? (
-              <span className="absolute top-1 right-3 w-4 h-4 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                {item.badgeCount > 9 ? "9+" : item.badgeCount}
-              </span>
-            ) : null}
-          </Link>
-        ))}
-      </div>
-    </nav>
+    <div className={`fixed md:hidden bottom-4 left-0 right-0 px-2 pointer-events-none transition-transform duration-300 ease-in-out ${
+      hidden || isKeyboardVisible ? "translate-y-32" : "translate-y-0"
+    }`}>
+      <nav
+        className={`mx-auto max-w-sm pointer-events-auto bg-white/50 backdrop-blur-sm border border-white/50 py-2 rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-1`}
+      >
+        <div className="flex items-center justify-between gap-1 relative">
+          {items.map((item) => {
+            const isActive = item.isActive;
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-all duration-400 ease-out relative rounded-[28px] ${
+                  isActive 
+                    ? "bg-brand-50 text-brand-700 shadow-sm border border-brand-100/50" 
+                    : "text-slate-500 hover:text-slate-900 active:scale-95"
+                }`}
+              >
+                <i className={`${item.iconClassName} ${isActive ? 'text-lg text-brand-600' : 'text-xl'}`}></i>
+                <span className={`text-[11px] font-semibold leading-none ${isActive ? "opacity-100 text-brand-600" : "opacity-70"}`}>
+                  {item.label}
+                </span>
+                
+                {typeof item.badgeCount === "number" && item.badgeCount > 0 ? (
+                  <span className={`absolute top-1 right-2 w-4 h-4 bg-brand-500 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 ${isActive ? 'border-brand-50' : 'border-white'}`}>
+                    {item.badgeCount > 9 ? "9+" : item.badgeCount}
+                  </span>
+                ) : null}
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
   );
 }
 

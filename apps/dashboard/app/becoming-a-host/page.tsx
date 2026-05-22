@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -29,7 +29,15 @@ type Step =
   | "PRICING"
   | "DISCOUNTS"
   | "SAFETY"
-  | "CONGRATS";
+  | "CONGRATS"
+  // Service Specific Steps
+  | "SERVICE_TYPE"
+  | "SERVICE_DETAILS"
+  | "SERVICE_COVERAGE"
+  // Experience Specific Steps
+  | "EXPERIENCE_TYPE"
+  | "EXPERIENCE_DETAILS"
+  | "EXPERIENCE_CAPACITY";
 
 export default function BecomingAHostPage() {
   const router = useRouter();
@@ -42,6 +50,12 @@ export default function BecomingAHostPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedSpaceType, setSelectedSpaceType] = useState<string | null>(null);
+  
+  // New State for Services and Experiences
+  const [selectedServiceType, setSelectedServiceType] = useState<string | null>(null);
+  const [serviceCoverage, setServiceCoverage] = useState<string[]>([]);
+  const [selectedExperienceType, setSelectedExperienceType] = useState<string | null>(null);
+  const [experienceCapacity, setExperienceCapacity] = useState(10);
   
   // New State for remaining steps
   const [photos, setPhotos] = useState<string[]>([
@@ -98,8 +112,10 @@ export default function BecomingAHostPage() {
           const newListing: Listing = {
             id: `list_${Math.random().toString(36).substr(2, 9)}`,
             category: selectedCategory || "home",
-            type: selectedType || "house",
-            spaceType: selectedSpaceType || "entire_place",
+            type: selectedCategory === "home" ? (selectedType || "house") : 
+                  selectedCategory === "service" ? (selectedServiceType || "cleaning") : 
+                  (selectedExperienceType || "tour"),
+            spaceType: selectedSpaceType || undefined,
             host: {
               id: user?.id,
               name: user?.name || user?.email?.split("@")[0] || "Host",
@@ -107,17 +123,18 @@ export default function BecomingAHostPage() {
               phone: user?.phone,
               avatar: user?.avatar,
             },
-            address,
-            basics,
-            amenities: selectedAmenities,
+            address: selectedCategory === "service" ? { ...address, city: serviceCoverage.join(", ") } : address,
+            basics: selectedCategory === "home" ? basics : 
+                    selectedCategory === "experience" ? { guests: experienceCapacity } : undefined,
+            amenities: selectedCategory === "home" ? selectedAmenities : [],
             photos,
             title,
             highlights: selectedHighlights,
             description,
             price,
-            securityCharge,
-            otherCharges,
-            paymentFrequency,
+            securityCharge: selectedCategory === "home" ? securityCharge : 0,
+            otherCharges: selectedCategory === "home" ? otherCharges : 0,
+            paymentFrequency: selectedCategory === "home" ? paymentFrequency : "MONTHLY",
             status: isUserFullyVerified ? "VERIFIED" : "ACTION_REQUIRED",
             createdAt: new Date().toISOString(),
           };
@@ -303,6 +320,28 @@ export default function BecomingAHostPage() {
     { id: "boat", label: "Boat", icon: "ph-boat", description: "Floating stays on the water" },
   ];
 
+  const serviceTypes = [
+    { id: "home_lifestyle", label: "Home & Lifestyle", icon: "ph-house", description: "Cleaning, laundry, and home maintenance" },
+    { id: "beauty_personal", label: "Beauty & Personal Care", icon: "ph-sparkles", description: "Hair, makeup, and personal styling" },
+    { id: "events_entertainment", label: "Events & Entertainment", icon: "ph-confetti", description: "Planning, DJing, and event services" },
+    { id: "professional_business", label: "Professional & Business", icon: "ph-briefcase", description: "Legal, accounting, and consulting" },
+    { id: "health_wellness", label: "Health & Wellness", icon: "ph-heartbeat", description: "Fitness, therapy, and health services" },
+    { id: "education_tutoring", label: "Education & Tutoring", icon: "ph-graduation-cap", description: "Private lessons and academic support" },
+    { id: "logistics_transport", label: "Logistics & Transport", icon: "ph-truck", description: "Moving, delivery, and car services" },
+    { id: "tech_digital", label: "Tech & Digital", icon: "ph-cpu", description: "IT support, repairs, and digital services" },
+    { id: "other_service", label: "Others", icon: "ph-dots-three-circle", description: "Any other type of professional service" },
+  ];
+
+  const experienceTypes = [
+    { id: "cultural_heritage", label: "Cultural & Heritage", icon: "ph-bank", description: "History, traditions, and local culture" },
+    { id: "food_drink", label: "Food & Drink", icon: "ph-fork-knife", description: "Tours, tastings, and cooking classes" },
+    { id: "outdoor_adventure", label: "Outdoor & Adventure", icon: "ph-mountains", description: "Hiking, sports, and nature activities" },
+    { id: "arts_nightlife", label: "Arts, Entertainment & Nightlife", icon: "ph-music-notes", description: "Concerts, bar crawls, and gallery visits" },
+    { id: "wellness_lifestyle", label: "Wellness & Lifestyle", icon: "ph-leaf", description: "Yoga, meditation, and self-care" },
+    { id: "learning_education", label: "Learning & Education", icon: "ph-book-open", description: "Skill-sharing and educational tours" },
+    { id: "other_experience", label: "Others", icon: "ph-dots-three-circle", description: "Any other type of unique experience" },
+  ];
+
   const spaceTypes = [
     { id: "entire", label: "An entire place", description: "Guests have the whole place to themselves.", icon: "ph-house" },
     { id: "room", label: "A room", description: "Guests have their own room in a home, plus access to shared spaces.", icon: "ph-door" },
@@ -342,28 +381,56 @@ export default function BecomingAHostPage() {
     { id: "monthly", label: "Monthly discount", description: "For stays of 28 nights or more", percentage: 25 },
   ];
 
-  const stepsOrder: Step[] = [
-    "CATEGORY", 
-    "INTRO", 
-    "TELL_US", 
-    "TYPE", 
-    "SPACE_TYPE",
-    "LOCATION_SEARCH",
-    "ADDRESS",
-    "LOCATION_CONFIRM",
-    "BASICS",
-    "STAND_OUT_INTRO",
-    "AMENITIES",
-    "PHOTOS",
-    "TITLE",
-    "HIGHLIGHTS",
-    "DESCRIPTION",
-    "FINISH_INTRO",
-    "PRICING",
-    "DISCOUNTS",
-    "SAFETY",
-    "CONGRATS"
-  ];
+  const stepsOrder = useMemo((): Step[] => {
+    const base: Step[] = ["CATEGORY", "INTRO"];
+    if (selectedCategory === "home") {
+      return [
+        ...base,
+        "TELL_US",
+        "TYPE",
+        "SPACE_TYPE",
+        "LOCATION_SEARCH",
+        "ADDRESS",
+        "LOCATION_CONFIRM",
+        "BASICS",
+        "STAND_OUT_INTRO",
+        "AMENITIES",
+        "PHOTOS",
+        "TITLE",
+        "HIGHLIGHTS",
+        "DESCRIPTION",
+        "FINISH_INTRO",
+        "PRICING",
+        "DISCOUNTS",
+        "SAFETY",
+        "CONGRATS"
+      ];
+    }
+    if (selectedCategory === "service") {
+      return [
+        ...base,
+        "SERVICE_TYPE",
+        "SERVICE_COVERAGE",
+        "SERVICE_DETAILS",
+        "PHOTOS",
+        "PRICING",
+        "CONGRATS"
+      ];
+    }
+    if (selectedCategory === "experience") {
+      return [
+        ...base,
+        "EXPERIENCE_TYPE",
+        "LOCATION_SEARCH",
+        "EXPERIENCE_DETAILS",
+        "EXPERIENCE_CAPACITY",
+        "PHOTOS",
+        "PRICING",
+        "CONGRATS"
+      ];
+    }
+    return ["CATEGORY"];
+  }, [selectedCategory]);
 
   const isAddressValid = 
     address.street.length > 0 && 
@@ -565,11 +632,25 @@ export default function BecomingAHostPage() {
                 <div className="flex gap-5">
                   <span className="text-xl font-bold text-slate-900">1</span>
                   <div className="flex-1">
-                    <h2 className="text-xl font-bold text-slate-900 mb-1">Tell us about your place</h2>
-                    <p className="text-slate-500 leading-relaxed text-[16px]">Share some basic info, like where it is and how many guests can stay.</p>
+                    <h2 className="text-xl font-bold text-slate-900 mb-1">
+                      {selectedCategory === "home" ? "Tell us about your place" : 
+                       selectedCategory === "service" ? "Tell us about your service" : 
+                       "Tell us about your experience"}
+                    </h2>
+                    <p className="text-slate-500 leading-relaxed text-[16px]">
+                      {selectedCategory === "home" ? "Share some basic info, like where it is and how many guests can stay." : 
+                       selectedCategory === "service" ? "Share what kind of service you provide and your coverage area." : 
+                       "Share what makes your experience unique and where it takes place."}
+                    </p>
                   </div>
-                  <div className="w-16 h-16 flex-shrink-0 bg-blue-50 rounded-2xl flex items-center justify-center">
-                    <i className="ph-bold ph-house-line text-2xl text-blue-500"></i>
+                  <div className={`w-16 h-16 flex-shrink-0 rounded-2xl flex items-center justify-center ${
+                    selectedCategory === "home" ? "bg-blue-50" : 
+                    selectedCategory === "service" ? "bg-amber-50" : "bg-rose-50"
+                  }`}>
+                    <i className={`ph-bold text-2xl ${
+                      selectedCategory === "home" ? "ph-house-line text-blue-500" : 
+                      selectedCategory === "service" ? "ph-wrench text-amber-500" : "ph-balloon text-rose-500"
+                    }`}></i>
                   </div>
                 </div>
                 <div className="flex gap-5 border-y border-slate-100 py-10">
@@ -690,6 +771,236 @@ export default function BecomingAHostPage() {
                       <i className={`ph-bold ${type.icon} text-2xl ${selectedSpaceType === type.id ? 'text-brand-600' : 'text-slate-400'}`}></i>
                     </button>
                   ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "SERVICE_TYPE" && (
+            <motion.div
+              key="service_type"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center px-5 py-8 md:p-10 overflow-y-auto"
+            >
+              <div className="max-w-3xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-10">
+                  What kind of service do you provide?
+                </h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {serviceTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => setSelectedServiceType(type.id)}
+                      className={`flex items-center gap-4 p-6 rounded-2xl border-2 transition-all text-left ${
+                        selectedServiceType === type.id
+                          ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-50"
+                          : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${selectedServiceType === type.id ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        <i className={`ph-bold ${type.icon} text-2xl`}></i>
+                      </div>
+                      <div>
+                        <span className={`font-bold block mb-1 text-lg ${selectedServiceType === type.id ? 'text-brand-700' : 'text-slate-900'}`}>
+                          {type.label}
+                        </span>
+                        <span className="text-sm text-slate-500 leading-relaxed">
+                          {type.description}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "SERVICE_COVERAGE" && (
+            <motion.div
+              key="service_coverage"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center justify-center px-5 py-8 md:p-10"
+            >
+              <div className="max-w-2xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-6">
+                  Where do you operate?
+                </h1>
+                <p className="text-slate-500 mb-10">Select all areas where you can provide this service.</p>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {nigerianStates.slice(0, 12).map((state) => (
+                    <button
+                      key={state}
+                      onClick={() => {
+                        setServiceCoverage(prev => 
+                          prev.includes(state) ? prev.filter(s => s !== state) : [...prev, state]
+                        );
+                      }}
+                      className={`p-4 rounded-xl border-2 transition-all font-bold text-center ${
+                        serviceCoverage.includes(state)
+                          ? "border-brand-500 bg-brand-50 text-brand-700"
+                          : "border-slate-100 text-slate-600 hover:border-slate-200"
+                      }`}
+                    >
+                      {state}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "SERVICE_DETAILS" && (
+            <motion.div
+              key="service_details"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center justify-center p-8 md:p-10"
+            >
+              <div className="max-w-xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-8">
+                  Describe your service
+                </h1>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Service Title</label>
+                    <input 
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. Professional Move-in Cleaning"
+                      className="w-full p-4 bg-white border-2 border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-brand-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Service Description</label>
+                    <textarea 
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Explain what's included in your service..."
+                      className="w-full p-4 bg-white border-2 border-slate-200 rounded-xl min-h-[160px] font-medium text-slate-700 outline-none focus:border-brand-500 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "EXPERIENCE_TYPE" && (
+            <motion.div
+              key="experience_type"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center px-5 py-8 md:p-10 overflow-y-auto"
+            >
+              <div className="max-w-3xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-10">
+                  What kind of experience is it?
+                </h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {experienceTypes.map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => setSelectedExperienceType(type.id)}
+                      className={`flex items-center gap-4 p-6 rounded-2xl border-2 transition-all text-left ${
+                        selectedExperienceType === type.id
+                          ? "border-brand-500 bg-brand-50/50 ring-2 ring-brand-50"
+                          : "border-slate-100 hover:border-brand-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${selectedExperienceType === type.id ? 'bg-rose-500 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                        <i className={`ph-bold ${type.icon} text-2xl`}></i>
+                      </div>
+                      <div>
+                        <span className={`font-bold block mb-1 text-lg ${selectedExperienceType === type.id ? 'text-rose-700' : 'text-slate-900'}`}>
+                          {type.label}
+                        </span>
+                        <span className="text-sm text-slate-500 leading-relaxed">
+                          {type.description}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "EXPERIENCE_DETAILS" && (
+            <motion.div
+              key="experience_details"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center justify-center p-8 md:p-10"
+            >
+              <div className="max-w-xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[500] text-slate-900 mb-8">
+                  Experience details
+                </h1>
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Title</label>
+                    <input 
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. Lagos Island Street Food Tour"
+                      className="w-full p-4 bg-white border-2 border-slate-200 rounded-xl font-bold text-slate-700 outline-none focus:border-brand-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-700 uppercase tracking-wider mb-2">Description</label>
+                    <textarea 
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Describe what guests will do, see, and eat..."
+                      className="w-full p-4 bg-white border-2 border-slate-200 rounded-xl min-h-[160px] font-medium text-slate-700 outline-none focus:border-brand-500 transition-all resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {currentStep === "EXPERIENCE_CAPACITY" && (
+            <motion.div
+              key="experience_capacity"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              className="flex-1 flex flex-col items-center justify-center p-8 md:p-12 overflow-y-auto"
+            >
+              <div className="max-w-xl w-full">
+                <h1 className="text-2xl md:text-3xl font-display font-[600] text-slate-900 mb-12">
+                  Group Size
+                </h1>
+                
+                <div className="flex items-center justify-between p-8 bg-slate-50 rounded-3xl border-2 border-slate-100">
+                  <div className="flex flex-col">
+                    <span className="text-xl font-bold text-slate-900">Maximum guests</span>
+                    <span className="text-slate-500">How many people can join at once?</span>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <button 
+                      onClick={() => setExperienceCapacity(Math.max(1, experienceCapacity - 1))}
+                      className="w-10 h-10 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-brand-500 hover:text-brand-500 transition-all"
+                    >
+                      <i className="ph-bold ph-minus"></i>
+                    </button>
+                    <span className="w-8 text-center font-bold text-2xl text-slate-900">{experienceCapacity}</span>
+                    <button 
+                      onClick={() => setExperienceCapacity(experienceCapacity + 1)}
+                      className="w-10 h-10 rounded-full border-2 border-slate-200 flex items-center justify-center text-slate-600 hover:border-brand-500 hover:text-brand-500 transition-all"
+                    >
+                      <i className="ph-bold ph-plus"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1737,7 +2048,12 @@ export default function BecomingAHostPage() {
               (currentStep === "TITLE" && title.length < 5) ||
               (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) ||
               (currentStep === "DESCRIPTION" && description.length < 10) ||
-              (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery)
+              (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery) ||
+              (currentStep === "SERVICE_TYPE" && !selectedServiceType) ||
+              (currentStep === "SERVICE_COVERAGE" && serviceCoverage.length === 0) ||
+              (currentStep === "SERVICE_DETAILS" && (!title || !description)) ||
+              (currentStep === "EXPERIENCE_TYPE" && !selectedExperienceType) ||
+              (currentStep === "EXPERIENCE_DETAILS" && (!title || !description))
             }
             className={`px-8 py-2 rounded-xl font-bold text-lg transition-all shadow-brutal ${
               // Special case: ADDRESS step has its own "Looks good" button in the form
@@ -1750,14 +2066,17 @@ export default function BecomingAHostPage() {
                (currentStep === "TITLE" && title.length < 5) || 
                (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) || 
                (currentStep === "DESCRIPTION" && description.length < 10) ||
-               (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery))
+               (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery) ||
+               (currentStep === "SERVICE_TYPE" && !selectedServiceType) ||
+               (currentStep === "SERVICE_COVERAGE" && serviceCoverage.length === 0) ||
+               (currentStep === "SERVICE_DETAILS" && (!title || !description)) ||
+               (currentStep === "EXPERIENCE_TYPE" && !selectedExperienceType) ||
+               (currentStep === "EXPERIENCE_DETAILS" && (!title || !description)))
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                 : "bg-brand-500 text-white hover:bg-brand-600 hover:shadow-none"
             }`}
           >
-            {currentStep === "SAFETY" ? "Create listing" : 
-             currentStep === "PRICING" ? "Publish Listing" : 
-             currentStep === "LOCATION_SEARCH" ? "Next" : "Next"}
+            {currentStep === "SAFETY" || currentStep === "PRICING" ? "Publish Listing" : "Next"}
           </button>
         </footer>
       )}

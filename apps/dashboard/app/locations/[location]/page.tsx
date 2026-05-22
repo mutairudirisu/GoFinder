@@ -389,7 +389,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-100 via-gray-50 to-gray-200">
-      <div ref={topBarRef} className="fixed top-0 z-50 w-full flex flex-col bg-white shadow-sm transition-all duration-300">
+      <div ref={topBarRef} className="fixed top-0 z-[110] w-full flex flex-col bg-white shadow-sm transition-all duration-300">
         <div className="hidden md:block">
           <Header
             hideCenterTabs
@@ -876,6 +876,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
 
       {!authLoading ? (
         <BottomTabNav
+          zIndexClassName="z-[70]"
           hidden={isAuthenticated ? mobileNavHidden : false}
           items={
             isAuthenticated

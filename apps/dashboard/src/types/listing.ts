@@ -2,7 +2,7 @@ export interface Listing {
   id: string;
   category: string;
   type: string;
-  spaceType: string;
+  spaceType?: string;
   host?: {
     id?: string;
     name: string;
@@ -21,11 +21,11 @@ export interface Listing {
     latitude?: number;
     longitude?: number;
   };
-  basics: {
+  basics?: {
     guests: number;
-    bedrooms: number;
-    beds: number;
-    hasLock: boolean | null;
+    bedrooms?: number;
+    beds?: number;
+    hasLock?: boolean | null;
   };
   amenities: string[];
   photos: string[];
@@ -36,6 +36,6 @@ export interface Listing {
   securityCharge: number;
   otherCharges: number;
   paymentFrequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
-  status: "IN_PROGRESS" | "ACTION_REQUIRED" | "VERIFIED" | "INACTIVE" | "REJECTED" | "BOOKED";
+  status: "IN_PROGRESS" | "ACTION_REQUIRED" | "VERIFIED" | "INACTIVE" | "REJECTED" | "BOOKED" | "PUBLISHED";
   createdAt: string;
 }

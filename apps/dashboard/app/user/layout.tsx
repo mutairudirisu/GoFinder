@@ -30,7 +30,7 @@ function UserDashboardLayoutContent({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated, switchRole } = useAuth();
   const { unreadCount, refreshConversations } = useMessages();
   const { isCollapsed } = useSidebarCollapse();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -131,7 +131,8 @@ function UserDashboardLayoutContent({
 
             {/* Switch to Host Button */}
             <button 
-              onClick={() => {
+              onClick={async () => {
+                await switchRole('lister');
                 localStorage.setItem('gigs_current_mode', 'host');
                 router.push('/hosting');
               }}

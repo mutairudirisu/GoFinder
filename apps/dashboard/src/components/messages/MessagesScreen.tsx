@@ -39,6 +39,9 @@ export function MessagesScreen({ mode }: { mode: Mode }) {
   const [query, setQuery] = useState("");
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [composer, setComposer] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
 
@@ -52,6 +55,12 @@ export function MessagesScreen({ mode }: { mode: Mode }) {
   useEffect(() => {
     if (!user?.id) return;
     if (activeConversationId) return;
+    
+    // Only auto-select the first conversation on desktop
+    // On mobile, we want to show the list if no ID is selected
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) return;
+
     const preferred = conversations.find((c) => c.participants.includes(user.id));
     if (preferred) setActiveConversationId(preferred.id);
   }, [activeConversationId, conversations, user?.id]);
@@ -149,6 +158,37 @@ export function MessagesScreen({ mode }: { mode: Mode }) {
     sendMessage(activeConversation.id, user.id, content);
     markAsRead(activeConversation.id, user.id);
     setComposer("");
+  };
+
+  const startRecording = () => {
+    setIsRecording(true);
+    setRecordingDuration(0);
+    recordingTimerRef.current = setInterval(() => {
+      setRecordingDuration(prev => prev + 1);
+    }, 1000);
+  };
+
+  const stopRecording = (shouldSend = true) => {
+    if (recordingTimerRef.current) {
+      clearInterval(recordingTimerRef.current);
+      recordingTimerRef.current = null;
+    }
+    
+    if (shouldSend && activeConversation && user?.id) {
+      // For demo, we send a "Voice Message" placeholder
+      // In a real app, this would be an audio blob
+      sendMessage(activeConversation.id, user.id, `🎤 Voice message (${formatRecordingTime(recordingDuration)})`);
+      markAsRead(activeConversation.id, user.id);
+    }
+    
+    setIsRecording(false);
+    setRecordingDuration(0);
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const emptyTitle = mode === "host" ? "Host inbox" : "Messages";
@@ -324,25 +364,27 @@ export function MessagesScreen({ mode }: { mode: Mode }) {
                       <i className="ph-bold ph-caret-left"></i>
                     </button>
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden border border-slate-100 bg-slate-50 shrink-0">
-                        <img 
-                          src={`https://ui-avatars.com/api/?name=${user?.name || "Host"}&background=random&color=fff`} 
-                          className="w-full h-full object-cover" 
-                          alt="Profile"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-900 line-clamp-1 text-sm md:text-base tracking-tight">
-                          {user?.name || "Dirisu Mutairu"}
+                      <div className="relative shrink-0">
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-sm md:text-base border-2 border-white shadow-sm overflow-hidden">
+                          {(activeOtherParticipant as any).image ? (
+                            <img src={(activeOtherParticipant as any).image} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            activeOtherParticipant.name.split(' ').map((n: string) => n[0]).join('').toUpperCase()
+                          )}
                         </div>
-                        <div className="flex flex-col">
-                          <div className="text-[10px] md:text-xs text-slate-500 line-clamp-1 font-medium">
-                            {activeConversation.listingTitle}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300" />
-                            <span className="text-[10px] text-slate-400 font-medium">Offline</span>
-                          </div>
+                        <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 md:w-4 md:h-4 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-slate-900 line-clamp-1 text-sm md:text-base tracking-tight">
+                          {activeOtherParticipant.name}
+                        </div>
+                        <div className="text-[11px] md:text-xs text-slate-500 font-medium line-clamp-1 flex items-center gap-1.5">
+                          {activeConversation.listingTitle}
+                          <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            Offline
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -438,42 +480,77 @@ export function MessagesScreen({ mode }: { mode: Mode }) {
 
             <div className="p-4 md:p-6 border-t border-slate-100 bg-white">
               <div className="max-w-4xl mx-auto flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={!activeConversation}
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors shrink-0"
-                  aria-label="Attach"
-                >
-                  <i className="ph-bold ph-image text-lg md:text-xl"></i>
-                </button>
+                {!isRecording && (
+                  <button
+                    type="button"
+                    disabled={!activeConversation}
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-100 transition-colors shrink-0"
+                    aria-label="Attach"
+                  >
+                    <i className="ph-bold ph-image text-lg md:text-xl"></i>
+                  </button>
+                )}
                 
                 <div className="flex-1 relative">
-                  <div className="rounded-[28px] border-2 border-brand-500/20 bg-white focus-within:border-brand-500/50 transition-all duration-200 px-5  shadow-sm flex items-center">
-                    <textarea
-                      value={composer}
-                      onChange={(e) => setComposer(e.target.value)}
-                      placeholder="Nice to meet you"
-                      className="w-full bg-transparent outline-none resize-none text-[15px] text-slate-900 placeholder:text-slate-400 min-h-[20px] max-h-40 py-1 block"
-                      disabled={!activeConversation}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                    />
-                  </div>
+                  {isRecording ? (
+                    <div className="h-12 flex items-center justify-between px-6 bg-red-50 rounded-[28px] border-2 border-red-100 shadow-sm animate-pulse">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
+                        <span className="text-sm font-bold text-red-600 tracking-tight">
+                          Recording... {formatRecordingTime(recordingDuration)}
+                        </span>
+                      </div>
+                      <button 
+                        onClick={() => stopRecording(false)}
+                        className="text-xs font-bold text-red-400 uppercase tracking-widest hover:text-red-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="rounded-[28px] border-2 border-brand-500/20 bg-white focus-within:border-brand-500/50 transition-all duration-200 px-5 shadow-sm flex items-center">
+                      <textarea
+                        value={composer}
+                        onChange={(e) => setComposer(e.target.value)}
+                        placeholder="Nice to meet you"
+                        className="w-full bg-transparent outline-none resize-none text-[15px] text-slate-900 placeholder:text-slate-400 min-h-[20px] max-h-40 py-1 block"
+                        disabled={!activeConversation}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleSend}
-                  disabled={!activeConversation || !composer.trim()}
-                  className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-brand-500 text-white flex items-center justify-center hover:bg-brand-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 shadow-lg shadow-brand-500/20"
-                  aria-label="Send"
-                >
-                  <i className="ph-bold ph-arrow-up text-lg md:text-xl"></i>
-                </button>
+                {composer.trim() || isRecording ? (
+                  <button
+                    type="button"
+                    onClick={() => isRecording ? stopRecording(true) : handleSend()}
+                    disabled={!activeConversation}
+                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg ${
+                      isRecording 
+                        ? "bg-red-500 shadow-red-500/20 text-white" 
+                        : "bg-brand-500 shadow-brand-500/20 text-white hover:bg-brand-600"
+                    }`}
+                    aria-label="Send"
+                  >
+                    <i className={`ph-bold ${isRecording ? "ph-check" : "ph-arrow-up"} text-lg md:text-xl`}></i>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startRecording}
+                    disabled={!activeConversation}
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-all active:scale-95 disabled:opacity-50 shrink-0"
+                    aria-label="Voice Message"
+                  >
+                    <i className="ph-bold ph-microphone text-lg md:text-xl"></i>
+                  </button>
+                )}
               </div>
             </div>
           </section>

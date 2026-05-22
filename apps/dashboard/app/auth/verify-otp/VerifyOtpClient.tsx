@@ -13,17 +13,25 @@ interface VerifyOtpClientProps {
 export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
   const router = useRouter();
   const auth = useAuth();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [resendTimer, setResendTimer] = useState(0);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const hiddenInputRef = useRef<HTMLInputElement>(null);
   const didAutoSubmit = useRef(false);
 
   const [resolvedEmail, setResolvedEmail] = useState(email);
   const [resolvedFlow, setResolvedFlow] = useState<"login" | "signup">(
     flow === "signup" ? "signup" : "login"
   );
+
+  useEffect(() => {
+    // Auto-focus hidden input on mount
+    const timer = setTimeout(() => {
+      hiddenInputRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (email) setResolvedEmail(email);
@@ -49,58 +57,44 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
     return () => clearTimeout(timer);
   }, [resendTimer]);
 
-  const handleOtpChange = (index: number, value: string) => {
-    // Only allow digits
-    const digit = value.replace(/[^0-9]/g, "").slice(-1);
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, "").slice(0, 6);
+    setOtp(value);
     
-    const newOtp = [...otp];
-    newOtp[index] = digit;
-    setOtp(newOtp);
-
-    // Auto-focus next input if a digit was entered
-    if (digit && index < 5) {
-      setTimeout(() => {
-        inputRefs.current[index + 1]?.focus();
-      }, 0);
+    // Immediately blur to hide keyboard when 6th digit is entered
+    if (value.length === 6) {
+      hiddenInputRef.current?.blur();
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace") {
-      if (!otp[index] && index > 0) {
-        // Move to previous input on backspace if current is empty
-        inputRefs.current[index - 1]?.focus();
-      } else {
-        // Clear current input
-        const newOtp = [...otp];
-        newOtp[index] = "";
-        setOtp(newOtp);
-      }
-    }
+  const handleBoxClick = () => {
+    // Ensure hidden input is focused when any box is clicked
+    hiddenInputRef.current?.focus();
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     setError("");
 
-    if (otp.some((digit) => !digit)) {
+    if (otp.length < 6) {
       setError("Please enter all 6 digits");
       return;
     }
 
     setIsLoading(true);
-    try {
-      const otpCode = otp.join("");
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      if (otpCode.length !== 6) {
-        setError("Invalid code");
-        return;
-      }
+    // Explicitly blur the hidden input to dismiss mobile keyboard on primary CTA
+    hiddenInputRef.current?.blur();
 
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
       if (resolvedFlow === "signup") {
-        const ok = await auth.verifyOTP(otpCode);
+        const ok = await auth.verifyOTP(otp);
         if (!ok) {
           setError("Invalid code. Please try again.");
+          setIsLoading(false);
+          // Refocus after 10ms as per convention
+          setTimeout(() => hiddenInputRef.current?.focus(), 10);
           return;
         }
         localStorage.removeItem("pending_auth");
@@ -110,6 +104,7 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
 
       if (!resolvedEmail) {
         setError("Missing email. Please restart sign in.");
+        setIsLoading(false);
         return;
       }
 
@@ -128,6 +123,8 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
       router.push(redirect);
     } catch (err) {
       setError("Invalid OTP. Please try again.");
+      // Refocus after 10ms as per convention
+      setTimeout(() => hiddenInputRef.current?.focus(), 10);
     } finally {
       setIsLoading(false);
     }
@@ -135,14 +132,13 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
 
   useEffect(() => {
     if (isLoading) return;
-    if (otp.some((d) => !d)) {
+    if (otp.length < 6) {
       didAutoSubmit.current = false;
       return;
     }
     if (didAutoSubmit.current) return;
     didAutoSubmit.current = true;
-    const form = document.getElementById("otp-form") as HTMLFormElement | null;
-    if (form) form.requestSubmit();
+    handleSubmit();
   }, [otp, isLoading]);
 
   const handleResend = async () => {
@@ -151,6 +147,8 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setResendTimer(60);
+      setOtp("");
+      setTimeout(() => hiddenInputRef.current?.focus(), 10);
     } catch (err) {
       setError("Failed to resend OTP. Please try again.");
     } finally {
@@ -164,41 +162,72 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
       subtitle={resolvedEmail ? `We sent a 6-digit code to ${resolvedEmail}` : "We sent a 6-digit verification code"}
       showImage={true}
     >
-      <form id="otp-form" onSubmit={handleSubmit} className="space-y-8">
+      <div className="space-y-8">
         <div className="space-y-6">
           <label className="block text-sm font-semibold text-slate-700 text-center">Enter 6-digit code</label>
-          <div className="flex gap-2 justify-center">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                id={`otp-digit-${index}`}
-                name={`otp-digit-${index}`}
-                ref={(el) => {
-                  inputRefs.current[index] = el;
-                }}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                disabled={isLoading}
-                className="w-11 h-11 md:w-14 md:h-14 text-center text-xl md:text-2xl font-bold rounded-2xl border border-slate-200 bg-slate-50 text-slate-900 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 focus:outline-none transition-all disabled:cursor-not-allowed disabled:bg-slate-50 shadow-sm"
-              />
-            ))}
+          
+          <div className="relative flex gap-2 justify-center" onClick={handleBoxClick}>
+            {/* Hidden Input Pattern */}
+            <input
+              ref={hiddenInputRef}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
+              value={otp}
+              onChange={handleOtpChange}
+              autoComplete="one-time-code"
+              disabled={isLoading}
+              className="absolute inset-0 opacity-0 cursor-default"
+              aria-hidden="true"
+            />
+            
+            {Array.from({ length: 6 }).map((_, index) => {
+              const digit = otp[index] || "";
+              const isFocused = otp.length === index && !isLoading;
+              
+              return (
+                <div
+                  key={index}
+                  className={`w-11 h-11 md:w-14 md:h-14 flex items-center justify-center text-xl md:text-2xl font-bold rounded-2xl border transition-all duration-200 shadow-sm ${
+                    isFocused 
+                      ? "border-brand-500 ring-4 ring-brand-500/10 bg-white" 
+                      : digit 
+                        ? "border-slate-300 bg-white text-slate-900" 
+                        : "border-slate-200 bg-slate-50 text-slate-400"
+                  } ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-text"}`}
+                >
+                  {digit}
+                  {isFocused && (
+                    <span 
+                      className="w-0.5 h-6 bg-brand-500 rounded-full" 
+                      style={{ 
+                        animation: 'blink 0.6s step-end infinite'
+                      }}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
+        <style jsx global>{`
+          @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+          }
+        `}</style>
+
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-2xl">
-            <p className="text-sm font-semibold text-red-600">{error}</p>
+            <p className="text-sm font-semibold text-red-600 text-center">{error}</p>
           </div>
         )}
 
         <button
-          type="submit"
-          disabled={isLoading || otp.some((digit) => !digit)}
+          onClick={() => handleSubmit()}
+          disabled={isLoading || otp.length < 6}
           className="w-full px-6 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 disabled:bg-slate-100 disabled:text-slate-400 text-white font-bold transition-all active:scale-95 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 disabled:shadow-none"
         >
           {isLoading ? "Verifying..." : "Verify & Continue"}
@@ -217,7 +246,7 @@ export default function VerifyOtpClient({ email, flow }: VerifyOtpClientProps) {
         </div>
 
         <p className="text-xs text-center text-slate-400 font-medium tracking-wide">Demo: Enter any 6-digit code</p>
-      </form>
+      </div>
     </AuthLayout>
   );
 }

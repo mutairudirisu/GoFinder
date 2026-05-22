@@ -30,7 +30,7 @@ function HostingLayoutContent({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, switchRole } = useAuth();
   const { unreadCount, refreshConversations } = useMessages();
   const { isCollapsed } = useSidebarCollapse();
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -142,7 +142,9 @@ function HostingLayoutContent({
 
             {/* Switch to Finder Button */}
             <button 
-              onClick={() => {
+              onClick={async () => {
+                await switchRole('renter');
+                localStorage.setItem('gigs_current_mode', 'guest');
                 router.push('/');
               }}
               className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 bg-slate-100 text-slate-700 rounded-lg md:rounded-xl font-medium text-xs md:text-sm hover:bg-slate-200 transition-colors flex-shrink-0"

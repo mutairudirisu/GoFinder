@@ -63,7 +63,7 @@
     "email": "mutairudirisu@gmail.com",
     "name": "Mutairu DIrisu",
     "phone": "+2348107613948",
-    "role": "renter",
+    "role": "both",
     "avatar": "",
     "isProfileComplete": true,
     "verifications": {
@@ -73,7 +73,7 @@
       }
     },
     "createdAt": "2026-04-03T10:41:55.108Z",
-    "updatedAt": "2026-05-21T13:27:20.368Z",
+    "updatedAt": "2026-05-22T10:06:19.326Z",
     "firstName": "Mutairu",
     "lastName": "DIrisu",
     "security": {

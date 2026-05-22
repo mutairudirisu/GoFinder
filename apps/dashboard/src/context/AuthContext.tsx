@@ -249,13 +249,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthCookie(null);
   };
 
-  const switchRole = (role: "lister" | "renter") => {
-    if (user) {
-      if (user.role === "admin") return;
-      const updatedUser = { ...user, role };
-      setUser(updatedUser);
-      localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
-      setAuthCookie(updatedUser);
+  const switchRole = async (targetRole: "lister" | "renter") => {
+    if (!user) return;
+    if (user.role === "admin") return;
+
+    let nextRole: User["role"] = user.role;
+
+    if (user.role === "both") {
+      // User already has both, just keep it as both
+      nextRole = "both";
+    } else if (user.role !== targetRole) {
+      // User is switching to the other role, so they now have "both"
+      nextRole = "both";
+    }
+
+    const updatedUser = { ...user, role: nextRole };
+    setUser(updatedUser);
+    localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
+    setAuthCookie(updatedUser);
+
+    // Persist to backend if possible
+    try {
+      await fetch(`/api/users/${encodeURIComponent(String(user.id))}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: nextRole }),
+      });
+    } catch (err) {
+      console.error("Failed to update user role on backend:", err);
     }
   };
 

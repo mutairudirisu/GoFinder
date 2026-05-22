@@ -12,11 +12,18 @@ interface UserMenuProps {
 
 export default function UserMenu({ isOpen, onClose }: UserMenuProps) {
   const router = useRouter();
-  const { logout, user } = useAuth();
+  const { logout, user, switchRole } = useAuth();
 
   const handleLogout = async () => {
     await logout();
     router.push("/");
+    onClose();
+  };
+
+  const handleSwitchToHosting = async () => {
+    await switchRole("lister");
+    localStorage.setItem("gigs_current_mode", "host");
+    router.push("/hosting");
     onClose();
   };
 
@@ -25,6 +32,11 @@ export default function UserMenu({ isOpen, onClose }: UserMenuProps) {
       icon: "ph-user",
       label: "Personal info",
       href: "/user/profile",
+    },
+    {
+      icon: "ph-storefront",
+      label: "Switch to hosting",
+      onClick: handleSwitchToHosting,
     },
     {
       icon: "ph-house-line",
@@ -127,29 +139,42 @@ export default function UserMenu({ isOpen, onClose }: UserMenuProps) {
                 </Link>
               </div>
 
-              {/* Menu Items */}
               <div className="space-y-1">
-                {menuItems.map((item, index) => (
-                  <div key={index}>
-                    {item.href ? (
-                      <Link
-                        href={item.href}
-                        onClick={onClose}
-                        className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-slate-50 transition-colors text-sm"
-                      >
-                        <i className={`ph-bold ${item.icon} text-base text-slate-600`}></i>
-                        <span className="font-medium">{item.label}</span>
-                      </Link>
-                    ) : (
-                      <button
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-slate-50 transition-colors text-sm cursor-not-allowed opacity-60"
-                      >
-                        <i className={`ph-bold ${item.icon} text-base text-slate-600`}></i>
-                        <span className="font-medium">{item.label}</span>
-                      </button>
-                    )}
-                  </div>
-                ))}
+                {menuItems.map((item, index) => {
+                  const content = (
+                    <>
+                      <i className={`ph-bold ${item.icon} text-base text-slate-600`}></i>
+                      <span className="font-medium">{item.label}</span>
+                    </>
+                  );
+
+                  return (
+                    <div key={index}>
+                      {item.onClick ? (
+                        <button
+                          onClick={item.onClick}
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-slate-50 transition-colors text-sm"
+                        >
+                          {content}
+                        </button>
+                      ) : item.href ? (
+                        <Link
+                          href={item.href}
+                          onClick={onClose}
+                          className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-slate-50 transition-colors text-sm"
+                        >
+                          {content}
+                        </Link>
+                      ) : (
+                        <button
+                          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-800 hover:bg-slate-50 transition-colors text-sm cursor-not-allowed opacity-60"
+                        >
+                          {content}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
