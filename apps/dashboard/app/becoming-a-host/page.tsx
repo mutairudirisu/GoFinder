@@ -10,14 +10,12 @@ import { Listing } from "@/types/listing";
 import { LocationPickerMap } from "@/components/listings/LocationPickerMap";
 
 type Step = 
+  | "ONBOARDING_START"
+  | "INTRO"
   | "CATEGORY" 
-  | "INTRO" 
   | "TELL_US" 
   | "TYPE" 
   | "SPACE_TYPE"
-  | "LOCATION_SEARCH"
-  | "ADDRESS"
-  | "LOCATION_CONFIRM"
   | "BASICS"
   | "STAND_OUT_INTRO"
   | "AMENITIES"
@@ -42,11 +40,7 @@ type Step =
 export default function BecomingAHostPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const isUserFullyVerified =
-    (user?.verifications?.email?.status ?? "UNVERIFIED") === "VERIFIED" &&
-    (user?.verifications?.phone?.status ?? "UNVERIFIED") === "VERIFIED" &&
-    (user?.verifications?.id?.status ?? "UNVERIFIED") === "VERIFIED";
-  const [currentStep, setCurrentStep] = useState<Step>("CATEGORY");
+  const [currentStep, setCurrentStep] = useState<Step>("ONBOARDING_START");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [selectedSpaceType, setSelectedSpaceType] = useState<string | null>(null);
@@ -95,6 +89,42 @@ export default function BecomingAHostPage() {
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [publishingProgress, setPublishingProgress] = useState(0);
   const [isPublished, setIsPublished] = useState(false);
+
+  // Basics state
+  const [basics, setBasics] = useState({
+    guests: 2,
+    bedrooms: 1,
+    beds: 1,
+    hasLock: null as boolean | null
+  });
+
+  // Address state - kept minimal as it's now handled in /address route
+  // but needed for the final submission logic below
+  const [address, setAddress] = useState({
+    country: "Nigeria - NG",
+    building: "",
+    unit: "",
+    street: "",
+    district: "",
+    city: "Lagos",
+    province: "Lagos State",
+    postalCode: "",
+    latitude: 6.5244,
+    longitude: 3.3792
+  });
+  const [showSpecificLocation, setShowSpecificLocation] = useState(true);
+
+  // Redirect to /address if we are at the start
+  useEffect(() => {
+    if (currentStep === "ONBOARDING_START") {
+      router.replace("/becoming-a-host/address");
+    }
+  }, [currentStep, router]);
+
+  const isUserFullyVerified =
+    (user?.verifications?.email?.status ?? "UNVERIFIED") === "VERIFIED" &&
+    (user?.verifications?.phone?.status ?? "UNVERIFIED") === "VERIFIED" &&
+    (user?.verifications?.id?.status ?? "UNVERIFIED") === "VERIFIED";
 
   // Trigger publishing simulation when reaching CONGRATS step
   useEffect(() => {
@@ -156,7 +186,7 @@ export default function BecomingAHostPage() {
       }, 300);
       return () => clearInterval(interval);
     }
-  }, [currentStep, isPublished]);
+  }, [currentStep, isPublished, selectedCategory, selectedType, selectedServiceType, selectedExperienceType, selectedSpaceType, user, address, serviceCoverage, basics, experienceCapacity, selectedAmenities, photos, title, selectedHighlights, description, price, securityCharge, otherCharges, paymentFrequency, isUserFullyVerified]);
 
   const generateAIDescription = () => {
     setIsGeneratingAI(true);
@@ -169,129 +199,6 @@ export default function BecomingAHostPage() {
       setIsGeneratingAI(false);
     }, 1500);
   };
-
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
-  const [isLocating, setIsLocating] = useState(false);
-
-  const handleUseCurrentLocation = () => {
-    setIsLocating(true);
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setAddress(prev => ({ ...prev, latitude, longitude }));
-          setIsLocating(false);
-          // Automatically move to next step or update map
-          setCurrentStep("ADDRESS");
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          setIsLocating(false);
-          alert("Could not get your location. Please enter it manually.");
-        }
-      );
-    } else {
-      setIsLocating(false);
-      alert("Geolocation is not supported by your browser.");
-    }
-  };
-
-  useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (searchQuery.length < 3) {
-        setSuggestions([]);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-            searchQuery
-          )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=5&proximity=${address.longitude},${address.latitude}`
-        );
-        const data = await response.json();
-        setSuggestions(data.features || []);
-      } catch (error) {
-        console.error("Error fetching suggestions:", error);
-      }
-    };
-
-    const timeoutId = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
-
-  const handleSelectSuggestion = (suggestion: any) => {
-    const [lng, lat] = suggestion.center;
-    const placeName = suggestion.place_name;
-    
-    // Parse the place name to fill address fields
-    const context = suggestion.context || [];
-    const street = suggestion.text || "";
-    const city = context.find((c: any) => c.id.startsWith('place'))?.text || "";
-    const province = context.find((c: any) => c.id.startsWith('region'))?.text || "";
-    const country = context.find((c: any) => c.id.startsWith('country'))?.text || "Nigeria";
-    const postalCode = context.find((c: any) => c.id.startsWith('postcode'))?.text || "";
-
-    setAddress(prev => ({
-      ...prev,
-      latitude: lat,
-      longitude: lng,
-      street: street,
-      city: city,
-      province: province,
-      postalCode: postalCode,
-      country: country === "Nigeria" ? "Nigeria - NG" : country
-    }));
-    
-    setSuggestions([]);
-    setSearchQuery(placeName);
-    setCurrentStep("ADDRESS");
-  };
-
-  const handleSearchAddress = async (query: string) => {
-    if (!query) return;
-    setIsSearching(true);
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          query
-        )}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=1`
-      );
-      const data = await response.json();
-      if (data.features && data.features.length > 0) {
-        handleSelectSuggestion(data.features[0]);
-      }
-    } catch (error) {
-      console.error("Error searching address:", error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Basics state
-  const [basics, setBasics] = useState({
-    guests: 2,
-    bedrooms: 1,
-    beds: 1,
-    hasLock: null as boolean | null
-  });
-
-  // Address state
-  const [address, setAddress] = useState({
-    country: "Nigeria - NG",
-    building: "",
-    unit: "",
-    street: "",
-    district: "",
-    city: "Lagos",
-    province: "Lagos State",
-    postalCode: "",
-    latitude: 6.5244,
-    longitude: 3.3792
-  });
-  const [showSpecificLocation, setShowSpecificLocation] = useState(true);
 
   const nigerianStates = [
     "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa", "Benue", "Borno", 
@@ -382,16 +289,13 @@ export default function BecomingAHostPage() {
   ];
 
   const stepsOrder = useMemo((): Step[] => {
-    const base: Step[] = ["CATEGORY", "INTRO"];
+    const startFlow: Step[] = ["ONBOARDING_START", "INTRO", "TELL_US", "CATEGORY"];
+    
     if (selectedCategory === "home") {
       return [
-        ...base,
-        "TELL_US",
+        ...startFlow,
         "TYPE",
         "SPACE_TYPE",
-        "LOCATION_SEARCH",
-        "ADDRESS",
-        "LOCATION_CONFIRM",
         "BASICS",
         "STAND_OUT_INTRO",
         "AMENITIES",
@@ -408,7 +312,7 @@ export default function BecomingAHostPage() {
     }
     if (selectedCategory === "service") {
       return [
-        ...base,
+        ...startFlow,
         "SERVICE_TYPE",
         "SERVICE_COVERAGE",
         "SERVICE_DETAILS",
@@ -419,9 +323,8 @@ export default function BecomingAHostPage() {
     }
     if (selectedCategory === "experience") {
       return [
-        ...base,
+        ...startFlow,
         "EXPERIENCE_TYPE",
-        "LOCATION_SEARCH",
         "EXPERIENCE_DETAILS",
         "EXPERIENCE_CAPACITY",
         "PHOTOS",
@@ -429,52 +332,14 @@ export default function BecomingAHostPage() {
         "CONGRATS"
       ];
     }
-    return ["CATEGORY"];
+    return startFlow;
   }, [selectedCategory]);
-
-  const isAddressValid = 
-    address.street.length > 0 && 
-    address.city.length > 0 && 
-    address.province.length > 0 && 
-    address.country.length > 0;
-
-  const handleLocationChange = async (lat: number, lng: number) => {
-    setAddress(prev => ({ ...prev, latitude: lat, longitude: lng }));
-    
-    // Reverse geocode if we are in the confirm step to keep address in sync
-    if (currentStep === "LOCATION_CONFIRM") {
-      try {
-        const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN}&limit=1`
-        );
-        const data = await response.json();
-        if (data.features && data.features.length > 0) {
-          const suggestion = data.features[0];
-          const context = suggestion.context || [];
-          const street = suggestion.text || "";
-          const city = context.find((c: any) => c.id.startsWith('place'))?.text || "";
-          const province = context.find((c: any) => c.id.startsWith('region'))?.text || "";
-          const postalCode = context.find((c: any) => c.id.startsWith('postcode'))?.text || "";
-
-          setAddress(prev => ({
-            ...prev,
-            street: street || prev.street,
-            city: city || prev.city,
-            province: province || prev.province,
-            postalCode: postalCode || prev.postalCode,
-          }));
-        }
-      } catch (error) {
-        console.error("Error reverse geocoding:", error);
-      }
-    }
-  };
 
   const handleNext = () => {
     const currentIndex = stepsOrder.indexOf(currentStep);
-    if (currentIndex < stepsOrder.length - 1) {
-      const nextStep = stepsOrder[currentIndex + 1];
-      if (nextStep) setCurrentStep(nextStep);
+    const nextStep = stepsOrder[currentIndex + 1];
+    if (nextStep) {
+      setCurrentStep(nextStep);
     } else {
       // Final submission logic here
       router.push("/hosting/listings");
@@ -483,17 +348,17 @@ export default function BecomingAHostPage() {
 
   const handleBack = () => {
     const currentIndex = stepsOrder.indexOf(currentStep);
-    if (currentIndex > 0) {
-      const prevStep = stepsOrder[currentIndex - 1];
-      if (prevStep) setCurrentStep(prevStep);
+    const prevStep = stepsOrder[currentIndex - 1];
+    if (prevStep) {
+      setCurrentStep(prevStep);
     }
   };
 
   const getProgress = () => {
     const currentIndex = stepsOrder.indexOf(currentStep);
-    // Exclude Category and Congrats from progress bar logic
-    if (currentStep === "CATEGORY" || currentStep === "CONGRATS") return 0;
-    return ((currentIndex) / (stepsOrder.length - 2)) * 100;
+    // Exclude Start and Congrats from progress bar logic
+    if (currentStep === "ONBOARDING_START" || currentStep === "CONGRATS") return 0;
+    return ((currentIndex) / (stepsOrder.length - 1)) * 100;
   };
 
   const toggleHighlight = (id: string) => {
@@ -521,67 +386,31 @@ export default function BecomingAHostPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
-      <header className="h-20 px-6 md:px-12 flex flex-col justify-center sticky top-0 bg-white z-50">
-        <div className="flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2 hidden md:inline-flex">
-            <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm">
-              <i className="ph-bold ph-house-line text-white"></i>
-            </div>
-            <span className="font-display font-bold text-xl text-brand-dark hidden sm:inline-block">GIGS</span>
-          </Link>
-          <div className="flex justify-between md:justify-end gap-4 w-full">
-            <button className="px-5 py-2.5 text-base font-bold border border-slate-200 rounded-full hover:bg-slate-50 transition-all flex items-center gap-2">
-              Questions?
-            </button>
-            <button 
-              onClick={() => router.push("/hosting")}
-              className="px-5 py-2.5 text-base font-bold border border-slate-200 rounded-full hover:bg-slate-50 transition-all"
-            >
-              Save & exit
-            </button>
-          </div>
-        </div>
-        {/* Progressive Bar below header */}
-        {currentStep !== "CATEGORY" && currentStep !== "CONGRATS" && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100">
-            <motion.div 
-              className="h-full bg-slate-900"
-              initial={{ width: "0%" }}
-              animate={{ width: `${getProgress()}%` }}
-              transition={{ duration: 0.3 }}
-            />
-          </div>
-        )}
-      </header>
-
-      <main className="flex-1 flex flex-col relative overflow-hidden">
-        <AnimatePresence mode="wait">
-          {currentStep === "CATEGORY" && (
+    <main className="flex-1 flex flex-col relative overflow-hidden">
+      <AnimatePresence mode="wait">
+        {currentStep === "CATEGORY" && (
             <motion.div
               key="category"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="flex-1 flex flex-col items-center justify-center"
+              className="flex-1 flex flex-col items-center justify-center bg-white"
             >
-              <div className="w-full md:max-w-4xl rounded-t-[32px] md:rounded-[32px] border border-slate-200 shadow-t-2xl p-8 md:p-12 ">
-                <h1 className="text-2xl md:text-3xl font-display font-medium text-text-slate-900 text-center mb-10">
+              <div className="w-full md:max-w-4xl rounded-t-[32px] md:rounded-[32px] p-8 md:p-12 ">
+                <h1 className="text-2xl md:text-3xl font-display font-medium text-slate-900 text-center mb-10">
                   What would you like to host?
                 </h1>
-                {/* Close Button matching the first image */}
-                {/* <button 
-                  onClick={() => router.push("/hosting")}
-                  className="absolute top-6 right-6 md:top-8 md:right-8 p-2 hover:bg-slate-50 rounded-full transition-colors z-10"
-                >
-                  <i className="ph-bold ph-x text-xl text-slate-900"></i>
-                </button> */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:py-6">
                   {categories.map((cat) => (
                     <button
                       key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => {
+                        setSelectedCategory(cat.id);
+                        // Find the next step manually since stepsOrder updates asynchronously
+                        if (cat.id === "home") setCurrentStep("TYPE");
+                        else if (cat.id === "service") setCurrentStep("SERVICE_TYPE");
+                        else if (cat.id === "experience") setCurrentStep("EXPERIENCE_TYPE");
+                      }}
                       className={`flex justify-between flex-row-reverse md:flex-col items-center p-6 md:p-12
                          rounded-3xl border-2 transition-all group ${
                         selectedCategory === cat.id
@@ -597,19 +426,6 @@ export default function BecomingAHostPage() {
                       </span>
                     </button>
                   ))}
-                </div>
-                <div className="mt-10 flex justify-end">
-                  <button
-                    disabled={!selectedCategory}
-                    onClick={handleNext}
-                    className={`w-full md:w-[120px] px-8 py-4 rounded-xl font-bold text-base transition-all shadow-brutal ${
-                      selectedCategory
-                        ? "bg-brand-500 text-white hover:bg-brand-600"
-                        : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                    }`}
-                  >
-                    Next
-                  </button>
                 </div>
               </div>
             </motion.div>
@@ -683,20 +499,29 @@ export default function BecomingAHostPage() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
-              className="flex-1 grid grid-cols-1 lg:grid-cols-2 h-full"
+              className="flex-1 grid grid-cols-1 lg:grid-cols-2 h-full bg-white"
             >
-              <div className="flex flex-col justify-center px-5 md:px-20 py-10 space-y-5">
-                <span className="text-[10px] font-bold text-slate-900 uppercase tracking-widest">Step 1</span>
-                <h1 className="text-2xl md:text-4xl font-display font-[500] text-slate-900 leading-tight">
+              <div className="flex flex-col justify-center px-8 md:px-24 py-10 space-y-6">
+                <span className="text-lg font-bold text-slate-900">Step 1</span>
+                <h1 className="text-4xl md:text-5xl font-display font-[600] text-slate-900 leading-tight">
                   Tell us about your place
                 </h1>
-                <p className="text-[18px] text-slate-600 leading-relaxed max-w-lg">
+                <p className="text-lg text-slate-600 leading-relaxed max-w-lg">
                   In this step, we'll ask you which type of property you have and if guests will book the entire place or just a room. Then let us know the location and how many guests can stay.
                 </p>
               </div>
               <div className="bg-white flex items-center justify-center p-10">
-                <div className="w-full md:max-w-lg aspect-square relative bg-blue-50 rounded-[40px] flex items-center justify-center shadow-brutal border-2 border-slate-900">
-                  <i className="ph-bold ph-house-line text-[100px] text-blue-500"></i>
+                <div className="w-full max-w-2xl aspect-[1.4/1] relative flex items-center justify-center">
+                  <motion.img 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6 }}
+                    src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" 
+                    className="w-full h-full object-cover rounded-[32px] shadow-2xl"
+                    alt="Place Intro"
+                  />
+                  {/* Isometric Overlay Simulation */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-white/20 to-transparent pointer-events-none rounded-[32px]" />
                 </div>
               </div>
             </motion.div>
@@ -1006,326 +831,6 @@ export default function BecomingAHostPage() {
             </motion.div>
           )}
 
-          {currentStep === "LOCATION_SEARCH" && (
-            <motion.div
-              key="location_search"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col mx-auto overflow-y-auto pb-10"
-            >
-              <div className="px-6 md:px-12 py-10 bg-white flex-shrink-0">
-                <div className="max-w-2xl">
-                  <h1 className="text-2xl md:text-4xl font-display font-[500] text-slate-900 mb-4">
-                    Where's your place located?
-                  </h1>
-                  <p className="text-slate-600 text-lg">
-                    Your address is only shared with guests after they've made a reservation.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex-1 relative min-h-[400px] h-full">
-                <LocationPickerMap 
-                  latitude={address.latitude}
-                  longitude={address.longitude}
-                  onLocationChange={handleLocationChange}
-                  showSpecificLocation={false}
-                  interactive={true}
-                />
-                
-                {/* Floating Search Area */}
-                <div className="absolute top-10 left-6 right-6 md:left-12 md:right-auto md:w-[480px] space-y-6">
-                  {/* Search Bar - Airbnb Style (Image 2) */}
-                  <div className="bg-white rounded-full shadow-2xl border-2 border-transparent p-1.5 flex items-center gap-3 transition-all ring-2 ring-slate-200 focus-within:ring-4 focus-within:ring-brand-500/20 focus-within:border-brand-500">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center">
-                      <i className={`ph-bold ${isSearching ? "ph-spinner animate-spin" : "ph-map-pin"} text-slate-900 text-xl`}></i>
-                    </div>
-                    <input 
-                      type="text"
-                      placeholder="Enter your address"
-                      className="flex-1 bg-transparent outline-none font-medium text-slate-900 placeholder:text-slate-500 text-lg"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleSearchAddress(searchQuery);
-                        }
-                      }}
-                    />
-                    {searchQuery && (
-                      <button 
-                        onClick={() => {
-                          setSearchQuery("");
-                          setSuggestions([]);
-                        }}
-                        className="w-10 h-10 rounded-full hover:bg-slate-50 flex items-center justify-center text-slate-400 mr-1"
-                      >
-                        <i className="ph-bold ph-x"></i>
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Search Suggestions Dropdown */}
-                  <AnimatePresence>
-                    {suggestions.length > 0 && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="bg-white rounded-[24px] shadow-2xl border border-slate-200 overflow-hidden overflow-y-auto"
-                      >
-                        {suggestions.map((suggestion, index) => (
-                          <button
-                            key={suggestion.id}
-                            onClick={() => handleSelectSuggestion(suggestion)}
-                            className={`w-full flex items-center gap-4 p-4 hover:bg-slate-50 transition-all text-left ${
-                              index !== suggestions.length - 1 ? "border-b border-slate-100" : ""
-                            }`}
-                          >
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
-                              <i className="ph-bold ph-map-pin text-slate-900"></i>
-                            </div>
-                            <div>
-                              <p className="font-bold text-slate-900 text-base leading-tight">
-                                {suggestion.text}
-                              </p>
-                              <p className="text-slate-500 text-sm">
-                                {suggestion.place_name.split(', ').slice(1).join(', ')}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Use Current Location Button (Image 2) */}
-                  <button 
-                    onClick={handleUseCurrentLocation}
-                    disabled={isLocating}
-                    className="w-full bg-white rounded-full shadow-lg border border-slate-200 p-4 flex items-center gap-4 hover:bg-slate-50 transition-all group"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center">
-                      <i className={`ph-bold ${isLocating ? "ph-spinner animate-spin" : "ph-navigation-arrow"} text-brand-600 text-xl`}></i>
-                    </div>
-                    <span className="font-bold text-slate-900 text-lg">Use my current location</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {currentStep === "ADDRESS" && (
-            <motion.div
-              key="address"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col items-center px-5 py-8 md:p-12 overflow-y-auto bg-white"
-            >
-              <div className="max-w-2xl w-full">
-                <div className="items-center gap-4 mb-8">
-                  <button 
-                    onClick={handleBack}
-                    className="w-10 h-10 mb-4 bg-slate-100 rounded-full hover:bg-brand-100 flex items-center justify-center transition-colors"
-                  >
-                    <i className="ph ph-arrow-left text-xl "></i>
-                  </button>
-                  <h1 className="text-2xl font-display font-[600] text-slate-900">
-                    Confirm your address
-                  </h1>
-                </div>
-                
-                <div className="space-y-0 border-2 border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-                  <div className="p-4 border-b-2 border-slate-200 bg-white group hover:bg-slate-50 transition-colors">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Country / region</label>
-                    <select 
-                      className="w-full text-slate-900 outline-none bg-transparent font-medium cursor-pointer appearance-none text-lg"
-                      value={address.country}
-                      onChange={(e) => setAddress({...address, country: e.target.value})}
-                    >
-                      <option value="Nigeria - NG">Nigeria</option>
-                      <option value="United States">United States</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                    </select>
-                  </div>
-                  
-                  <div className="p-4 border-b-2 border-slate-200 bg-white">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Street address</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 1226 University Drive" 
-                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
-                      value={address.street}
-                      onChange={(e) => setAddress({...address, street: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="p-4 border-b-2 border-slate-200 bg-white">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">Apt, suite, unit (if applicable)</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Apt 4B" 
-                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
-                      value={address.unit}
-                      onChange={(e) => setAddress({...address, unit: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="p-4 border-b-2 border-slate-200 bg-white">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">City / town</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Lagos" 
-                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
-                      value={address.city}
-                      onChange={(e) => setAddress({...address, city: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="p-4 border-b-2 border-slate-200 bg-white">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">State / territory</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. Lagos State" 
-                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
-                      value={address.province}
-                      onChange={(e) => setAddress({...address, province: e.target.value})}
-                    />
-                  </div>
-                  
-                  <div className="p-4 bg-white">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-1">ZIP code</label>
-                    <input 
-                      type="text" 
-                      placeholder="e.g. 100001" 
-                      className="w-full text-slate-900 outline-none placeholder:text-slate-300 font-medium text-lg"
-                      value={address.postalCode}
-                      onChange={(e) => setAddress({...address, postalCode: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-8">
-                  <button 
-                    onClick={handleNext}
-                    disabled={!isAddressValid}
-                    className="w-full bg-brand-500 text-white font-bold py-4 rounded-xl hover:bg-brand-600 transition-all disabled:bg-slate-200 disabled:text-slate-400 shadow-brutal active:scale-[0.98]"
-                  >
-                    Looks good
-                  </button>
-                </div>
-
-                <hr className="my-10 border-slate-100" />
-
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <div className="flex justify-between mb-4">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">Show your specific location</h3>
-
-                      <button 
-                    onClick={() => setShowSpecificLocation(!showSpecificLocation)}
-                    className={`w-14 h-8 rounded-full relative transition-all duration-300 ${showSpecificLocation ? "bg-slate-900" : "bg-slate-200"}`}
-                  >
-                    <motion.div 
-                      animate={{ x: showSpecificLocation ? 26 : 4 }}
-                      className="absolute top-1 w-6 h-6 bg-white rounded-full shadow-md"
-                    />
-                  </button>
-                    </div>
-                    <p className="text-slate-500 text-base max-w-md leading-relaxed">
-                      Make it clear to guests where your place is located. We'll only share your address after they've made a reservation. <button className="text-slate-900 font-bold underline">Learn more</button>
-                    </p>
-                  </div>
-                  
-                </div>
-
-                <div className="relative w-full aspect-[2/1] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 group">
-                  <LocationPickerMap 
-                    latitude={address.latitude}
-                    longitude={address.longitude}
-                    onLocationChange={handleLocationChange}
-                    showSpecificLocation={showSpecificLocation}
-                    interactive={false}
-                  />
-                  {!showSpecificLocation && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="bg-white px-6 py-3 rounded-full shadow-xl border border-slate-100 font-bold text-slate-900 text-sm">
-                        We'll share your approximate location.
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {currentStep === "LOCATION_CONFIRM" && (
-            <motion.div
-              key="location_confirm"
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="flex-1 flex flex-col mx-auto"
-            >
-              <div className="px-6 md:px-12 py-10 bg-white flex-shrink-0">
-                <div className="max-w-2xl">
-                  <h1 className="text-2xl md:text-4xl font-display font-[600] text-slate-900 mb-4">
-                    Is the pin in the right spot?
-                  </h1>
-                  <p className="text-slate-600 text-lg">
-                    Your address is only shared with guests after they've made a reservation.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex-1 relative min-h-[400px] h-full">
-                <LocationPickerMap 
-                  latitude={address.latitude}
-                  longitude={address.longitude}
-                  onLocationChange={handleLocationChange}
-                  showSpecificLocation={true}
-                  interactive={true}
-                />
-                
-                {/* Floating Address Box (Image 5) */}
-                <div className="absolute top-10 left-6 right-6 md:left-12 md:right-auto md:w-[480px]">
-                  <div className="bg-white rounded-[24px] shadow-2xl border border-slate-200 p-6 flex items-start gap-4 transition-all hover:border-brand-300">
-                    <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
-                      <i className="ph-bold ph-map-pin text-slate-900 text-xl"></i>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-slate-900 text-lg leading-tight">
-                        {address.street}{address.unit ? `, ${address.unit}` : ""}, {address.city}, {address.province} {address.postalCode}, {address.country.split(' - ')[0]}
-                      </p>
-                    </div>
-                    <button 
-                      onClick={() => setCurrentStep("ADDRESS")}
-                      className="p-2 hover:bg-slate-50 rounded-full transition-colors"
-                    >
-                      <i className="ph-bold ph-pencil-simple text-slate-600"></i>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Animated Tooltip (Image 5) */}
-                <div className="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none">
-                  <motion.div 
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    className="bg-slate-900 text-white px-6 py-4 rounded-3xl text-base font-bold shadow-2xl flex items-center gap-3 pointer-events-auto"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                      <i className="ph-bold ph-hand-grabbing animate-pulse"></i>
-                    </div>
-                    Drag the map to reposition the pin
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
           {currentStep === "BASICS" && (
             <motion.div
               key="basics"
@@ -1517,7 +1022,7 @@ export default function BecomingAHostPage() {
                     <>
                       {/* Main Cover Photo */}
                       <div className="md:col-span-2 aspect-[16/10] bg-slate-100 rounded-3xl overflow-hidden relative group border-2 border-slate-200">
-                        <img src={photos[0]} className="w-full h-full object-cover" />
+                        <img src={photos[0]} className="w-full h-full object-cover" alt="Cover" />
                         <div className="absolute top-4 left-4 bg-white px-3 py-1 rounded-md text-[9px] font-bold shadow-sm z-10">Cover Photo</div>
                         <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
@@ -1531,7 +1036,7 @@ export default function BecomingAHostPage() {
                       {/* Secondary Photos */}
                       {photos.slice(1).map((photo, index) => (
                         <div key={index} className="aspect-square bg-slate-50 rounded-3xl overflow-hidden relative group border-2 border-slate-200">
-                          <img src={photo} className="w-full h-full object-cover" />
+                          <img src={photo} className="w-full h-full object-cover" alt={`Listing ${index + 1}`} />
                           <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button 
                               onClick={() => removePhoto(index + 1)}
@@ -2027,59 +1532,5 @@ export default function BecomingAHostPage() {
           )}
         </AnimatePresence>
       </main>
-
-      {/* Footer */}
-      {currentStep !== "CATEGORY" && currentStep !== "CONGRATS" && (
-        <footer className="h-24 bg-white border-t border-slate-100 flex items-center justify-between px-6 md:px-12 sticky bottom-0 z-50">
-          <button
-            onClick={handleBack}
-            className="text-[16px] font-bold text-slate-900 underline decoration-2 underline-offset-8 hover:text-brand-600 transition-colors"
-          >
-            Back
-          </button>
-          
-          <button
-            onClick={handleNext}
-            disabled={
-              (currentStep === "TYPE" && !selectedType) || 
-              (currentStep === "SPACE_TYPE" && !selectedSpaceType) ||
-              (currentStep === "BASICS" && basics.hasLock === null) ||
-              (currentStep === "AMENITIES" && selectedAmenities.length === 0) ||
-              (currentStep === "TITLE" && title.length < 5) ||
-              (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) ||
-              (currentStep === "DESCRIPTION" && description.length < 10) ||
-              (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery) ||
-              (currentStep === "SERVICE_TYPE" && !selectedServiceType) ||
-              (currentStep === "SERVICE_COVERAGE" && serviceCoverage.length === 0) ||
-              (currentStep === "SERVICE_DETAILS" && (!title || !description)) ||
-              (currentStep === "EXPERIENCE_TYPE" && !selectedExperienceType) ||
-              (currentStep === "EXPERIENCE_DETAILS" && (!title || !description))
-            }
-            className={`px-8 py-2 rounded-xl font-bold text-lg transition-all shadow-brutal ${
-              // Special case: ADDRESS step has its own "Looks good" button in the form
-              currentStep === "ADDRESS" ? "hidden" : ""
-            } ${
-              ((currentStep === "TYPE" && !selectedType) || 
-               (currentStep === "SPACE_TYPE" && !selectedSpaceType) || 
-               (currentStep === "BASICS" && basics.hasLock === null) || 
-               (currentStep === "AMENITIES" && selectedAmenities.length === 0) || 
-               (currentStep === "TITLE" && title.length < 5) || 
-               (currentStep === "HIGHLIGHTS" && selectedHighlights.length === 0) || 
-               (currentStep === "DESCRIPTION" && description.length < 10) ||
-               (currentStep === "LOCATION_SEARCH" && !address.street && !searchQuery) ||
-               (currentStep === "SERVICE_TYPE" && !selectedServiceType) ||
-               (currentStep === "SERVICE_COVERAGE" && serviceCoverage.length === 0) ||
-               (currentStep === "SERVICE_DETAILS" && (!title || !description)) ||
-               (currentStep === "EXPERIENCE_TYPE" && !selectedExperienceType) ||
-               (currentStep === "EXPERIENCE_DETAILS" && (!title || !description)))
-                ? "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
-                : "bg-brand-500 text-white hover:bg-brand-600 hover:shadow-none"
-            }`}
-          >
-            {currentStep === "SAFETY" || currentStep === "PRICING" ? "Publish Listing" : "Next"}
-          </button>
-        </footer>
-      )}
-    </div>
   );
 }
