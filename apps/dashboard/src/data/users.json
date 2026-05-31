@@ -48,15 +48,24 @@
     "name": "bn.usmann22",
     "role": "renter",
     "avatar": "",
-    "isProfileComplete": false,
+    "isProfileComplete": true,
     "verifications": {
       "email": {
         "status": "VERIFIED",
         "verifiedAt": "2026-04-08T10:37:20.433Z"
-      }
+      },
+      "phone": {
+        "status": "VERIFIED",
+        "phone": "+2349160152870",
+        "requestedAt": "2026-05-31T15:25:29.652Z",
+        "lastSentAt": "2026-05-31T15:25:29.652Z",
+        "verifiedAt": "2026-05-31T15:25:49.806Z"
+      },
+      "id": {}
     },
     "createdAt": "2026-04-08T10:37:20.466Z",
-    "updatedAt": "2026-04-08T10:37:20.466Z"
+    "updatedAt": "2026-05-31T15:25:50.346Z",
+    "phone": "+2349160152870"
   },
   {
     "id": "user_s5cgorq0",
