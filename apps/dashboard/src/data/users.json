@@ -82,7 +82,11 @@
       }
     },
     "createdAt": "2026-04-03T10:41:55.108Z",
+<<<<<<< HEAD
     "updatedAt": "2026-06-09T14:22:04.043Z",
+=======
+    "updatedAt": "2026-05-31T13:04:24.765Z",
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     "firstName": "Mutairu",
     "lastName": "DIrisu",
     "security": {

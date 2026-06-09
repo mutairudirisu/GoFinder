@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 import { useAuth } from "@/context/AuthContext";
 
 type BookingStatus = "PENDING" | "CONFIRMED" | "DECLINED" | "CANCELLED";
@@ -39,7 +42,10 @@ function writeBookings(next: Booking[]) {
 }
 
 export default function UserBookingsPage() {
+<<<<<<< HEAD
   const router = useRouter();
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const { user } = useAuth();
   const [all, setAll] = useState<Booking[]>([]);
 
@@ -68,6 +74,7 @@ export default function UserBookingsPage() {
   };
 
   return (
+<<<<<<< HEAD
     <div className="max-w-5xl mx-auto px-4 py-6 md:py-10">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -88,6 +95,15 @@ export default function UserBookingsPage() {
         </div>
 
         <div className="space-y-4">
+=======
+    <div className="max-w-5xl mx-auto">
+      <div>
+        <div className="text-2xl md:text-3xl font-display font-semibold text-slate-900 tracking-tight">Bookings</div>
+        <div className="text-sm text-slate-500 mt-1">Your accommodation reservations and stay details.</div>
+      </div>
+
+      <div className="mt-6 space-y-3">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         {myTrips.length === 0 ? (
           <div className="bg-white rounded-[28px] border border-slate-200 p-10 text-center">
             <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -158,8 +174,12 @@ export default function UserBookingsPage() {
             );
           })
         )}
+<<<<<<< HEAD
         </div>
       </motion.div>
+=======
+      </div>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     </div>
   );
 }

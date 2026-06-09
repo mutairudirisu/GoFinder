@@ -161,6 +161,7 @@ export default function AddressPage() {
   };
 
   const handleFinishAddress = () => {
+<<<<<<< HEAD
     const params = new URLSearchParams(window.location.search);
     const category = params.get("category") || "home";
     
@@ -173,6 +174,15 @@ export default function AddressPage() {
 
   return (
     <div className="flex-1 flex flex-col h-screen overflow-hidden">
+=======
+    // In a real app, we would create a draft listing here
+    const listingId = Date.now().toString();
+    router.push(`/becoming-a-host/${listingId}/about-your-place`);
+  };
+
+  return (
+    <div className="flex-1 flex flex-col relative">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
       {/* Landing Background - Visible for LANDING, SEARCH, and FORM sub-steps */}
       {subStep !== "CONFIRM" && (
         <motion.div
@@ -180,6 +190,7 @@ export default function AddressPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+<<<<<<< HEAD
           className="flex-1 grid grid-cols-1 lg:grid-cols-2 bg-white overflow-y-auto"
         >
           <div className="flex flex-col md:justify-center px-8 md:px-20 py-8 pt-20 items-center">
@@ -192,6 +203,11 @@ export default function AddressPage() {
               </button>
             </div>
 
+=======
+          className="flex-1 grid grid-cols-1 lg:grid-cols-2 bg-white"
+        >
+          <div className="flex flex-col md:justify-center px-8 md:px-20 py-8 pt-20 items-center">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             <h1 className="text-4xl md:text-5xl text-center font-display font-[500] text-slate-900 leading-wide mb-8">
               Set up your <br></br> <span className="text-brand-500">GIGRental</span> listing
             </h1>
@@ -207,7 +223,11 @@ export default function AddressPage() {
             </button>
           </div>
 
+<<<<<<< HEAD
           <div className="hidden xl:flex items-center justify-center bg-slate-50 relative overflow-hidden">
+=======
+          <div className="hidden lg:flex items-center justify-center bg-slate-50 relative overflow-hidden">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             <motion.div 
               initial={{ scale: 1.1, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -530,12 +550,16 @@ export default function AddressPage() {
                   onClick={() => {
                     if (validate()) setSubStep("CONFIRM");
                   }}
+<<<<<<< HEAD
                   disabled={!isFormValid}
                   className={`w-full font-bold py-4 rounded-full transition-all text-lg shadow-xl active:scale-[0.98] ${
                     !isFormValid 
                       ? "bg-slate-100 text-slate-300 cursor-not-allowed shadow-none" 
                       : "bg-brand-600 shadow-brutal text-white hover:bg-brand-500"
                   }`}
+=======
+                  className="w-full bg-brand-600 shadow-brutal text-white font-bold py-4 rounded-full hover:bg-brand-500 transition-all text-lg shadow-xl active:scale-[0.98]"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 >
                   Accept and continue
                 </button>
@@ -552,6 +576,7 @@ export default function AddressPage() {
             exit={{ opacity: 0 }}
             className="flex-1 flex flex-col h-full bg-white overflow-hidden"
           >
+<<<<<<< HEAD
             {/* Custom Header for Location Step */}
             <header className="px-6 py-4 flex items-center gap-4 bg-white border-b border-slate-50 shrink-0">
               <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold text-xl shadow-lg">
@@ -563,17 +588,28 @@ export default function AddressPage() {
             <div className="flex-1 overflow-y-auto flex flex-col pb-32">
               <div className="px-6 md:px-12 py-8 bg-white flex-shrink-0">
                 <p className="text-slate-500 text-[15px] leading-relaxed font-medium">
+=======
+            <div className="flex-1 overflow-y-auto flex flex-col">
+              <div className="px-6 md:px-12 py-8 bg-white flex-shrink-0">
+                <h1 className="text-2xl md:text-3xl font-display font-medium text-slate-900 mb-4">Location</h1>
+                <p className="text-slate-500 text-sm leading-relaxed">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                   Place the pin near your property's street location. Street-level accuracy is sufficient and helps your property be found in search results. Your precise address is NOT shared until a booking is confirmed.
                 </p>
               </div>
               
+<<<<<<< HEAD
               <div className="flex-1 relative min-h-[450px] bg-slate-50 mx-4 md:mx-12 rounded-[40px] overflow-hidden border-2 border-slate-100 shadow-inner">
+=======
+              <div className="flex-1 relative min-h-[400px] bg-slate-50 mx-6 md:mx-12 rounded-[32px] overflow-hidden border-2 border-slate-100 mb-8">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 <LocationPickerMap 
                   latitude={address.latitude}
                   longitude={address.longitude}
                   onLocationChange={handleLocationChange}
                   showSpecificLocation={true}
                   interactive={true}
+<<<<<<< HEAD
                   price={150000}
                 />
 
@@ -596,23 +632,76 @@ export default function AddressPage() {
                     className="w-full flex items-center justify-center gap-3 py-4 bg-white rounded-full shadow-xl border border-white font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-[0.98]"
                   >
                     <i className="ph-bold ph-arrow-counter-clockwise text-lg"></i>
+=======
+                />
+                
+                {/* Floating Address Card */}
+                <div className="absolute top-20 md:top-6 left-6 right-6 md:w-[400px]">
+                  <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white p-4 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center flex-shrink-0">
+                      <i className="ph-fill ph-map-pin text-white text-lg"></i>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-slate-900 text-sm truncate">
+                        {address.street || "Select location"}
+                      </p>
+                      <p className="text-slate-500 text-xs truncate">
+                        {address.city}, {address.province}
+                      </p>
+                    </div>
+                    <button onClick={() => setSubStep("FORM")} className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 rounded-full transition-colors">
+                      <i className="ph-bold ph-pencil-simple text-slate-600"></i>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Map Controls */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 space-y-2 justify-center md:flex items-center md:gap-3 w-full px-6 md:w-auto">
+                  <button 
+                    onClick={handleUseCurrentLocation}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full shadow-lg border border-slate-100 font-bold text-slate-700 hover:bg-slate-50 transition-all whitespace-nowrap"
+                  >
+                    <i className="ph-bold ph-crosshair"></i>
+                    <span>Use my device location</span>
+                  </button>
+                  <button 
+                    onClick={() => {
+                      // Logic to reset to original geocoded address
+                      setSubStep("SEARCH");
+                    }}
+                    className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-white rounded-full shadow-lg border border-slate-100 font-bold text-slate-700 hover:bg-slate-50 transition-all whitespace-nowrap"
+                  >
+                    <i className="ph-bold ph-arrow-counter-clockwise"></i>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                     <span>Reset to address</span>
                   </button>
                 </div>
               </div>
             </div>
             
+<<<<<<< HEAD
             {/* Fixed Footer for Confirm View */}
             <div className="fixed bottom-0 left-0 right-0 h-28 bg-white border-t border-slate-100 flex items-center justify-between px-8 md:px-12 z-[60] shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
               <button 
                 onClick={() => setSubStep("FORM")} 
                 className="text-[17px] font-bold text-slate-900 underline underline-offset-8 decoration-2 hover:text-slate-600 transition-colors"
+=======
+            {/* Static Footer */}
+            <div className="h-24 bg-white border-t border-slate-100 flex items-center justify-between px-6 md:px-12 flex-shrink-0 z-50">
+              <button 
+                onClick={() => setSubStep("FORM")} 
+                className="text-lg font-bold text-slate-900 underline underline-offset-8 decoration-2"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               >
                 Back
               </button>
               <button 
                 onClick={handleFinishAddress} 
+<<<<<<< HEAD
                 className="px-12 py-4 rounded-[20px] bg-[#1A1A1A] text-white font-bold text-lg hover:bg-black transition-all shadow-xl active:scale-[0.98]"
+=======
+                className="px-10 py-3.5 rounded-2xl bg-slate-900 text-white font-bold text-lg hover:bg-black transition-all shadow-xl active:scale-[0.98]"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               >
                 Next
               </button>

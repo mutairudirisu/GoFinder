@@ -7,7 +7,11 @@ import Link from "next/link";
 // Listing Categories
 const LISTING_CATEGORIES = [
   { 
+<<<<<<< HEAD
     id: "home", 
+=======
+    id: "accommodation", 
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     title: "Home / Apartment / Hostel", 
     description: "List your property for rent", 
     icon: "ph-house-line", 
@@ -23,7 +27,11 @@ const LISTING_CATEGORIES = [
     comingSoon: true
   },
   { 
+<<<<<<< HEAD
     id: "service", 
+=======
+    id: "services", 
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     title: "Services", 
     description: "Offer cleaning, transport & more", 
     icon: "ph-wrench", 
@@ -46,7 +54,12 @@ export default function CreateListingModal({ isOpen, onClose }: CreateListingMod
 
   const handleNext = () => {
     if (selectedCategory) {
+<<<<<<< HEAD
       window.location.href = `/becoming-a-host/address?category=${selectedCategory}`;
+=======
+      // Navigate to create page with selected category
+      window.location.href = `/listings/create?category=${selectedCategory}`;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     }
   };
 

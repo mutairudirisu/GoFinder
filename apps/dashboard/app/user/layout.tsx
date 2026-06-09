@@ -182,11 +182,19 @@ function UserDashboardLayoutContent({
             isActive: isActiveSection("/user/favorites"),
           },
           {
+<<<<<<< HEAD
             key: "experiences",
             href: "/user/experiences",
             label: "Experiences",
             iconClassName: "ph-bold ph-suitcase text-xl",
             isActive: isActiveSection("/user/experiences"),
+=======
+            key: "trips",
+            href: "/user/bookings",
+            label: "Trips",
+            iconClassName: "ph-bold ph-suitcase text-xl",
+            isActive: isActiveSection("/user/bookings"),
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
           },
           {
             key: "messages",

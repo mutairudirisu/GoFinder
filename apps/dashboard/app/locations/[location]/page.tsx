@@ -56,8 +56,11 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const dragStartHRef = useRef(0);
   const topBarRef = useRef<HTMLDivElement | null>(null);
   const [topBarBottom, setTopBarBottom] = useState(0);
+<<<<<<< HEAD
   const topBarBottomRef = useRef(0);
   const gridScrollRef = useRef<HTMLDivElement | null>(null);
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const drawerScrollRef = useRef<HTMLDivElement | null>(null);
   const lastDrawerScrollTopRef = useRef(0);
   const headerMaxHRef = useRef(0);
@@ -128,6 +131,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     }
   };
 
+<<<<<<< HEAD
   const handleMarkerClick = (id: string) => {
     setActiveId(id);
     
@@ -157,6 +161,8 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
     }, 350);
   };
 
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const locationListings = useMemo(() => {
     const target = locationKey;
     return allListings.filter((l) => {
@@ -328,9 +334,15 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
   const availableH = viewportH ? Math.max(280, viewportH - bottomNavH) : 680;
   const headerMaxH = viewportH ? Math.max(280, viewportH - (topBarBottom ? topBarBottom - 12 : 0) - bottomNavH) : 680;
   const fullBleedH = viewportH ? Math.max(280, viewportH - (topBarBottom ? topBarBottom - 60 : 0) - bottomNavH) : 680;
+<<<<<<< HEAD
   const peekH = viewportH ? Math.min(Math.round(availableH * 0.90), headerMaxH) : 720;
   const midH = viewportH ? Math.min(Math.round(availableH * 0.96), headerMaxH) : 800;
   const collapsedH = 80;
+=======
+  const peekH = viewportH ? Math.min(Math.round(availableH * 0.82), headerMaxH) : 620;
+  const midH = viewportH ? Math.min(Math.round(availableH * 0.92), headerMaxH) : 750;
+  const collapsedH = 140;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const sheetCurrentH = sheetH || peekH;
   const isCollapsed = sheetCurrentH <= collapsedH + 10;
 
@@ -542,7 +554,11 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 })}
               </div>
 
+<<<<<<< HEAD
               <div ref={gridScrollRef} className="flex-1 overflow-y-auto pr-2">
+=======
+              <div className="flex-1 overflow-y-auto pr-2">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 {isLoading ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {Array.from({ length: 6 }).map((_, i) => (
@@ -570,6 +586,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                       const id = String(listing.id);
                       const isActive = id === activeId;
                       return (
+<<<<<<< HEAD
                         <div key={listing.id} data-listing-id={id}>
                           <ListingResultCard
                             listing={listing}
@@ -580,6 +597,17 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                             onMouseEnter={() => setActiveId(id)}
                           />
                         </div>
+=======
+                        <ListingResultCard
+                          key={listing.id}
+                          listing={listing}
+                          variant="grid"
+                          isActive={isActive}
+                          liked={likedIds.has(id)}
+                          onToggleLike={() => toggleLike(id)}
+                          onMouseEnter={() => setActiveId(id)}
+                        />
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                       );
                     })}
                   </div>
@@ -594,10 +622,79 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                 <MapComponent
                   listings={filteredListings}
                   activeId={activeId}
+<<<<<<< HEAD
                   onMarkerClick={handleMarkerClick}
                   likedIds={likedIds}
                   onToggleLike={toggleLike}
                 />
+=======
+                  onMarkerClick={(id) => setActiveId(id)}
+                  likedIds={likedIds}
+                  onToggleLike={toggleLike}
+                />
+
+                {activeListing ? (
+                  <div className="absolute left-6 right-6 bottom-6 hidden">
+                    <div className="bg-white rounded-[28px] border border-slate-200 shadow-xl overflow-hidden">
+                      <div className="flex gap-4 p-4">
+                        <div className="w-24 h-20 rounded-2xl overflow-hidden bg-slate-100 shrink-0">
+                          <img
+                            src={
+                              activeListing.photos[0] ||
+                              "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=960&auto=format&fit=crop"
+                            }
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 line-clamp-1">{activeListing.title}</div>
+                              <div className="text-xs text-slate-500 line-clamp-1">
+                                {activeListing.address.city}, {activeListing.address.province}
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-3">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  toggleLike(String(activeListing.id));
+                                }}
+                                className={`w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center transition-colors ${
+                                  likedIds.has(String(activeListing.id))
+                                    ? "bg-brand-50 text-brand-700 hover:bg-brand-100"
+                                    : "bg-white text-slate-700 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200"
+                                }`}
+                                aria-label={likedIds.has(String(activeListing.id)) ? "Remove from wishlist" : "Save to wishlist"}
+                              >
+                                <i className={`${likedIds.has(String(activeListing.id)) ? "ph-fill ph-heart" : "ph ph-heart"} text-xl`}></i>
+                              </button>
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-slate-900">₦{activeListing.price.toLocaleString()}</div>
+                                <div className="text-[10px] text-slate-500">/ {activeListing.paymentFrequency.toLowerCase()}</div>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="text-[10px] font-bold uppercase tracking-widest text-brand-600 bg-brand-50 px-3 py-1 rounded-full">
+                              {activeListing.type.replaceAll("_", " ")}
+                            </div>
+                            <Link
+                              href={`/listings/${encodeURIComponent(String(activeListing.id))}`}
+                              className="text-sm font-bold text-brand-700 hover:text-brand-800 inline-flex items-center gap-1"
+                            >
+                              View
+                              <i className="ph ph-arrow-right"></i>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               </div>
             </div>
           </div>
@@ -612,6 +709,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
           style={{ height: sheetCurrentH }}
         >
           {/* Floating Toggle Button (Map/List) */}
+<<<<<<< HEAD
           <AnimatePresence>
             {!activeListing || !isCollapsed ? (
               <motion.div
@@ -640,6 +738,30 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
               </motion.div>
             ) : null}
           </AnimatePresence>
+=======
+          <motion.div
+            initial={false}
+            className="fixed bottom-24 left-1/2 z-50 pointer-events-auto"
+            style={{ x: "-50%" }}
+          >
+            <button
+              onClick={() => {
+                if (isCollapsed) {
+                  setSheetH(peekH);
+                } else {
+                  setSheetH(collapsedH);
+                  if (drawerScrollRef.current) {
+                    drawerScrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-3 rounded-full bg-[#222222] text-white font-bold text-sm shadow-xl active:scale-95 transition-all duration-300"
+            >
+              <span>{isCollapsed ? "Results" : "Map"}</span>
+              <i className={`ph-bold ${isCollapsed ? "ph-list-bullets" : "ph-map"} text-base`} />
+            </button>
+          </motion.div>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 
           <div
             className="px-4 pt-3 pb-2 touch-none"
@@ -696,6 +818,7 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                   const id = String(listing.id);
                   const isActive = id === activeId;
                   return (
+<<<<<<< HEAD
                     <div key={listing.id} data-listing-id={id}>
                       <ListingResultCard
                         listing={listing}
@@ -705,6 +828,16 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
                         onToggleLike={() => toggleLike(id)}
                       />
                     </div>
+=======
+                    <ListingResultCard
+                      key={listing.id}
+                      listing={listing}
+                      variant="drawer"
+                      isActive={isActive}
+                      liked={likedIds.has(id)}
+                      onToggleLike={() => toggleLike(id)}
+                    />
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                   );
                 })}
               </div>
@@ -854,7 +987,11 @@ export default function LocationListingsPage({ params }: { params: Promise<{ loc
       {!authLoading ? (
         <BottomTabNav
           zIndexClassName="z-[70]"
+<<<<<<< HEAD
           hidden={isAuthenticated ? (mobileNavHidden || isCollapsed) : isCollapsed}
+=======
+          hidden={isAuthenticated ? mobileNavHidden : false}
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
           items={
             isAuthenticated
               ? [

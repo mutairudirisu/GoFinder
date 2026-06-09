@@ -46,11 +46,14 @@
     "securityCharge": 50000,
     "otherCharges": 0,
     "paymentFrequency": "MONTHLY",
+<<<<<<< HEAD
     "studentHousing": {
       "forStudents": true,
       "needsRoommate": true,
       "roommateSlots": 2
     },
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     "status": "VERIFIED",
     "createdAt": "2026-04-03T11:03:38.209Z"
   },
@@ -534,6 +537,7 @@
     "paymentFrequency": "MONTHLY",
     "status": "ACTION_REQUIRED",
     "createdAt": "2026-05-22T10:13:11.825Z"
+<<<<<<< HEAD
   },
   {
     "id": "list_a4rgyfswd",
@@ -766,3 +770,7 @@
     "createdAt": "2026-06-09T13:56:48.167Z"
   }
 ]
+=======
+  }
+]
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2

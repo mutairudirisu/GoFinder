@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
+<<<<<<< HEAD
 type Options<T extends HTMLElement = HTMLElement> =
+=======
+type Options =
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   | {
       mode: "window";
       enabled: boolean;
@@ -12,12 +16,20 @@ type Options<T extends HTMLElement = HTMLElement> =
   | {
       mode: "element";
       enabled: boolean;
+<<<<<<< HEAD
       elementRef: React.RefObject<T | null>;
+=======
+      elementRef: React.RefObject<HTMLElement | null>;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
       topReset?: number;
       deltaThreshold?: number;
     };
 
+<<<<<<< HEAD
 export function useAutoHideOnScroll<T extends HTMLElement = HTMLElement>(options: Options<T>) {
+=======
+export function useAutoHideOnScroll(options: Options) {
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const [hidden, setHidden] = useState(false);
   const lastPosRef = useRef(0);
 
@@ -33,7 +45,11 @@ export function useAutoHideOnScroll<T extends HTMLElement = HTMLElement>(options
     const target =
       options.mode === "window"
         ? window
+<<<<<<< HEAD
         : (options.elementRef.current as T | null);
+=======
+        : options.elementRef.current;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 
     if (!target) return;
 
@@ -73,7 +89,11 @@ export function useAutoHideOnScroll<T extends HTMLElement = HTMLElement>(options
       };
     }
 
+<<<<<<< HEAD
     const el = options.elementRef.current as T | null;
+=======
+    const el = options.elementRef.current;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     el?.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       if (raf) window.cancelAnimationFrame(raf);

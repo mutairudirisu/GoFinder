@@ -14,20 +14,30 @@ interface LocationPickerMapProps {
   latitude?: number;
   longitude?: number;
   onLocationChange: (lat: number, lng: number) => void;
+<<<<<<< HEAD
   onMarkerClick?: () => void;
   interactive?: boolean;
   showSpecificLocation?: boolean;
   price?: number;
+=======
+  interactive?: boolean;
+  showSpecificLocation?: boolean;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 }
 
 export function LocationPickerMap({ 
   latitude, 
   longitude, 
   onLocationChange, 
+<<<<<<< HEAD
   onMarkerClick,
   interactive = true,
   showSpecificLocation = true,
   price
+=======
+  interactive = true,
+  showSpecificLocation = true
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 }: LocationPickerMapProps) {
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
   const [mapStyle, setMapStyle] = useState<"streets" | "satellite">("streets");
@@ -110,6 +120,7 @@ export function LocationPickerMap({
             anchor="bottom"
             draggable={interactive}
             onDragEnd={handleMarkerDragEnd}
+<<<<<<< HEAD
             onClick={(e) => {
               e.originalEvent.stopPropagation();
               onMarkerClick?.();
@@ -131,6 +142,17 @@ export function LocationPickerMap({
                     <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-white -mt-1 shadow-sm"></div>
                   </>
                 )}
+=======
+          >
+            {showSpecificLocation ? (
+              <div className="relative flex flex-col items-center group/marker cursor-grab active:cursor-grabbing">
+                {/* Custom Premium Marker */}
+                <div className="w-12 h-12 bg-slate-900 rounded-full border-4 border-white shadow-[0_8px_30px_rgb(0,0,0,0.3)] flex items-center justify-center transition-all group-hover/marker:scale-110 group-hover/marker:bg-brand-500">
+                  <i className="ph-fill ph-map-pin text-white text-xl"></i>
+                </div>
+                {/* Pointer Tip */}
+                <div className="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[10px] border-t-white -mt-1 shadow-sm"></div>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 
                 {/* Pulsing Aura */}
                 <div className="absolute -inset-4 bg-slate-900/10 rounded-full -z-10 animate-ping opacity-20"></div>

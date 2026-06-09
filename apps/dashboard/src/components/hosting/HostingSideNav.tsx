@@ -64,6 +64,7 @@ export default function HostingSideNav() {
 
       {/* Navigation Items */}
       <nav className={`flex-1 px-2 py-6 space-y-2 ${isCollapsed ? 'overflow-visible' : 'overflow-y-auto'}`}>
+<<<<<<< HEAD
         {/* Create Button (Integrated with Global Overlay) */}
         <div className="relative group mb-4">
           <button
@@ -85,6 +86,8 @@ export default function HostingSideNav() {
           )}
         </div>
 
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         {navItems.map((item) => (
           <div key={item.href} className="relative group">
             <Link

@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 import { isRoommateFriendlyListing, isStudentFriendlyListing, type Listing } from "@/types/listing";
+=======
+import type { Listing } from "@/types/listing";
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 
 type Variant = "grid" | "drawer";
 
@@ -22,8 +26,11 @@ export function ListingResultCard({ listing, variant, isActive, liked, onToggleL
     listing.photos && listing.photos.length > 0
       ? listing.photos[0]
       : "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop";
+<<<<<<< HEAD
   const showStudentBadge = isStudentFriendlyListing(listing);
   const showRoommateBadge = isRoommateFriendlyListing(listing);
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 
   if (variant === "drawer") {
     return (
@@ -71,16 +78,25 @@ export function ListingResultCard({ listing, variant, isActive, liked, onToggleL
               }}
             />
             
+<<<<<<< HEAD
             {(showStudentBadge || showRoommateBadge) && (
+=======
+            {/* Bill Splitting Indicator */}
+            {listing.type === "student_accommodation" && (
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               <div className="absolute bottom-3 left-3 right-3">
                 <div className="bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-white/10 flex items-center justify-between gap-2 shadow-xl">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full bg-brand-500 flex items-center justify-center">
                       <i className="ph-fill ph-users text-[12px] text-white"></i>
                     </div>
+<<<<<<< HEAD
                     <span className="text-[10px] font-bold text-white uppercase tracking-wider">
                       {showRoommateBadge ? "Needs roommate" : "Student stay"}
                     </span>
+=======
+                    <span className="text-[10px] font-bold text-white uppercase tracking-wider">Share & Split Bill</span>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                   </div>
                   <i className="ph ph-arrow-right text-white/60 text-xs"></i>
                 </div>
@@ -160,16 +176,25 @@ export function ListingResultCard({ listing, variant, isActive, liked, onToggleL
             }}
           />
 
+<<<<<<< HEAD
           {(showStudentBadge || showRoommateBadge) && (
+=======
+          {/* Bill Splitting Indicator */}
+          {listing.type === "student_accommodation" && (
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             <div className="absolute bottom-4 left-4 right-4">
               <div className="bg-slate-900/90 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/10 flex items-center justify-between gap-2 shadow-xl">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-brand-500 flex items-center justify-center">
                     <i className="ph-fill ph-users text-sm text-white"></i>
                   </div>
+<<<<<<< HEAD
                   <span className="text-[11px] font-bold text-white uppercase tracking-wider">
                     {showRoommateBadge ? "Needs roommate" : "Student stay"}
                   </span>
+=======
+                  <span className="text-[11px] font-bold text-white uppercase tracking-wider">Share & Split Bill</span>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 </div>
                 <i className="ph ph-arrow-right text-white/60 text-sm"></i>
               </div>
