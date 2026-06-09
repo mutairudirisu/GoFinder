@@ -1,0 +1,768 @@
+[
+  {
+    "id": "list_eio011pf9",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Landmark Tower",
+      "unit": "",
+      "street": "123 Ademola Adetokumbo Street",
+      "district": "Victorial Island",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "92004"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac",
+      "workspace",
+      "washer",
+      "study_room"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "The BeeHive",
+    "highlights": [
+      "spacious",
+      "family"
+    ],
+    "description": "Welcome to our spacious and family student accommodation in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a spacious experience. Enjoy easy access to local amenities while staying in a family environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "studentHousing": {
+      "forStudents": true,
+      "needsRoommate": true,
+      "roommateSlots": 2
+    },
+    "status": "VERIFIED",
+    "createdAt": "2026-04-03T11:03:38.209Z"
+  },
+  {
+    "id": "list_3b316w57d",
+    "category": "home",
+    "type": "hotel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": ""
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
+    ],
+    "title": "First Hotel",
+    "highlights": [
+      "spacious"
+    ],
+    "description": "Welcome to our spacious hotel in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a spacious experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-03T12:05:15.595Z"
+  },
+  {
+    "id": "list_oxx9ysdru",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "room",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Danbari",
+      "unit": "",
+      "street": "123, kano street",
+      "district": "Kabuga",
+      "city": "Kano",
+      "province": "Kano",
+      "postalCode": "3388484"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": false
+    },
+    "amenities": [
+      "parking",
+      "kitchen",
+      "washer",
+      "wifi",
+      "study_room"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop"
+    ],
+    "title": "the cozy apartment",
+    "highlights": [
+      "central"
+    ],
+    "description": "Welcome to our central student accommodation in the heart of Kano. This space is designed for comfort and style, perfect for those looking for a central experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-04T08:31:51.958Z"
+  },
+  {
+    "id": "list_vme74nkjt",
+    "category": "home",
+    "type": "hotel",
+    "spaceType": "room",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "CONR",
+      "unit": "",
+      "street": "123 Bridge street",
+      "district": "",
+      "city": "Enugu",
+      "province": "Enugu",
+      "postalCode": "123456"
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "ac",
+      "wifi",
+      "parking"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "The Cone",
+    "highlights": [
+      "family"
+    ],
+    "description": "Welcome to our family hotel in the heart of Enugu. This space is designed for comfort and style, perfect for those looking for a family experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 120000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-14T08:03:15.450Z"
+  },
+  {
+    "id": "list_33ont2j1y",
+    "category": "home",
+    "type": "apartment",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "Mai Gida",
+      "unit": "",
+      "street": "123 faskari street",
+      "district": "",
+      "city": "Faskari",
+      "province": "Jigawa",
+      "postalCode": ""
+    },
+    "basics": {
+      "guests": 1,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "parking",
+      "kitchen",
+      "lounge"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Mai Gida",
+    "highlights": [
+      "unique",
+      "peaceful"
+    ],
+    "description": "Welcome to our unique and peaceful apartment in the heart of Faskari. This space is designed for comfort and style, perfect for those looking for a unique experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-14T08:13:57.713Z"
+  },
+  {
+    "id": "list_mo97inkbg",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Mississippi Street",
+      "district": "",
+      "city": "Abuja Municipal",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "latitude": 9.092201,
+      "longitude": 7.484363
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi",
+      "kitchen"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2074&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "Maggi",
+    "highlights": [
+      "peaceful",
+      "spacious"
+    ],
+    "description": "Welcome to our peaceful and spacious student accommodation in the heart of Abuja Municipal. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a spacious environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-24T11:17:10.429Z"
+  },
+  {
+    "id": "list_5awf0s5lg",
+    "category": "home",
+    "type": "hostel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Lagos",
+      "district": "",
+      "city": "Apapa",
+      "province": "Lagos",
+      "postalCode": "",
+      "latitude": 6.453928,
+      "longitude": 3.38975
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi",
+      "parking"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1524758631624-e2822e304c36?q=80&w=2070&auto=format&fit=crop"
+    ],
+    "title": "Dabiri",
+    "highlights": [
+      "peaceful",
+      "stylish"
+    ],
+    "description": "Welcome to our peaceful and stylish hostel in the heart of Apapa. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a stylish environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:14:59.180Z"
+  },
+  {
+    "id": "list_rzod210v6",
+    "category": "home",
+    "type": "student_accommodation",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "Lagos",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos",
+      "postalCode": "",
+      "latitude": 6.453928,
+      "longitude": 3.38975
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "wifi"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Dome1",
+    "highlights": [
+      "family"
+    ],
+    "description": "Welcome to our family student accommodation in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a family experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:17:10.304Z"
+  },
+  {
+    "id": "list_pahlit211",
+    "category": "home",
+    "type": "hostel",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "DIRISU MUTAIRU",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "900001",
+      "latitude": 9.0567,
+      "longitude": 7.4969
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "washer"
+    ],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "dimitry",
+    "highlights": [
+      "unique"
+    ],
+    "description": "Welcome to our unique hostel in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a unique experience. Enjoy easy access to local amenities while staying in a peaceful environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "VERIFIED",
+    "createdAt": "2026-04-25T13:19:16.792Z"
+  },
+  {
+    "id": "list_xrk16rxkj",
+    "category": "service",
+    "type": "transport",
+    "spaceType": "shared",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Ebonyi",
+      "province": "FCT",
+      "postalCode": "900001",
+      "latitude": 9.092466758497643,
+      "longitude": 7.483665432273265
+    },
+    "amenities": [],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1980&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=2074&auto=format&fit=crop"
+    ],
+    "title": "Professional Cleaning",
+    "highlights": [],
+    "description": "Cleaning",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-05-22T10:05:51.379Z"
+  },
+  {
+    "id": "list_9xhlhs8km",
+    "category": "experience",
+    "type": "other",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "25 Mississippi, Maitaima, Abuja",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "900001",
+      "latitude": 9.092493371745853,
+      "longitude": 7.483670496226995
+    },
+    "basics": {
+      "guests": 10
+    },
+    "amenities": [],
+    "photos": [
+      "https://images.unsplash.com/photo-1555854811-82242b5126f7?q=80&w=2070&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop"
+    ],
+    "title": "Lagos Food",
+    "highlights": [],
+    "description": "FOod",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-05-22T10:13:11.825Z"
+  },
+  {
+    "id": "list_a4rgyfswd",
+    "category": "home",
+    "type": "apartment",
+    "spaceType": "room",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "building": "",
+      "unit": "",
+      "street": "",
+      "district": "",
+      "city": "Lagos",
+      "province": "Lagos State",
+      "postalCode": "",
+      "latitude": 6.5244,
+      "longitude": 3.3792
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "workspace"
+    ],
+    "photos": [
+      "blob:http://localhost:3001/d24b687e-9e71-4bac-9449-0dd8030548e9",
+      "blob:http://localhost:3001/6cc7ad91-f1bc-48ee-99cc-b88965d031f0",
+      "blob:http://localhost:3001/fca342f4-12a7-40f4-8697-394d2c973b7b",
+      "blob:http://localhost:3001/1c9aea30-0a56-48ea-94f3-c7d6fb3c2194",
+      "blob:http://localhost:3001/a416a2a5-79c3-47d6-b014-9dc7a7cf3452"
+    ],
+    "title": "cozyh",
+    "highlights": [
+      "peaceful",
+      "central"
+    ],
+    "description": "Welcome to our peaceful and central apartment in the heart of Lagos. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a central environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-06-01T14:14:26.804Z"
+  },
+  {
+    "id": "list_whe9efa1c",
+    "category": "home",
+    "type": "apartment",
+    "spaceType": "entire",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "houseNumber": "3",
+      "street": "Mississippi Street",
+      "city": "Abuja Municipal",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "landmark": "",
+      "latitude": 9.092235,
+      "longitude": 7.483642
+    },
+    "basics": {
+      "guests": 2,
+      "bedrooms": 1,
+      "beds": 1,
+      "hasLock": true
+    },
+    "amenities": [
+      "canteen",
+      "lockers",
+      "library"
+    ],
+    "photos": [
+      "blob:http://localhost:3001/70679993-2b61-4137-bc98-91d501eb0a63",
+      "blob:http://localhost:3001/cd34a253-7481-47da-9fd7-da8bcdcf9d5b",
+      "blob:http://localhost:3001/f1e11c74-d5a2-4146-bef8-726feaf4fdb2",
+      "blob:http://localhost:3001/06228f3e-f726-40e4-a13c-144f79e8ac42",
+      "blob:http://localhost:3001/e2684f18-e783-4b5c-8f8c-9eb9181e623a"
+    ],
+    "title": "Frezar",
+    "highlights": [
+      "peaceful",
+      "central"
+    ],
+    "description": "Welcome to our peaceful and central apartment in the heart of Abuja Municipal. This space is designed for comfort and style, perfect for those looking for a peaceful experience. Enjoy easy access to local amenities while staying in a central environment. We can't wait to host you!",
+    "price": 150000,
+    "securityCharge": 50000,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-06-09T13:20:03.091Z"
+  },
+  {
+    "id": "list_7328pj9o2",
+    "category": "experience",
+    "type": "cultural_heritage",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "houseNumber": "3",
+      "street": "Mississippi Street",
+      "city": "Abuja Municipal",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "landmark": "",
+      "latitude": 9.092234,
+      "longitude": 7.483631
+    },
+    "basics": {
+      "guests": 10
+    },
+    "amenities": [],
+    "photos": [
+      "blob:http://localhost:3001/17e764a9-4163-4c31-ae5f-b851bac9891e",
+      "blob:http://localhost:3001/7bb02f16-184b-487d-bb12-7e04e4d2abf0",
+      "blob:http://localhost:3001/033c7cc9-abf8-4c5b-abea-c7fdb4eb5e7c",
+      "blob:http://localhost:3001/fd2c0c72-d952-4958-98a0-c5ef35f60824",
+      "blob:http://localhost:3001/dfb6d60c-b4c7-4b07-aa1d-5721a258b4a1"
+    ],
+    "title": "yyyeyey",
+    "highlights": [],
+    "description": "jdhjhdjhfdkgdsssssssssssssssssssss",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-06-09T13:25:23.964Z"
+  },
+  {
+    "id": "list_mlt9vnb7p",
+    "category": "service",
+    "type": "tech_digital",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "houseNumber": "22",
+      "street": "Mississippi Street",
+      "city": "Adamawa",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "landmark": "",
+      "latitude": 9.092235,
+      "longitude": 7.483639
+    },
+    "amenities": [],
+    "photos": [
+      "blob:http://localhost:3001/883fc5b8-c5cb-4545-a14f-89bdc15f7386",
+      "blob:http://localhost:3001/886259ba-5d6d-4b57-a493-74861c9177c5",
+      "blob:http://localhost:3001/c3d1f975-e97e-45ff-94de-a7bc0bf50730",
+      "blob:http://localhost:3001/a930fd2f-4bed-4ea3-9913-61a39febf7e6",
+      "blob:http://localhost:3001/acf07195-588c-4917-a21d-b32ee30fd5cd"
+    ],
+    "title": "3333ffff",
+    "highlights": [],
+    "description": "dkjdkjdfjdfjdfjlfjfjslfjlf",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-06-09T13:30:45.309Z"
+  },
+  {
+    "id": "list_epgfbyaku",
+    "category": "service",
+    "type": "events_entertainment",
+    "host": {
+      "id": "user_s5cgorq0",
+      "name": "Mutairu DIrisu",
+      "email": "mutairudirisu@gmail.com",
+      "phone": "+2348107613948",
+      "avatar": ""
+    },
+    "address": {
+      "country": "Nigeria - NG",
+      "houseNumber": "111",
+      "street": "Blantyre Street",
+      "city": "Ebonyi",
+      "province": "Federal Capital Territory",
+      "postalCode": "90",
+      "landmark": "",
+      "latitude": 9.070012,
+      "longitude": 7.479966
+    },
+    "amenities": [],
+    "photos": [
+      "blob:http://localhost:3001/26b49fa1-ba85-4459-a7e0-926b628929b8",
+      "blob:http://localhost:3001/bfffbdfa-26a8-4cef-bdce-0d3568be1428",
+      "blob:http://localhost:3001/d1bcbd3d-ad98-46ef-963a-3991a65dbbea",
+      "blob:http://localhost:3001/3b152a47-2ec4-431b-8c49-d06fca55a829",
+      "blob:http://localhost:3001/92052be4-1954-4f5d-b2db-9e6e9649b9c3"
+    ],
+    "title": "Barbing Saloon",
+    "highlights": [],
+    "description": "I offer a reliable events entertainment service designed for clients who want professional quality, flexible scheduling. I currently serve Ebonyi and focus on clear communication, punctual delivery, and a professional finish. Every booking is handled with care so clients know exactly what to expect from start to finish.",
+    "price": 150000,
+    "securityCharge": 0,
+    "otherCharges": 0,
+    "paymentFrequency": "MONTHLY",
+    "status": "ACTION_REQUIRED",
+    "createdAt": "2026-06-09T13:56:48.167Z"
+  }
+]

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "user_cvww1co6",
+    "email": "umorusherifat196@gmail.com",
+    "name": "Sherifat Umoru",
+    "role": "renter",
+    "avatar": "",
+    "isProfileComplete": true,
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-04-03T10:54:22.061Z"
+      }
+    },
+    "createdAt": "2026-04-03T10:54:22.095Z",
+    "updatedAt": "2026-04-03T10:55:02.805Z",
+    "firstName": "Sherifat",
+    "lastName": "Umoru",
+    "security": {
+      "hasPassword": true,
+      "passwordSetAt": "2026-04-03T10:55:02.240Z"
+    }
+  },
+  {
+    "id": "user_admin_0001",
+    "email": "admin@gigs.app",
+    "name": "GIGS Admin",
+    "role": "admin",
+    "avatar": "",
+    "isProfileComplete": true,
+    "adminStatus": "ACTIVE",
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-04-03T10:00:00.000Z"
+      }
+    },
+    "createdAt": "2026-04-03T10:00:00.000Z",
+    "updatedAt": "2026-04-03T10:00:00.000Z",
+    "security": {
+      "hasPassword": true,
+      "passwordSetAt": "2026-04-03T10:00:00.000Z"
+    }
+  },
+  {
+    "id": "user_41cvtvia",
+    "email": "bn.usmann22@gmail.com",
+    "name": "bn.usmann22",
+    "role": "renter",
+    "avatar": "",
+    "isProfileComplete": true,
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-04-08T10:37:20.433Z"
+      },
+      "phone": {
+        "status": "VERIFIED",
+        "phone": "+2349160152870",
+        "requestedAt": "2026-05-31T15:25:29.652Z",
+        "lastSentAt": "2026-05-31T15:25:29.652Z",
+        "verifiedAt": "2026-05-31T15:25:49.806Z"
+      },
+      "id": {}
+    },
+    "createdAt": "2026-04-08T10:37:20.466Z",
+    "updatedAt": "2026-05-31T15:25:50.346Z",
+    "phone": "+2349160152870"
+  },
+  {
+    "id": "user_s5cgorq0",
+    "email": "mutairudirisu@gmail.com",
+    "name": "Mutairu DIrisu",
+    "phone": "+2348107613948",
+    "role": "both",
+    "avatar": "",
+    "isProfileComplete": true,
+    "verifications": {
+      "email": {
+        "status": "VERIFIED",
+        "verifiedAt": "2026-05-21T13:19:26.414Z"
+      }
+    },
+    "createdAt": "2026-04-03T10:41:55.108Z",
+    "updatedAt": "2026-06-09T14:22:04.043Z",
+    "firstName": "Mutairu",
+    "lastName": "DIrisu",
+    "security": {
+      "hasPassword": true,
+      "passwordSetAt": "2026-05-21T13:27:19.818Z"
+    }
+  }
+]

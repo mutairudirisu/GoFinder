@@ -1,0 +1,163 @@
+{
+  "students": [
+    {
+      "id": "student_001",
+      "name": "Emma Johnson",
+      "email": "emma.johnson@university.edu",
+      "phone": "+1-555-0101",
+      "university": "State University",
+      "course": "Computer Science",
+      "year": 2,
+      "budget": {
+        "min": 400,
+        "max": 800,
+        "currency": "USD"
+      },
+      "preferences": {
+        "roomType": "shared",
+        "bedrooms": 2,
+        "amenities": ["wifi", "furnished", "kitchen"]
+      },
+      "moveInDate": "2024-09-01",
+      "bio": "Quiet student looking for a peaceful living space",
+      "verified": true,
+      "createdAt": "2024-08-15T10:30:00Z"
+    },
+    {
+      "id": "student_002",
+      "name": "Alex Chen",
+      "email": "alex.chen@university.edu",
+      "phone": "+1-555-0102",
+      "university": "State University",
+      "course": "Business Administration",
+      "year": 3,
+      "budget": {
+        "min": 500,
+        "max": 1000,
+        "currency": "USD"
+      },
+      "preferences": {
+        "roomType": "private",
+        "bedrooms": 1,
+        "amenities": ["wifi", "gym", "study-area"]
+      },
+      "moveInDate": "2024-08-20",
+      "bio": "Professional student, looking for modern accommodation",
+      "verified": true,
+      "createdAt": "2024-08-10T14:45:00Z"
+    },
+    {
+      "id": "student_003",
+      "name": "Sarah Williams",
+      "email": "sarah.w@university.edu",
+      "phone": "+1-555-0103",
+      "university": "City College",
+      "course": "Engineering",
+      "year": 1,
+      "budget": {
+        "min": 350,
+        "max": 600,
+        "currency": "USD"
+      },
+      "preferences": {
+        "roomType": "shared",
+        "bedrooms": 3,
+        "amenities": ["wifi", "parking", "laundry"]
+      },
+      "moveInDate": "2024-09-05",
+      "bio": "First-year student, open to meeting new people",
+      "verified": false,
+      "createdAt": "2024-08-18T09:15:00Z"
+    },
+    {
+      "id": "student_004",
+      "name": "Marcus Rodriguez",
+      "email": "marcus.r@university.edu",
+      "phone": "+1-555-0104",
+      "university": "Tech Institute",
+      "course": "Data Science",
+      "year": 4,
+      "budget": {
+        "min": 600,
+        "max": 1200,
+        "currency": "USD"
+      },
+      "preferences": {
+        "roomType": "private",
+        "bedrooms": 1,
+        "amenities": ["wifi", "kitchen", "ac"]
+      },
+      "moveInDate": "2024-08-25",
+      "bio": "Graduate student, quiet neighborhood preferred",
+      "verified": true,
+      "createdAt": "2024-08-12T16:20:00Z"
+    },
+    {
+      "id": "student_005",
+      "name": "Priya Patel",
+      "email": "priya.patel@university.edu",
+      "phone": "+1-555-0105",
+      "university": "State University",
+      "course": "Medicine",
+      "year": 2,
+      "budget": {
+        "min": 450,
+        "max": 900,
+        "currency": "USD"
+      },
+      "preferences": {
+        "roomType": "shared",
+        "bedrooms": 2,
+        "amenities": ["wifi", "quiet", "study-area"]
+      },
+      "moveInDate": "2024-09-01",
+      "bio": "Medical student seeking flexible and affordable housing",
+      "verified": true,
+      "createdAt": "2024-08-16T11:00:00Z"
+    }
+  ],
+  "landlords": [
+    {
+      "id": "landlord_001",
+      "name": "John Property Management",
+      "email": "john@propmgmt.com",
+      "phone": "+1-555-0201",
+      "company": "Prime Properties",
+      "verified": true,
+      "ratings": 4.8,
+      "totalListings": 12,
+      "joinDate": "2023-01-15T08:00:00Z"
+    },
+    {
+      "id": "landlord_002",
+      "name": "Sofia Martinez",
+      "email": "sofia.properties@email.com",
+      "phone": "+1-555-0202",
+      "company": "Affordable Housing Co.",
+      "verified": true,
+      "ratings": 4.6,
+      "totalListings": 8,
+      "joinDate": "2023-06-20T10:30:00Z"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review_001",
+      "studentId": "student_001",
+      "landlordId": "landlord_001",
+      "rating": 5,
+      "title": "Excellent accommodation!",
+      "comment": "Great communication and maintenance. Highly recommended!",
+      "createdAt": "2024-08-20T14:30:00Z"
+    },
+    {
+      "id": "review_002",
+      "studentId": "student_002",
+      "landlordId": "landlord_001",
+      "rating": 4,
+      "title": "Good value for money",
+      "comment": "Nice space, responsive landlord",
+      "createdAt": "2024-08-19T09:15:00Z"
+    }
+  ]
+}
