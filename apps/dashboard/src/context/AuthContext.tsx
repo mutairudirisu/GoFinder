@@ -2,7 +2,11 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 
+<<<<<<< HEAD
 export interface User {
+=======
+interface User {
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   id: string;
   email: string;
   name: string;

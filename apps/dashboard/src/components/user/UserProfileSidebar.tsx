@@ -26,8 +26,13 @@ export default function UserProfileSidebar() {
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all ${
                 isActive
+<<<<<<< HEAD
                   ? "bg-slate-100 text-slate-900 font-semibold"
                   : "text-slate-600 hover:bg-slate-50 font-normal"
+=======
+                  ? "bg-slate-100 text-slate-900 font-bold"
+                  : "text-slate-600 hover:bg-slate-50 font-medium"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               }`}
             >
               <i className={`ph-bold ${item.icon} text-xl`}></i>

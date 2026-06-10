@@ -3,7 +3,11 @@
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 import { isRoommateFriendlyListing, type Listing } from "@/types/listing";
+=======
+import type { Listing } from "@/types/listing";
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 import { Header } from "@/components/layout";
 import { useAuth } from "@/context/AuthContext";
 
@@ -139,7 +143,12 @@ export default function ListingRoommatesPage({ params }: { params: Promise<{ id:
 
   const requiresRoommates = useMemo(() => {
     if (!listing) return false;
+<<<<<<< HEAD
     return isRoommateFriendlyListing(listing);
+=======
+    const type = String(listing.type);
+    return listing.spaceType === "shared" || type === "shared_room" || type === "student_accommodation" || type === "hostel";
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   }, [listing]);
 
   const suggested = useMemo(() => {

@@ -12,12 +12,18 @@ export interface Listing {
   };
   address: {
     country: string;
+<<<<<<< HEAD
     houseNumber?: string;
     landmark?: string;
     building?: string;
     unit?: string;
     street: string;
     district?: string;
+=======
+    building: string;
+    street: string;
+    district: string;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     city: string;
     province: string;
     postalCode: string;
@@ -39,6 +45,7 @@ export interface Listing {
   securityCharge: number;
   otherCharges: number;
   paymentFrequency: "MONTHLY" | "QUARTERLY" | "YEARLY";
+<<<<<<< HEAD
   studentHousing?: {
     forStudents: boolean;
     needsRoommate: boolean;
@@ -68,3 +75,8 @@ export const isRoommateFriendlyListing = (listing: Listing) => {
       type === "hostel"
   );
 };
+=======
+  status: "IN_PROGRESS" | "ACTION_REQUIRED" | "VERIFIED" | "INACTIVE" | "REJECTED" | "BOOKED" | "PUBLISHED";
+  createdAt: string;
+}
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2

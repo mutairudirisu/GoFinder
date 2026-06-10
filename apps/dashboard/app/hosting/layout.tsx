@@ -10,8 +10,11 @@ import HostingSideNav from "@/components/hosting/HostingSideNav";
 import HostingMenu from "@/components/hosting/HostingMenu";
 import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
 import { BottomTabNav } from "@/components/mobile/BottomTabNav";
+<<<<<<< HEAD
 import { CategoryStep } from "@/components/becoming-a-host/CategoryStep";
 import { AnimatePresence } from "framer-motion";
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 
 export default function HostingLayout({
   children,
@@ -37,7 +40,10 @@ function HostingLayoutContent({
   const { isCollapsed } = useSidebarCollapse();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [hostingMenuOpen, setHostingMenuOpen] = useState(false);
+<<<<<<< HEAD
   const [isCategoryOverlayOpen, setIsCategoryOverlayOpen] = useState(false);
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   const [bookingUnreadCount, setBookingUnreadCount] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const { hidden: mobileNavHidden } = useAutoHideOnScroll({
@@ -81,6 +87,7 @@ function HostingLayoutContent({
       }
     };
     recompute();
+<<<<<<< HEAD
     const handler = () => {
       recompute();
       // Listen for global category overlay request
@@ -91,6 +98,10 @@ function HostingLayoutContent({
     };
     window.addEventListener("bookingsUpdated", handler as EventListener);
     window.addEventListener("gigs_open_category_overlay", handler as EventListener);
+=======
+    const handler = () => recompute();
+    window.addEventListener("bookingsUpdated", handler as EventListener);
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     window.addEventListener("storage", handler as EventListener);
     return () => {
       window.removeEventListener("bookingsUpdated", handler as EventListener);
@@ -113,11 +124,14 @@ function HostingLayoutContent({
   const isActiveSection = (baseHref: string) => pathname === baseHref || pathname.startsWith(`${baseHref}/`);
   const isMessagesPage = pathname.startsWith("/hosting/messages");
 
+<<<<<<< HEAD
   const openCategoryOverlay = () => {
     localStorage.setItem('gigs_request_category_overlay', 'true');
     window.dispatchEvent(new Event('gigs_open_category_overlay'));
   };
 
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
       <div className="hidden md:block">
@@ -202,6 +216,7 @@ function HostingLayoutContent({
         items={[
           { key: "today", href: "/hosting", label: "Today", iconClassName: "ph-bold ph-bookmark-simple text-xl", isActive: isTodayRoute },
           {
+<<<<<<< HEAD
             key: "create",
             href: "#",
             label: "Create",
@@ -209,6 +224,8 @@ function HostingLayoutContent({
             onClick: openCategoryOverlay,
           },
           {
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             key: "calendar",
             href: "/hosting/calendar",
             label: "Calendar",
@@ -239,6 +256,7 @@ function HostingLayoutContent({
         isOpen={hostingMenuOpen}
         onClose={() => setHostingMenuOpen(false)}
       />
+<<<<<<< HEAD
 
       {/* Global Category Overlay */}
       <AnimatePresence>
@@ -253,6 +271,8 @@ function HostingLayoutContent({
           />
         )}
       </AnimatePresence>
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     </div>
   );
 }

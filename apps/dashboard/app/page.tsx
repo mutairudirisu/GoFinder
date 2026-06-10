@@ -379,7 +379,11 @@ function ListingsPageContent() {
       </section>
       
       {/* Results Section */}
+<<<<<<< HEAD
       <section className="pb-24 pt-[60px] mt-[160px] md:mt-4 md:p-16 md:pt-12">
+=======
+      <section className="pb-12 pt-[60px] mt-[160px] md:mt-4 md:px-16 md:pt-12">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         <div className="max-w-7xl mx-auto pl-6 md:px-6">
           {Object.keys(groupedByLocation).length > 0 ? (
             <div className="space-y-6 md:space-y-8">

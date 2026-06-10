@@ -13,11 +13,14 @@ export default function HostingPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loadingListings, setLoadingListings] = useState(true);
 
+<<<<<<< HEAD
   const openCategoryOverlay = () => {
     localStorage.setItem('gigs_request_category_overlay', 'true');
     window.dispatchEvent(new Event('gigs_open_category_overlay'));
   };
 
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
   // Redirect if not authorized (handled by layout, but kept for safety)
   useEffect(() => {
     if (user && user.role === 'renter') {
@@ -75,13 +78,22 @@ export default function HostingPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+<<<<<<< HEAD
           <button
             onClick={openCategoryOverlay}
+=======
+          <Link
+            href="/becoming-a-host"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
           >
             <i className="ph-bold ph-plus"></i>
             Create listing
+<<<<<<< HEAD
           </button>
+=======
+          </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
           <Link
             href="/hosting/listings"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 text-slate-800 font-bold hover:bg-brand-50 hover:text-brand-700 transition-colors"
@@ -93,20 +105,33 @@ export default function HostingPage() {
       </div>
 
       <div className="md:hidden mt-4 grid grid-cols-2 gap-3">
+<<<<<<< HEAD
         <button
           onClick={openCategoryOverlay}
+=======
+        <Link
+          href="/becoming-a-host"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
           className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 text-white font-bold hover:bg-slate-800 transition-colors"
         >
           <i className="ph-bold ph-plus"></i>
           Create
+<<<<<<< HEAD
         </button>
+=======
+        </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         <Link
           href="/hosting/listings"
           className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 text-slate-800 font-bold hover:bg-brand-50 hover:text-brand-700 transition-colors"
         >
           Listings
           <i className="ph-bold ph-caret-right"></i>
+<<<<<<< HEAD
           </Link>
+=======
+        </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
       </div>
 
       <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mt-8">
@@ -177,13 +202,22 @@ export default function HostingPage() {
               </div>
             </div>
             <div className="mt-6">
+<<<<<<< HEAD
               <button
                 onClick={openCategoryOverlay}
+=======
+              <Link
+                href={hasListings ? "/hosting/listings" : "/becoming-a-host"}
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-2xl border border-slate-200 text-slate-800 font-bold hover:bg-brand-50 hover:text-brand-700 transition-colors"
               >
                 {hasListings ? "Manage listings" : "Create your first listing"}
                 <i className="ph-bold ph-caret-right"></i>
+<<<<<<< HEAD
               </button>
+=======
+              </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             </div>
           </div>
 
@@ -208,13 +242,22 @@ export default function HostingPage() {
             </div>
             <div className="mt-6 space-y-3">
               {!hasListings ? (
+<<<<<<< HEAD
                 <button
                   onClick={openCategoryOverlay}
+=======
+                <Link
+                  href="/becoming-a-host"
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                   className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
                 >
                   Create listing
                   <i className="ph-bold ph-caret-right"></i>
+<<<<<<< HEAD
                 </button>
+=======
+                </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               ) : (
                 <Link
                   href={isUserFullyVerified ? "/hosting/listings" : "/hosting/settings"}
@@ -248,6 +291,7 @@ export default function HostingPage() {
             </div>
             <div className="font-display font-bold text-slate-900 text-xl">No listings yet</div>
             <div className="text-slate-500 mt-2">Create your first listing to start hosting.</div>
+<<<<<<< HEAD
             <button 
               onClick={openCategoryOverlay}
               className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors"
@@ -255,6 +299,12 @@ export default function HostingPage() {
               <i className="ph-bold ph-plus"></i>
               Create listing
             </button>
+=======
+            <Link href="/becoming-a-host" className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-2xl bg-brand-500 text-white font-bold hover:bg-brand-600 transition-colors">
+              <i className="ph-bold ph-plus"></i>
+              Create listing
+            </Link>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">

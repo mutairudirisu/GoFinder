@@ -3,7 +3,11 @@
 import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+<<<<<<< HEAD
 import { isRoommateFriendlyListing, isStudentFriendlyListing, type Listing } from "@/types/listing";
+=======
+import type { Listing } from "@/types/listing";
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 import { useAuth } from "@/context/AuthContext";
 
 export default function ListingDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -124,6 +128,7 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
   const meta = useMemo(() => {
     if (!listing) return null;
     const type = String(listing.type).toLowerCase();
+<<<<<<< HEAD
     const isStudent = isStudentFriendlyListing(listing);
     const isShared =
       listing.spaceType === "shared" ||
@@ -134,6 +139,13 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
     const isHostel = type === "hostel";
     const isHotel = type === "hotel";
     const requiresRoommates = isRoommateFriendlyListing(listing);
+=======
+    const isStudent = type === "student_accommodation";
+    const isShared = listing.spaceType === "shared" || type === "shared_room";
+    const isHostel = type === "hostel";
+    const isHotel = type === "hotel";
+    const requiresRoommates = isShared || isStudent || isHostel;
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
     
     // Hide guest selection for per-person bookings (student, shared, hostel)
     // Only show it for standard homes or hotels
@@ -442,6 +454,7 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
                 )}
               </>
             )}
+<<<<<<< HEAD
             {listing.studentHousing?.forStudents && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 rounded-full border border-brand-100 text-[11px] font-bold text-brand-700">
                 <i className="ph ph-student"></i> Student ready
@@ -452,12 +465,15 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
                 <i className="ph ph-users-three"></i> Needs roommate
               </div>
             )}
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
             <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-full border border-slate-100 text-[11px] font-bold text-slate-600">
               <i className="ph ph-paw-print"></i>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2 pt-2">
+<<<<<<< HEAD
             {[
               listing.studentHousing?.forStudents ? "Student housing" : null,
               listing.studentHousing?.needsRoommate ? "Roommate friendly" : null,
@@ -467,6 +483,9 @@ export default function ListingDetailsPage({ params }: { params: Promise<{ id: s
             ]
               .filter(Boolean)
               .map((tag) => (
+=======
+            {["Students", "Programmers", "Yung people"].map((tag) => (
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               <span key={tag} className="px-5 py-2.5 bg-slate-100 rounded-full text-[13px] font-medium text-slate-700">
                 {tag}
               </span>

@@ -10,7 +10,10 @@ export type BottomTabNavItem = {
   iconClassName: string;
   isActive?: boolean;
   badgeCount?: number;
+<<<<<<< HEAD
   onClick?: () => void;
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
 };
 
 export function BottomTabNav({
@@ -44,15 +47,33 @@ export function BottomTabNav({
       hidden || isKeyboardVisible ? "translate-y-32" : "translate-y-0"
     }`}>
       <nav
+<<<<<<< HEAD
         className={`mx-auto max-w-sm pointer-events-auto bg-white/80 backdrop-blur-md border border-white/50 py-2.5 rounded-[36px] shadow-[0_16px_48px_rgba(0,0,0,0.12)] p-1.5`}
+=======
+        className={`mx-auto max-w-sm pointer-events-auto bg-white/50 backdrop-blur-sm border border-white/50 py-2 rounded-[32px] shadow-[0_12px_40px_rgba(0,0,0,0.08)] p-1`}
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
       >
         <div className="flex items-center justify-between gap-1 relative">
           {items.map((item) => {
             const isActive = item.isActive;
+<<<<<<< HEAD
             
             const content = (
               <>
                 <i className={`${item.iconClassName} ${isActive ? 'text-xl text-brand-600' : 'text-xl'}`}></i>
+=======
+            return (
+              <Link
+                key={item.key}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 py-2.5 transition-all duration-400 ease-out relative rounded-[28px] ${
+                  isActive 
+                    ? "bg-brand-50 text-brand-700 shadow-sm border border-brand-100/50" 
+                    : "text-slate-500 hover:text-slate-900 active:scale-95"
+                }`}
+              >
+                <i className={`${item.iconClassName} ${isActive ? 'text-lg text-brand-600' : 'text-xl'}`}></i>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
                 <span className={`text-[11px] font-semibold leading-none ${isActive ? "opacity-100 text-brand-600" : "opacity-70"}`}>
                   {item.label}
                 </span>
@@ -62,6 +83,7 @@ export function BottomTabNav({
                     {item.badgeCount > 9 ? "9+" : item.badgeCount}
                   </span>
                 ) : null}
+<<<<<<< HEAD
               </>
             );
 
@@ -93,6 +115,8 @@ export function BottomTabNav({
                 className={baseClassName}
               >
                 {content}
+=======
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
               </Link>
             );
           })}

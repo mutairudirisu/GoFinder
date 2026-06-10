@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+<<<<<<< HEAD
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -36,10 +37,17 @@ export default function NotificationsPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6 md:py-10">
+=======
+
+export default function NotificationsPage() {
+  return (
+    <div className="max-w-6xl mx-auto">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
+<<<<<<< HEAD
         className="space-y-8"
       >
         <div className="flex items-center gap-4">
@@ -90,6 +98,19 @@ export default function NotificationsPage() {
               </p>
             </div>
           )}
+=======
+      >
+        <h2 className="text-3xl font-display font-bold text-slate-900 mb-8">Notifications</h2>
+
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
+          <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i className="ph-bold ph-bell text-4xl text-slate-300"></i>
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">No new notifications</h3>
+          <p className="text-slate-500 max-w-sm mx-auto mb-8">
+            Stay tuned for updates on your bookings and account activity.
+          </p>
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         </div>
       </motion.div>
     </div>

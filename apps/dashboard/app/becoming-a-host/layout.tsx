@@ -20,9 +20,15 @@ export default function BecomingAHostLayout({
   const showFullHeader = !isLocationStep && isListingFlow;
 
   return (
+<<<<<<< HEAD
     <div className="min-h-screen bg-white flex-col">
       {/* Header */}
       <header className="h-20 px-6 md:px-12 flex flex-col justify-center sticky top-0 bg-white z-50 hidden">
+=======
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Header */}
+      <header className="h-20 px-6 md:px-12 flex flex-col justify-center sticky top-0 bg-white z-50">
+>>>>>>> 3cf4ee25e3193adf65befbc4a4994bdf101bfef2
         <div className="flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm">
