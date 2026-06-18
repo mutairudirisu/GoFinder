@@ -97,10 +97,6 @@ export function JourneyScroller() {
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-20 sm:pt-28">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-slate-200 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-brand-500 animate-pulse" />
-            <span className="text-xs font-bold uppercase tracking-widest text-slate-600">Scroll story</span>
-          </div>
           <h2 className="mt-6 font-display font-extrabold text-3xl sm:text-4xl md:text-5xl text-brand-dark">
             What you can do on <span className="text-brand-600">GIGS Rentals</span>
           </h2>
