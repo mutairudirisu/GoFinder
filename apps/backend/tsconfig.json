@@ -18,6 +18,9 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@nestjs/*": ["../../node_modules/@nestjs/*"]
+    },
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false
