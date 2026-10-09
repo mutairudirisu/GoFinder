@@ -52,6 +52,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
         <meta name="theme-color" content="#22c55e" />
         <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&f[]=satoshi@400,500,700&display=swap" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap" />
         <script src="https://unpkg.com/@phosphor-icons/web"></script>
         <title>GIGS Rental - Find Your Perfect Student Housing</title>
         <meta name="description" content="GIGS Rental connects students with affordable co-sharing spaces and rental opportunities. Discover the perfect rental accommodation while studying." />

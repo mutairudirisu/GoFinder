@@ -6,14 +6,19 @@ export default function Home() {
   return  (
     <>
       <Hero />
-      <Marquee />
-      <JourneyScroller />
-      <AgentsEnterprise />
-      <FeaturesGrid />
-      <StudentLifestyleBanner />
-      <Testimonials />
-      <Newsletter />
-      <FAQ />
+      {/* Spacer to push content below the fixed hero viewport */}
+      <div className="h-[100svh]" />
+      {/* Content scrolls over the fixed hero */}
+      <div className="relative z-10 bg-white">
+        <Marquee />
+        <JourneyScroller />
+        <AgentsEnterprise />
+        <FeaturesGrid />
+        <StudentLifestyleBanner />
+        <Testimonials />
+        <Newsletter />
+        <FAQ />
+      </div>
     </>
   );
 }

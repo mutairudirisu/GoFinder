@@ -170,7 +170,7 @@ Fetch a single listing.
 Publish a new property listing (requires authentication).
 
 - **Method**: `POST`
-- **URL**: `{{BaseURL}}/listings`
+- **URL..**: `{{BaseURL}}/listings`
 - **Headers**:
   - `Authorization`: `Bearer <your_access_token>`
 - **Body** (JSON):

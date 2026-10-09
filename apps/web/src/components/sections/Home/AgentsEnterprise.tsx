@@ -36,7 +36,7 @@ export function AgentsEnterprise() {
       <section className="max-w-[1400px] mx-auto bg-white relative px-4 sm:px-6 md:px-12 mt-12 sm:mt-16 py-10 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-10 md:gap-20 mt-12 justify-between">
           <div className="relative md:min-h-[400vh]">
-            <div className="md:fixed md:top-1/2 md:-translate-y-1/2 md:w-[calc((100vw-1400px)/2+700px-3rem)] md:max-w-[700px]">
+            <div className="md:sticky md:top-1/2 md:-translate-y-1/2 md:w-[calc((100vw-1400px)/2+700px-3rem)] md:max-w-[700px]">
               <motion.div
                 className="flex flex-col items-start text-left max-w-3xl mx-auto md:mx-0 mb-8 md:mb-0 gap-4"
                 initial={{ opacity: 0, y: 14 }}

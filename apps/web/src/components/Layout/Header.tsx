@@ -1,557 +1,245 @@
 "use client";
-import Link from "next/link";
-import { useRef, useState, useEffect } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { Logo } from "./Logo";
-import { NavLinks } from "./NavLinks";
-import { DASHBOARD_URL } from "./header.constants";
-import { useHeaderAuth } from "./useHeaderAuth";
- 
-export const Header = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const { user, isAuthenticated, logout } = useHeaderAuth();
 
-  // Close menu when clicking outside
+import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Logo } from "./Logo";
+import { DASHBOARD_URL, NAV_LINKS } from "./header.constants";
+import { useHeaderAuth } from "./useHeaderAuth";
+import { useAutoHideOnScroll } from "@/hooks/useAutoHideOnScroll";
+
+const allNavLinks = [
+  { label: "Home", href: "/" },
+  ...NAV_LINKS,
+];
+
+export const Header = () => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const { user, isAuthenticated, logout } = useHeaderAuth();
+  const { hidden } = useAutoHideOnScroll({
+    enabled: true,
+    deltaThreshold: 8,
+    topReset: 40,
+  });
+
+  useEffect(() => {
+    if (hidden) {
+      setMobileOpen(false);
+      setIsUserMenuOpen(false);
+    }
+  }, [hidden]);
+
+  // Close user dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b-2 border-black">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 sm:h-20 flex items-center justify-between">
-        <Logo />
-        <NavLinks />
-        
-        <div className="flex items-center gap-4">
+    <motion.header
+      animate={{
+        y: hidden ? "-110%" : "0%",
+        scaleX: hidden ? 0.84 : 1,
+        opacity: hidden ? 0 : 1,
+      }}
+      transition={{ duration: 0.32, ease: [0.4, 0, 0.2, 1] }}
+      className="fixed inset-x-0 top-0 z-50 origin-top transform-gpu px-4 pt-4 sm:px-6"
+    >
+      <nav
+        aria-label="Primary navigation"
+        className="mx-auto flex w-full max-w-max items-center justify-between rounded-full bg-black/90 p-1.5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.22)] backdrop-blur-md md:w-fit md:justify-center md:bg-transparent md:p-0 md:shadow-none md:gap-2.5"
+      >
+        {/* Mascot-Only Logo Badge (Desktop & Mobile) */}
+        <div className="relative z-20 flex items-center justify-center rounded-full bg-[#F4F4F0] p-1.5 shadow-md backdrop-blur-sm transition-transform hover:scale-105">
+          <Logo showWordmark={false} />
+        </div>
+
+        {/* Center Navigation Links Capsule (Roomie style) */}
+        <div className="relative z-10 hidden items-center rounded-full bg-black/90 px-4 py-2 shadow-[0_12px_30px_rgba(0,0,0,0.2)] backdrop-blur-md before:pointer-events-none before:absolute before:inset-1.5 before:rounded-full before:border before:border-white/20 md:flex">
+          {allNavLinks.map((link, index) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`relative z-10 px-4 lg:px-5 py-2 text-sm font-medium text-white/90 transition-colors hover:text-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 ${
+                index > 0 ? "border-l border-white/20" : ""
+              }`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+
+        {/* Right CTA / Auth Button - Adjacent to Nav Links */}
+        <div className="hidden items-center md:flex">
           {isAuthenticated ? (
-            <div className="flex items-center gap-3">
-              {/* Messages/Chat Icon */}
-              <Link
-                href={`${DASHBOARD_URL}/user/messages`}
-                className="w-10 h-10 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors"
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="relative z-10 flex items-center gap-2 rounded-full bg-black/90 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] backdrop-blur-md transition-all hover:bg-slate-900 before:pointer-events-none before:absolute before:inset-1.5 before:rounded-full before:border before:border-white/20"
               >
-                <i className="ph-bold ph-chat-circle-dots text-xl text-slate-700"></i>
-              </Link>
-
-              {/* User Menu */}
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="w-10 h-10 rounded-full bg-brand-500 border-2 border-black flex items-center justify-center text-white font-bold text-sm shadow-brutal-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-                >
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 font-bold text-white text-xs">
                   {user?.name?.charAt(0).toUpperCase() || "U"}
-                </button>
+                </div>
+                <span className="max-w-[100px] truncate">{user?.name || "Account"}</span>
+                <i className="ph-bold ph-caret-down text-xs text-white/70"></i>
+              </button>
 
-                <AnimatePresence>
-                  {isMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-2xl border-2 border-black overflow-hidden"
-                    >
-                      <div className="px-4 py-3 border-b border-slate-100">
-                        <p className="font-bold text-slate-900 truncate">{user?.name}</p>
-                        <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                      </div>
-                      <div className="py-2">
-                        <Link
-                          href={DASHBOARD_URL}
-                          className="flex items-center gap-3 px-4 py-2 hover:bg-brand-50 text-slate-700 font-medium transition-colors"
-                        >
-                          <i className="ph-bold ph-squares-four"></i>
-                          Dashboard
-                        </Link>
-                        <Link
-                          href={`${DASHBOARD_URL}/user/profile`}
-                          className="flex items-center gap-3 px-4 py-2 hover:bg-brand-50 text-slate-700 font-medium transition-colors"
-                        >
-                          <i className="ph-bold ph-user"></i>
-                          Profile
-                        </Link>
-                        <button
-                          onClick={logout}
-                          className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-50 text-red-600 font-medium transition-colors text-left"
-                        >
-                          <i className="ph-bold ph-sign-out"></i>
-                          Log out
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+              <AnimatePresence>
+                {isUserMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 top-full mt-3 w-56 overflow-hidden rounded-2xl border border-white/10 bg-black/95 p-1 text-white shadow-2xl backdrop-blur-xl"
+                  >
+                    <div className="border-b border-white/10 px-4 py-3">
+                      <p className="font-bold text-white truncate">{user?.name}</p>
+                      <p className="text-xs text-white/60 truncate">{user?.email}</p>
+                    </div>
+                    <div className="py-1">
+                      <Link
+                        href={DASHBOARD_URL}
+                        className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        <i className="ph-bold ph-squares-four text-brand-400"></i>
+                        Dashboard
+                      </Link>
+                      <Link
+                        href={`${DASHBOARD_URL}/user/profile`}
+                        className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium text-white/90 hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        <i className="ph-bold ph-user text-brand-400"></i>
+                        Profile
+                      </Link>
+                      <button
+                        onClick={logout}
+                        className="flex w-full items-center gap-3 rounded-xl px-4 py-2.5 text-left text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors"
+                      >
+                        <i className="ph-bold ph-sign-out text-red-400"></i>
+                        Log out
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           ) : (
             <Link
               href={`${DASHBOARD_URL}/auth/signup`}
-              className="px-5 py-2.5 bg-black text-white font-bold rounded-lg border-2 border-brand-dark hover:bg-brand-accent hover:border-brand-accent hover:-translate-y-1 hover:shadow-brutal transition-all duration-300 text-sm"
+              className="relative z-10 inline-flex items-center justify-center rounded-full bg-black/90 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(0,0,0,0.18)] transition-transform hover:scale-105 before:pointer-events-none before:absolute before:inset-1.5 before:rounded-full before:border before:border-white/30"
             >
               Get Started
             </Link>
           )}
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Hamburger Button */}
+        <button
+          onClick={() => setMobileOpen((open) => !open)}
+          aria-label={mobileOpen ? "Close menu" : "Open menu"}
+          className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10 focus-visible:outline-none md:hidden"
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {mobileOpen ? (
+              <motion.span
+                key="close"
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <i className="ph-bold ph-x text-xl"></i>
+              </motion.span>
+            ) : (
+              <motion.span
+                key="open"
+                initial={{ rotate: 90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                <i className="ph-bold ph-list text-xl"></i>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
+      </nav>
+
+      {/* Mobile Dropdown Popover */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, height: 0, scale: 0.95 }}
+            animate={{ opacity: 1, height: "auto", scale: 1 }}
+            exit={{ opacity: 0, height: 0, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="mx-auto mt-2 max-w-sm overflow-hidden rounded-3xl border border-white/10 bg-black/95 text-white shadow-[0_12px_30px_rgba(0,0,0,0.3)] backdrop-blur-xl md:hidden"
+          >
+            <div className="flex flex-col gap-1 p-4">
+              {allNavLinks.map((link, i) => (
+                <motion.div
+                  key={link.href}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.2 }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-2xl px-4 py-3 text-sm font-medium text-white/90 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    {link.label}
+                  </Link>
+                </motion.div>
+              ))}
+
+              {isAuthenticated ? (
+                <div className="mt-2 border-t border-white/10 pt-3">
+                  <div className="px-4 pb-2">
+                    <p className="font-bold text-white text-sm">{user?.name}</p>
+                    <p className="text-xs text-white/60">{user?.email}</p>
+                  </div>
+                  <Link
+                    href={DASHBOARD_URL}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-white/90 hover:bg-white/10"
+                  >
+                    <i className="ph-bold ph-squares-four text-brand-400"></i>
+                    Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      logout();
+                    }}
+                    className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-400 hover:bg-red-500/20"
+                  >
+                    <i className="ph-bold ph-sign-out text-red-400"></i>
+                    Log out
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  href={`${DASHBOARD_URL}/auth/signup`}
+                  onClick={() => setMobileOpen(false)}
+                  className="mt-3 block rounded-2xl border border-white/30 px-4 py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-white hover:text-black"
+                >
+                  Get Started
+                </Link>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.header>
   );
 };
- 
-
-
-
-
-// "use client";
-// import { useRef, useState, useEffect } from "react";
-// import { AnimatePresence, motion } from "framer-motion";
-// import { useHeaderAuth } from "./useHeaderAuth";
-// import { Logo } from "./Logo";
-// import { NavLinks } from "./NavLinks";
-// import { AuthMenu } from "./AuthMenu";
-// import { GuestMenu } from "./GuestMenu";
-// import Link from "next/link";
-// import { DASHBOARD_URL } from "./header.constants";
-
-
-// export const Header = () => {
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
-//   const menuRef = useRef<HTMLDivElement>(null);
-//   const { user, isAuthenticated, isListerMode, logout, switchToLister } = useHeaderAuth();
-
-//   const closeMenu = () => setIsMenuOpen(false);
-
-//   // Close menu when clicking outside
-//   useEffect(() => {
-//     const handleClickOutside = (event: MouseEvent) => {
-//       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-//         setIsMenuOpen(false);
-//       }
-//     };
-
-//     document.addEventListener("mousedown", handleClickOutside);
-//     return () => document.removeEventListener("mousedown", handleClickOutside);
-//   }, []);
-
-//   return (
-//     <header className="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-b-2 border-black">
-//       <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-16 sm:h-20 flex items-center justify-between">
-//         {/* Logo */}
-//         <Link href="/" className="flex items-center gap-2 group flex-shrink-0">
-//           <div className="w-8 sm:w-10 h-8 sm:h-10 bg-brand-500 rounded-lg border-2 border-brand-dark flex items-center justify-center shadow-brutal-sm group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all flex-shrink-0">
-//             <i className="ph-bold ph-house-line text-lg sm:text-xl text-white"></i>
-//           </div>
-//           <span className="font-display font-bold text-xl sm:text-2xl md:text-3xl tracking-tight hidden sm:inline-block">
-//             Hostel<span className="text-brand-600">Finder</span>
-//           </span>
-//           <span className="font-display font-bold text-lg sm:hidden">
-//             <span className="text-brand-500">HF</span>
-//           </span>
-//         </Link>
-
-//         {/* Nav Links */}
-//         <nav className="hidden md:flex items-center gap-6 lg:gap-8 font-sans font-medium">
-//           <Link href="/" className="relative text-brand-dark py-2 text-sm lg:text-base">
-//             Home
-//             <span className="absolute bottom-0 left-0 w-full h-1 bg-brand-500 rounded-full"></span>
-//           </Link>
-//           <Link
-//             href={`${DASHBOARD_URL}/listings`}
-//             className="text-slate-500 hover:text-brand-dark transition-colors text-sm lg:text-base"
-//           >
-//             Listings
-//           </Link>
-//           <Link
-//             href="/about-us"
-//             className="text-slate-500 hover:text-brand-dark transition-colors text-sm lg:text-base"
-//           >
-//             About Us
-//           </Link>
-//           <Link
-//             href="/pricing"
-//             className="text-slate-500 hover:text-brand-dark transition-colors text-sm lg:text-base"
-//           >
-//             Pricing
-//           </Link>
-//           <Link
-//             href="/contact"
-//             className="text-slate-500 hover:text-brand-dark transition-colors text-sm lg:text-base"
-//           >
-//             Contact
-//           </Link>
-//         </nav>
-
-//         {/* CTA */}
-//         <div className="flex items-center gap-2 md:gap-4 lg:gap-6 flex-shrink-0">
-//           {/* Mobile: Menu Button */}
-//           <div className="relative md:hidden" ref={menuRef}>
-//             {/* Hamburger Button - Different based on auth */}
-//             <button
-//               onClick={() => setIsMenuOpen(!isMenuOpen)}
-//               className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-full hover:shadow-lg transition-all"
-//             >
-//               <i className="ph-bold ph-list text-xl"></i>
-//               {isAuthenticated ? (
-//                 /* Authenticated: Show avatar */
-//                 <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-//                   {user?.avatar ? (
-//                     <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-//                   ) : (
-//                     user?.name?.charAt(0).toUpperCase() || "U"
-//                   )}
-//                 </div>
-//               ) : (
-//                 /* Guest: Show user icon */
-//                 <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-//                   <i className="ph-bold ph-user text-lg"></i>
-//                 </div>
-//               )}
-//             </button>
-
-//             {/* Mobile Dropdown Menu */}
-//             <AnimatePresence>
-//               {isMenuOpen && (
-//                 <motion.div
-//                   initial={{ opacity: 0, y: -10, scale: 0.95 }}
-//                   animate={{ opacity: 1, y: 0, scale: 1 }}
-//                   exit={{ opacity: 0, y: -10, scale: 0.95 }}
-//                   transition={{ duration: 0.2 }}
-//                   className="absolute right-0 top-full mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-brand-100 overflow-hidden"
-//                 >
-//                   {/* Authenticated User Menu */}
-//                   {isAuthenticated ? (
-//                     <>
-//                       {/* User Info */}
-//                       <div className="px-4 py-3 bg-brand-50 border-b border-brand-100">
-//                         <p className="font-bold text-brand-dark">{user?.name}</p>
-//                         <p className="text-sm text-brand-600">{user?.email}</p>
-//                       </div>
-
-//                       {/* Menu Items */}
-//                       <div className="py-2">
-//                         <Link
-//                           href={`${DASHBOARD_URL}/listings/saved`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-heart text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Saved Listings</span>
-//                         </Link>
-//                         <Link
-//                           href={`${DASHBOARD_URL}/messages`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-chat-circle text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Messages</span>
-//                         </Link>
-//                         <Link
-//                           href={`${DASHBOARD_URL}/profile`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-user-circle text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Profile</span>
-//                         </Link>
-
-//                         {/* Divider */}
-//                         <div className="border-t border-brand-100 my-2"></div>
-
-//                         {/* Lister Actions */}
-//                         <p className="px-4 py-2 text-xs text-brand-600 font-medium uppercase">Hosting</p>
-//                         <Link
-//                           href={`${DASHBOARD_URL}/listings/create`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-plus-circle text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Create Listing</span>
-//                         </Link>
-//                         <Link
-//                           href={`${DASHBOARD_URL}/hosting`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-building text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Host Dashboard</span>
-//                         </Link>
-
-//                         {/* Switch Role Toggle */}
-//                         {!isListerMode && (
-//                           <button
-//                             onClick={() => {
-//                               // Switch to lister role
-//                               const updatedUser = { ...user, role: "both" as const };
-//                               localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
-//                               setUser(updatedUser);
-//                               setIsMenuOpen(false);
-//                               window.dispatchEvent(new Event("gigsAuthChange"));
-//                             }}
-//                             className="flex items-center gap-3 px-4 py-3 w-full text-left hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-arrows-left-right text-xl text-brand-500"></i>
-//                             <span className="font-medium text-brand-700">Switch to Lister</span>
-//                           </button>
-//                         )}
-
-//                         {/* Divider */}
-//                         <div className="border-t border-brand-100 my-2"></div>
-
-//                         {/* Logout */}
-//                         <button
-//                           onClick={handleLogout}
-//                           className="flex items-center gap-3 px-4 py-3 w-full text-left hover:bg-red-50 transition-colors"
-//                         >
-//                           <i className="ph ph-sign-out text-xl text-red-500"></i>
-//                           <span className="font-medium text-red-600">Log out</span>
-//                         </button>
-//                       </div>
-//                     </>
-//                   ) : (
-//                     /* Guest Menu */
-//                     <>
-//                       {/* Not Logged In Section */}
-//                       <div className="px-4 py-3 border-b border-brand-100">
-//                         <p className="text-xs text-brand-600 font-medium mb-2">Sign up or Log in</p>
-//                         <div className="space-y-2">
-//                           <Link
-//                             href={`${DASHBOARD_URL}/auth/signup`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center justify-between px-4 py-3 bg-brand-500 text-white rounded-xl font-bold hover:bg-brand-600 transition-colors"
-//                           >
-//                             <span>Sign Up</span>
-//                             <i className="ph-bold ph-arrow-right"></i>
-//                           </Link>
-//                           <Link
-//                             href={`${DASHBOARD_URL}/auth/login`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center justify-between px-4 py-3 border-2 border-brand-200 rounded-xl font-bold text-brand-600 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <span>Log in</span>
-//                             <i className="ph-bold ph-arrow-right"></i>
-//                           </Link>
-//                         </div>
-//                       </div>
-
-//                       {/* Menu Items - Limited for guests */}
-//                       <div className="py-2">
-//                         <Link
-//                           href={`${DASHBOARD_URL}/listings`}
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-buildings text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Browse Listings</span>
-//                         </Link>
-//                         <Link
-//                           href="/about-us"
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-users text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">About Us</span>
-//                         </Link>
-//                         <Link
-//                           href="/pricing"
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-tag text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Pricing</span>
-//                         </Link>
-
-//                         {/* Divider */}
-//                         <div className="border-t border-brand-100 my-2"></div>
-
-//                         <Link
-//                           href="/contact"
-//                           onClick={() => setIsMenuOpen(false)}
-//                           className="flex items-center gap-3 px-4 py-3 hover:bg-brand-50 transition-colors"
-//                         >
-//                           <i className="ph ph-question text-xl text-brand-500"></i>
-//                           <span className="font-medium text-brand-700">Help Center</span>
-//                         </Link>
-//                       </div>
-//                     </>
-//                   )}
-//                 </motion.div>
-//               )}
-//             </AnimatePresence>
-//           </div>
-
-//           {/* Desktop: Auth-aware CTA */}
-//           <div className="hidden md:flex items-center gap-2 md:gap-4 lg:gap-6 flex-shrink-0">
-//             {isAuthenticated ? (
-//               /* Authenticated Desktop Menu */
-//               <>
-//                 {/* Saved Listings */}
-//                 <Link
-//                   href={`${DASHBOARD_URL}/listings/saved`}
-//                   className="p-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-full transition-colors"
-//                   title="Saved Listings"
-//                 >
-//                   <i className="ph-bold ph-heart text-xl"></i>
-//                 </Link>
-
-//                 {/* Messages */}
-//                 <Link
-//                   href={`${DASHBOARD_URL}/messages`}
-//                   className="p-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-full transition-colors"
-//                   title="Messages"
-//                 >
-//                   <i className="ph-bold ph-chat-circle text-xl"></i>
-//                 </Link>
-
-//                 {/* User Menu Dropdown */}
-//                 <div className="relative" ref={menuRef}>
-//                   <button
-//                     onClick={() => setIsMenuOpen(!isMenuOpen)}
-//                     className="flex items-center gap-2 px-1 py-1 border-2 border-gray-200 rounded-full hover:border-brand-300 transition-colors"
-//                   >
-//                     <i className="ph-bold ph-list text-lg text-gray-600"></i>
-//                     <div className="w-8 h-8 bg-brand-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
-//                       {user?.avatar ? (
-//                         <img src={user.avatar} alt={user.name} className="w-full h-full rounded-full object-cover" />
-//                       ) : (
-//                         user?.name?.charAt(0).toUpperCase() || "U"
-//                       )}
-//                     </div>
-//                   </button>
-
-//                   {/* Desktop Dropdown */}
-//                   <AnimatePresence>
-//                     {isMenuOpen && (
-//                       <motion.div
-//                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
-//                         animate={{ opacity: 1, y: 0, scale: 1 }}
-//                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
-//                         transition={{ duration: 0.2 }}
-//                         className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-brand-100 overflow-hidden"
-//                       >
-//                         <div className="py-2">
-//                           {/* User Info */}
-//                           <div className="px-4 py-3 bg-brand-50 border-b border-brand-100">
-//                             <p className="font-bold text-brand-dark text-sm">{user?.name}</p>
-//                             <p className="text-xs text-brand-600">{user?.email}</p>
-//                           </div>
-
-//                           {/* Menu Items */}
-//                           <Link
-//                             href={`${DASHBOARD_URL}/profile`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-user-circle text-lg text-brand-500"></i>
-//                             <span className="font-medium text-brand-700 text-sm">Profile</span>
-//                           </Link>
-//                           <Link
-//                             href={`${DASHBOARD_URL}/listings/saved`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-heart text-lg text-brand-500"></i>
-//                             <span className="font-medium text-brand-700 text-sm">Saved Listings</span>
-//                           </Link>
-//                           <Link
-//                             href={`${DASHBOARD_URL}/messages`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-chat-circle text-lg text-brand-500"></i>
-//                             <span className="font-medium text-brand-700 text-sm">Messages</span>
-//                           </Link>
-
-//                           {/* Divider */}
-//                           <div className="border-t border-brand-100 my-2"></div>
-
-//                           {/* Lister Section */}
-//                           <p className="px-4 py-1 text-xs text-brand-600 font-medium uppercase">Hosting</p>
-//                           <Link
-//                             href={`${DASHBOARD_URL}/listings/create`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-plus-circle text-lg text-brand-500"></i>
-//                             <span className="font-medium text-brand-700 text-sm">Create Listing</span>
-//                           </Link>
-//                           <Link
-//                             href={`${DASHBOARD_URL}/hosting`}
-//                             onClick={() => setIsMenuOpen(false)}
-//                             className="flex items-center gap-3 px-4 py-2.5 hover:bg-brand-50 transition-colors"
-//                           >
-//                             <i className="ph ph-building text-lg text-brand-500"></i>
-//                             <span className="font-medium text-brand-700 text-sm">Host Dashboard</span>
-//                           </Link>
-
-//                           {/* Switch Role */}
-//                           {!isListerMode && (
-//                             <button
-//                               onClick={() => {
-//                                 const updatedUser = { ...user, role: "both" as const };
-//                                 localStorage.setItem("gigs_user", JSON.stringify(updatedUser));
-//                                 setUser(updatedUser);
-//                                 setIsMenuOpen(false);
-//                                 window.dispatchEvent(new Event("gigsAuthChange"));
-//                               }}
-//                               className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-brand-50 transition-colors"
-//                             >
-//                               <i className="ph ph-arrows-left-right text-lg text-brand-500"></i>
-//                               <span className="font-medium text-brand-700 text-sm">Switch to Lister</span>
-//                             </button>
-//                           )}
-
-//                           {/* Divider */}
-//                           <div className="border-t border-brand-100 my-2"></div>
-
-//                           {/* Logout */}
-//                           <button
-//                             onClick={handleLogout}
-//                             className="flex items-center gap-3 px-4 py-2.5 w-full text-left hover:bg-red-50 transition-colors"
-//                           >
-//                             <i className="ph ph-sign-out text-lg text-red-500"></i>
-//                             <span className="font-medium text-red-600 text-sm">Log out</span>
-//                           </button>
-//                         </div>
-//                       </motion.div>
-//                     )}
-//                   </AnimatePresence>
-//                 </div>
-//               </>
-//             ) : (
-//               /* Guest Desktop CTA */
-//               <>
-//                 <Link
-//                   href={`${DASHBOARD_URL}/auth/signup?redirect=/listings/create`}
-//                   className="hidden md:flex items-center gap-2 px-4 py-2 font-bold rounded-lg hover:border-orange-700 transition-all text-sm hover:text-brand-500"
-//                 >
-//                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-//                   </svg>
-//                   Become a Lister
-//                 </Link>
-//                 <Link
-//                   href={`${DASHBOARD_URL}/auth/login`}
-//                   className="hidden md:block text-sm font-bold hover:text-brand-600 transition-colors"
-//                 >
-//                   Log in
-//                 </Link>
-//                 <Link
-//                   href={`${DASHBOARD_URL}/auth/signup`}
-//                   className="px-5 py-2.5 bg-black text-white font-bold rounded-lg border-2 border-brand-dark hover:bg-brand-accent hover:border-brand-accent hover:-translate-y-1 hover:shadow-brutal transition-all text-sm"
-//                 >
-//                   Get Started
-//                 </Link>
-//               </>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//     </header>
-//   );
-// };
